@@ -81,7 +81,7 @@ public abstract class AbstractChain implements Chain {
         attribute.put(Constants.QUERY, context.getQuery());
         attribute.put(Constants.CONVERSATION_ID, context.getConversationId());
         attribute.put(Constants.SCENE_ID, context.getSceneId());
-        attribute.put(Constants.EXTEND, context.getMetadata());
+        attribute.put(Constants.EXTEND, context.getExtend());
         cacheManager.setAttribute(attribute);
     }
 }

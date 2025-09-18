@@ -13,7 +13,7 @@ public class CoreContext {
     private String query;
     private String conversationId;
     private String sceneId;
-    private Map<String, Object> metadata;
+    private Map<String, Object> extend;
 
     public CoreContext(String query, String conversationId) {
         this.query = query;
@@ -44,18 +44,18 @@ public class CoreContext {
         this.sceneId = sceneId;
     }
 
-    public Map<String, Object> getMetadata() {
-        return metadata;
+    public Map<String, Object> getExtend() {
+        return extend;
     }
 
-    public void copyMetadata(Map<String, Object> metadata) {
-        this.metadata = metadata;
+    public void copyExtend(Map<String, Object> extend) {
+        this.extend = extend;
     }
 
     public void addMetadata(String key, Object data) {
-        if (this.metadata == null) {
-            this.metadata = new LinkedHashMap<>();
+        if (this.extend == null) {
+            this.extend = new LinkedHashMap<>();
         }
-        this.metadata.put(key,data);
+        this.extend.put(key, data);
     }
 }
