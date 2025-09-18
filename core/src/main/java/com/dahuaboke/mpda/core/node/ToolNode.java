@@ -3,27 +3,23 @@ package com.dahuaboke.mpda.core.node;
 
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.action.NodeAction;
-import com.dahuaboke.mpda.core.agent.tools.ToolResult;
 import com.dahuaboke.mpda.core.agent.tools.ToolUtil;
 import com.dahuaboke.mpda.core.client.entity.LlmResponse;
 import com.dahuaboke.mpda.core.context.consts.Constants;
-import com.dahuaboke.mpda.core.exception.MpdaRuntimeException;
 import com.dahuaboke.mpda.core.memory.AssistantMessageWrapper;
 import com.dahuaboke.mpda.core.memory.MemoryManager;
 import com.dahuaboke.mpda.core.memory.ToolResponseMessageWrapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.ToolResponseMessage;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.model.Generation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * auth: dahua
@@ -45,29 +41,15 @@ public class ToolNode implements NodeAction {
     public Map<String, Object> apply(OverAllState state) throws Exception {
         ChatResponse chatResponse = chatResponse(state);
         ToolResponseMessage toolResponseMessage = executeTool(chatResponse);
-        List<ToolResponseMessage.ToolResponse> responses = toolResponseMessage.getResponses();
-        List<Object> extend = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(responses)) {
-            responses.forEach(res -> {
-                String resData = res.responseData();
-                try {
-                    ToolResult toolResult = objectMapper.readValue(resData, ToolResult.class);
-                    Object data = toolResult.getData();
-                    if (data != null) {
-                        extend.add(data);
-                    }
-                } catch (JsonProcessingException e) {
-                    throw new MpdaRuntimeException(e); // TODO
-                }
-            });
-        }
+
         ToolResponseMessageWrapper toolResponseMessageWrapper = buildToolResponseMessageWrapper(state, toolResponseMessage);
-        Map apply = new HashMap() {{
+        Map<String,Object> apply = new HashMap<>() {{
             put(Constants.QUERY, toolResponseMessageWrapper);
             put(Constants.IS_TOOL_QUERY, true);
         }};
-        if (CollectionUtils.isNotEmpty(extend)) {
-            apply.put(Constants.EXTEND, extend);
+        HashMap<String, Object> toolInputArguments = getToolInputArguments(chatResponse);
+        if (!toolInputArguments.isEmpty()) {
+            apply.put(Constants.EXTEND, toolInputArguments);
         }
         return apply;
     }
@@ -95,4 +77,25 @@ public class ToolNode implements NodeAction {
         memoryManager.addMemory(conversationId, sceneId, toolResponseMessageWrapper);
         return toolResponseMessageWrapper;
     }
+
+    private HashMap<String, Object> getToolInputArguments(ChatResponse chatResponse){
+        HashMap<String, Object> toolInputMap = new HashMap<>();
+        Optional<Generation> toolCallGeneration = chatResponse.getResults()
+                .stream()
+                .filter(g -> !org.springframework.util.CollectionUtils.isEmpty(g.getOutput().getToolCalls()))
+                .findFirst();
+
+        if (toolCallGeneration.isEmpty()) {
+            throw new IllegalStateException("No tool call requested by the chat model");
+        }
+
+        AssistantMessage assistantMessage = toolCallGeneration.get().getOutput();
+        for (AssistantMessage.ToolCall toolCall : assistantMessage.getToolCalls()) {
+            String toolName = toolCall.name();
+            String toolInputArguments = toolCall.arguments();
+            toolInputMap.put(toolName,toolInputArguments);
+        }
+        return toolInputMap;
+    }
+
 }

@@ -111,7 +111,7 @@ public abstract class AbstractGraph implements Graph {
         LlmResponse llmResponse = overAllState.value(Constants.RESULT, LlmResponse.class).get();
         String text = llmResponse.chatResponse().getResult().getOutput().getText();
         Object toolExtend = overAllState.value(Constants.EXTEND).orElse(null);
-        return new SceneResponse(text, new SceneExtend(graphExtend, toolExtend));
+        return new SceneResponse(text, buildSceneExtend(graphExtend,toolExtend));
     }
 
     protected Flux<SceneResponse> streamResponse(Map<String, Object> attribute, String graphKey) throws GraphRunnerException {
@@ -129,7 +129,7 @@ public abstract class AbstractGraph implements Graph {
                 } else {
                     OverAllState overAllState = output.state();
                     Object toolExtend = overAllState.value(Constants.EXTEND).orElse(null);
-                    sink.tryEmitNext(new SceneResponse("", new SceneExtend(graphExtend, toolExtend)));
+                    sink.tryEmitNext(new SceneResponse("", buildSceneExtend(graphExtend,toolExtend)));
                 }
             } catch (Exception e) {
                 throw new CompletionException(e);
@@ -142,4 +142,8 @@ public abstract class AbstractGraph implements Graph {
                 .doOnCancel(() -> System.out.println("Client disconnected from stream"))
                 .doOnError(e -> System.err.println("Error occurred during streaming: " + e));
     }
+
+    public SceneExtend buildSceneExtend(Object graphExtend, Object toolExtend) {
+        return new SceneExtend(graphExtend,toolExtend);
+    };
 }
