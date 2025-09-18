@@ -55,7 +55,7 @@ public class DocContextHandler {
         return docContext;
     }
 
-    private  ArrayList<List<Double>> getLists(List<Double> pageNumbers) {
+    private ArrayList<List<Double>> getLists(List<Double> pageNumbers) {
         ArrayList<List<Double>> continuousSegments = new ArrayList<>();
         if (!pageNumbers.isEmpty()) {
             ArrayList<Double> currentSegment = new ArrayList<>();

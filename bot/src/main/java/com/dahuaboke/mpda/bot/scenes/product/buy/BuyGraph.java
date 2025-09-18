@@ -3,9 +3,10 @@ package com.dahuaboke.mpda.bot.scenes.product.buy;
 
 import com.alibaba.cloud.ai.graph.KeyStrategyFactory;
 import com.alibaba.cloud.ai.graph.StateGraph;
-import com.dahuaboke.mpda.core.agent.exception.MpdaGraphException;
-import com.dahuaboke.mpda.core.agent.exception.MpdaRuntimeException;
 import com.dahuaboke.mpda.core.agent.graph.AbstractGraph;
+import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
+import com.dahuaboke.mpda.core.exception.MpdaGraphException;
+import com.dahuaboke.mpda.core.exception.MpdaRuntimeException;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
@@ -23,12 +24,12 @@ public class BuyGraph extends AbstractGraph {
     }
 
     @Override
-    public String execute(Map<String, Object> attribute) throws MpdaRuntimeException {
-        return "";
+    public SceneResponse execute(Map<String, Object> attribute) throws MpdaRuntimeException {
+        return null;
     }
 
     @Override
-    public Flux<String> executeAsync(Map<String, Object> attribute) throws MpdaRuntimeException {
+    public Flux<SceneResponse> executeAsync(Map<String, Object> attribute) throws MpdaRuntimeException {
         return null;
     }
 }

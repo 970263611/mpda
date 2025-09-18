@@ -6,12 +6,13 @@ import com.dahuaboke.mpda.bot.rag.constants.FundConstant;
 import com.dahuaboke.mpda.bot.rag.monitor.ProcessingMonitor;
 import com.dahuaboke.mpda.client.entity.resp.C014005Resp;
 import com.dahuaboke.mpda.client.handle.VectorStoreRequestHandle;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @Desc: 文档删除服务

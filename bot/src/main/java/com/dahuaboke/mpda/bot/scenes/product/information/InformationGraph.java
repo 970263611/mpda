@@ -2,19 +2,16 @@ package com.dahuaboke.mpda.bot.scenes.product.information;
 
 
 import com.alibaba.cloud.ai.graph.KeyStrategyFactory;
-import com.alibaba.cloud.ai.graph.NodeOutput;
-import com.alibaba.cloud.ai.graph.RunnableConfig;
 import com.alibaba.cloud.ai.graph.StateGraph;
-import com.alibaba.cloud.ai.graph.async.AsyncGenerator;
 import com.alibaba.cloud.ai.graph.exception.GraphRunnerException;
 import com.alibaba.cloud.ai.graph.exception.GraphStateException;
 import com.dahuaboke.mpda.bot.scenes.product.information.edge.InformationDispatcher;
 import com.dahuaboke.mpda.bot.scenes.product.marketRanking.MarketRankingScene;
-import com.dahuaboke.mpda.core.agent.exception.MpdaGraphException;
-import com.dahuaboke.mpda.core.agent.exception.MpdaRuntimeException;
 import com.dahuaboke.mpda.core.agent.graph.AbstractGraph;
-import com.dahuaboke.mpda.core.client.entity.LlmResponse;
+import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
 import com.dahuaboke.mpda.core.context.consts.Constants;
+import com.dahuaboke.mpda.core.exception.MpdaGraphException;
+import com.dahuaboke.mpda.core.exception.MpdaRuntimeException;
 import com.dahuaboke.mpda.core.memory.MemoryMerge;
 import com.dahuaboke.mpda.core.node.HumanNode;
 import com.dahuaboke.mpda.core.node.LlmNode;
@@ -78,12 +75,11 @@ public class InformationGraph extends AbstractGraph {
 
     @Override
     @MemoryMerge(MarketRankingScene.class)
-    public String execute(Map<String, Object> attribute) throws MpdaRuntimeException {
+    public SceneResponse execute(Map<String, Object> attribute) throws MpdaRuntimeException {
         attribute.put(Constants.TOOLS, List.of("informationTool"));
         informationPrompt.changePrompt("guide");
         try {
-            LlmResponse llmResponse = getGraph("default").invoke(attribute).get().value(Constants.RESULT, LlmResponse.class).get();
-            return llmResponse.chatResponse().getResult().getOutput().getText();
+            return response(attribute, "default");
         } catch (GraphRunnerException e) {
             throw new MpdaRuntimeException(e);
         }
@@ -91,13 +87,11 @@ public class InformationGraph extends AbstractGraph {
 
     @Override
     @MemoryMerge(MarketRankingScene.class)
-    public Flux<String> executeAsync(Map<String, Object> attribute) throws MpdaRuntimeException {
+    public Flux<SceneResponse> executeAsync(Map<String, Object> attribute) throws MpdaRuntimeException {
         attribute.put(Constants.TOOLS, List.of("informationTool"));
         informationPrompt.changePrompt("guide");
         try {
-            AsyncGenerator<NodeOutput> generator = getGraph("default").stream(attribute,
-                    RunnableConfig.builder().threadId(cacheManager.getContext().getSceneId()).build());
-            return changeFlux(generator);
+            return streamResponse(attribute, "default");
         } catch (GraphRunnerException e) {
             throw new MpdaRuntimeException(e);
         }

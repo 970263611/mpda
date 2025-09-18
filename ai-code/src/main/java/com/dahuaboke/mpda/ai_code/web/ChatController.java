@@ -1,7 +1,9 @@
 package com.dahuaboke.mpda.ai_code.web;
 
 import com.dahuaboke.mpda.ai_code.web.service.ChatService;
-import com.dahuaboke.mpda.core.agent.exception.MpdaException;
+import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
+import com.dahuaboke.mpda.core.context.CoreContext;
+import com.dahuaboke.mpda.core.exception.MpdaException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +29,10 @@ public class ChatController {
     public Flux<ServerSentEvent<String>> chat(
             @RequestHeader("Conversation-Id") String conversationId,
             @RequestBody String q) throws MpdaException {
-        Flux<String> response = chatService.chat(conversationId, q);
+        CoreContext context = new CoreContext(q, conversationId);
+        Flux<SceneResponse> response = chatService.chat(context);
         return response.map(res -> {
-            Map<String, Object> delta = Map.of("role", "assistant", "content", res);
+            Map<String, Object> delta = Map.of("role", "assistant", "content", res.output());
             Map<String, Object> choice = Map.of("index", 0, "delta", delta, "finish_reason", "");
             List<Map<String, Object>> choices = List.of(choice);
             try {

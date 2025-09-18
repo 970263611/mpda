@@ -2,11 +2,12 @@ package com.dahuaboke.mpda.core.agent.scene;
 
 
 import com.dahuaboke.mpda.core.agent.chain.DefaultChain;
-import com.dahuaboke.mpda.core.agent.exception.MpdaException;
-import com.dahuaboke.mpda.core.agent.exception.MpdaGraphException;
-import com.dahuaboke.mpda.core.agent.exception.MpdaIllegalConfigException;
+import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
 import com.dahuaboke.mpda.core.context.CacheManager;
 import com.dahuaboke.mpda.core.context.CoreContext;
+import com.dahuaboke.mpda.core.exception.MpdaException;
+import com.dahuaboke.mpda.core.exception.MpdaGraphException;
+import com.dahuaboke.mpda.core.exception.MpdaIllegalConfigException;
 import com.dahuaboke.mpda.core.utils.SpringUtil;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,10 +32,10 @@ import java.util.Map;
 @Component
 public class SceneManager implements BeanPostProcessor {
 
-    @Autowired
-    private ApplicationContext applicationContext;
     private final List<Scene> scenes = new ArrayList<>();
     private final Map<String, SceneWrapper> sceneWrappers = new HashMap<>();
+    @Autowired
+    private ApplicationContext applicationContext;
     private CacheManager cacheManager;
     private SceneWrapper rootWrapper;
     private boolean isInit = false;
@@ -98,8 +99,7 @@ public class SceneManager implements BeanPostProcessor {
         return applicationContext.getBean(wrapper.getSceneId(), SceneWrapper.class);
     }
 
-    public String apply(String conversationId, String query) throws MpdaException {
-        CoreContext context = new CoreContext(query, conversationId);
+    public SceneResponse apply(CoreContext context) throws MpdaException {
         SceneWrapper sceneWrapper = next(context);
         try {
             context.setSceneId(sceneWrapper.getSceneId());
@@ -110,8 +110,7 @@ public class SceneManager implements BeanPostProcessor {
         }
     }
 
-    public Flux<String> applyAsync(String conversationId, String query) throws MpdaException {
-        CoreContext context = new CoreContext(query, conversationId);
+    public Flux<SceneResponse> applyAsync(CoreContext context) throws MpdaException {
         SceneWrapper sceneWrapper = next(context);
         try {
             context.setSceneId(sceneWrapper.getSceneId());

@@ -1,8 +1,8 @@
 package com.dahuaboke.mpda.core.context;
 
-import com.dahuaboke.mpda.core.agent.exception.MpdaIllegalConfigException;
 import com.dahuaboke.mpda.core.agent.scene.Scene;
 import com.dahuaboke.mpda.core.agent.scene.SceneWrapper;
+import com.dahuaboke.mpda.core.exception.MpdaIllegalConfigException;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.stereotype.Component;
 

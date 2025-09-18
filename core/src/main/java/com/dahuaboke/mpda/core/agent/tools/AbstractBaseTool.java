@@ -1,7 +1,7 @@
 package com.dahuaboke.mpda.core.agent.tools;
 
 
-import com.dahuaboke.mpda.core.agent.exception.MpdaIllegalArgumentException;
+import com.dahuaboke.mpda.core.exception.MpdaIllegalArgumentException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

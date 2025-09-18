@@ -1,7 +1,9 @@
 package com.dahuaboke.mpda.ai_code.web.service;
 
-import com.dahuaboke.mpda.core.agent.exception.MpdaException;
 import com.dahuaboke.mpda.core.agent.scene.SceneManager;
+import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
+import com.dahuaboke.mpda.core.context.CoreContext;
+import com.dahuaboke.mpda.core.exception.MpdaException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -16,7 +18,7 @@ public class ChatService {
     @Autowired
     private SceneManager sceneManager;
 
-    public Flux<String> chat(String conversationId, String query) throws MpdaException {
-        return sceneManager.applyAsync(conversationId, query);
+    public Flux<SceneResponse> chat(CoreContext context) throws MpdaException {
+        return sceneManager.applyAsync(context);
     }
 }

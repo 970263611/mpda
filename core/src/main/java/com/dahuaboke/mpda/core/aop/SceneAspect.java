@@ -2,7 +2,6 @@ package com.dahuaboke.mpda.core.aop;
 
 
 import com.dahuaboke.mpda.core.context.CacheManager;
-import com.dahuaboke.mpda.core.context.trace.TraceManager;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;

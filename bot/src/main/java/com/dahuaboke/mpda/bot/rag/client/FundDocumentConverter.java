@@ -3,13 +3,14 @@ package com.dahuaboke.mpda.bot.rag.client;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.dahuaboke.mpda.client.convert.DocumentConverter;
+import org.springframework.ai.document.Document;
+import org.springframework.ai.embedding.EmbeddingModel;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.springframework.ai.document.Document;
-import org.springframework.ai.embedding.EmbeddingModel;
 
 /**
  * @Desc: document转换成基金对象, 以及基金对象转换成document

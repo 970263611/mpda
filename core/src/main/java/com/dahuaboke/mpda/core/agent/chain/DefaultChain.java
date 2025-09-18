@@ -1,10 +1,11 @@
 package com.dahuaboke.mpda.core.agent.chain;
 
 
-import com.dahuaboke.mpda.core.agent.exception.MpdaRuntimeException;
 import com.dahuaboke.mpda.core.agent.graph.Graph;
 import com.dahuaboke.mpda.core.agent.prompt.AgentPrompt;
+import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
 import com.dahuaboke.mpda.core.context.CacheManager;
+import com.dahuaboke.mpda.core.exception.MpdaRuntimeException;
 import reactor.core.publisher.Flux;
 
 /**
@@ -22,12 +23,12 @@ public class DefaultChain extends AbstractChain {
     }
 
     @Override
-    public String executeGraph() throws MpdaRuntimeException {
+    public SceneResponse executeGraph() throws MpdaRuntimeException {
         return graph.execute(attribute);
     }
 
     @Override
-    public Flux<String> executeGraphAsync() throws MpdaRuntimeException {
+    public Flux<SceneResponse> executeGraphAsync() throws MpdaRuntimeException {
         return graph.executeAsync(attribute);
     }
 

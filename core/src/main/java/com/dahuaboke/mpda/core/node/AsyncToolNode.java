@@ -2,7 +2,6 @@ package com.dahuaboke.mpda.core.node;
 
 
 import com.alibaba.cloud.ai.graph.OverAllState;
-import com.dahuaboke.mpda.core.agent.exception.MpdaRuntimeException;
 import com.dahuaboke.mpda.core.context.consts.Constants;
 import com.dahuaboke.mpda.core.memory.ToolResponseMessageWrapper;
 import org.springframework.ai.chat.messages.AssistantMessage;
@@ -22,7 +21,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  * time: 2025/8/22 10:24
  */
 @Component
-public class AsyncToolNode extends ToolNode implements SmartLifecycle {
+public class AsyncToolNode extends ToolNode implements SmartLifecycle { // TODO
 
     private BlockingQueue<ChatResponse> queue = new LinkedBlockingQueue();
     private Thread pullThread;
@@ -51,7 +50,7 @@ public class AsyncToolNode extends ToolNode implements SmartLifecycle {
                         ChatResponse chatResponse = queue.take();
                         executeTool(chatResponse);  // TODO 单线程循环执行，可以并发
                     } catch (InterruptedException e) {
-                        throw new MpdaRuntimeException(e);
+//                        throw new MpdaRuntimeException(e);
                     }
                 }
             });

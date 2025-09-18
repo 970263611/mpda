@@ -1,9 +1,10 @@
 package com.dahuaboke.mpda.core.agent.scene;
 
 import com.dahuaboke.mpda.core.agent.chain.Chain;
-import com.dahuaboke.mpda.core.agent.exception.MpdaException;
-import com.dahuaboke.mpda.core.agent.exception.MpdaGraphException;
+import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
 import com.dahuaboke.mpda.core.context.CoreContext;
+import com.dahuaboke.mpda.core.exception.MpdaException;
+import com.dahuaboke.mpda.core.exception.MpdaGraphException;
 import org.apache.commons.collections4.CollectionUtils;
 import reactor.core.publisher.Flux;
 
@@ -73,11 +74,11 @@ public class SceneWrapper {
         return childrenWrapper == null;
     }
 
-    public String apply(CoreContext context) throws MpdaException {
+    public SceneResponse apply(CoreContext context) throws MpdaException {
         return chain.slide(context);
     }
 
-    public Flux<String> applyAsync(CoreContext context) throws MpdaException {
+    public Flux<SceneResponse> applyAsync(CoreContext context) throws MpdaException {
         return chain.slideAsync(context);
     }
 
@@ -86,11 +87,12 @@ public class SceneWrapper {
     }
 
     private SceneWrapper next(CoreContext context, int retry) throws MpdaException {
-        String execute = apply(context);
-        if (execute.startsWith("<think>")) {
-            execute = execute.replaceFirst("(?s)<think>.*?</think>", "");
+        SceneResponse execute = apply(context);
+        String output = execute.output();
+        if (output.startsWith("<think>")) {
+            output = output.replaceFirst("(?s)<think>.*?</think>", "");
         }
-        String finalExecute = execute.trim();
+        String finalExecute = output.trim();
         Optional<SceneWrapper> match = childrenWrapper.stream().filter(child -> child.getSceneId().equals(finalExecute)).findFirst();
         if (match.isPresent()) {
             return match.get();

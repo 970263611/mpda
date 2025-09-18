@@ -2,18 +2,15 @@ package com.dahuaboke.mpda.ai_code.scenes.codeGenerate;
 
 
 import com.alibaba.cloud.ai.graph.KeyStrategyFactory;
-import com.alibaba.cloud.ai.graph.NodeOutput;
-import com.alibaba.cloud.ai.graph.RunnableConfig;
 import com.alibaba.cloud.ai.graph.StateGraph;
-import com.alibaba.cloud.ai.graph.async.AsyncGenerator;
 import com.alibaba.cloud.ai.graph.exception.GraphRunnerException;
 import com.alibaba.cloud.ai.graph.exception.GraphStateException;
 import com.dahuaboke.mpda.ai_code.scenes.codeGenerate.edge.CodeGenerateDispatcher;
-import com.dahuaboke.mpda.core.agent.exception.MpdaGraphException;
-import com.dahuaboke.mpda.core.agent.exception.MpdaRuntimeException;
 import com.dahuaboke.mpda.core.agent.graph.AbstractGraph;
-import com.dahuaboke.mpda.core.client.entity.LlmResponse;
+import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
 import com.dahuaboke.mpda.core.context.consts.Constants;
+import com.dahuaboke.mpda.core.exception.MpdaGraphException;
+import com.dahuaboke.mpda.core.exception.MpdaRuntimeException;
 import com.dahuaboke.mpda.core.node.HumanNode;
 import com.dahuaboke.mpda.core.node.LlmNode;
 import com.dahuaboke.mpda.core.node.StreamLlmNode;
@@ -72,23 +69,20 @@ public class CodeGenerateGraph extends AbstractGraph {
     }
 
     @Override
-    public String execute(Map<String, Object> attribute) throws MpdaRuntimeException {
+    public SceneResponse execute(Map<String, Object> attribute) throws MpdaRuntimeException {
         attribute.put(Constants.TOOLS, List.of("codeGenerateTool"));
         try {
-            LlmResponse llmResponse = getGraph("default").invoke(attribute).get().value(Constants.RESULT, LlmResponse.class).get();
-            return llmResponse.chatResponse().getResult().getOutput().getText();
+            return response(attribute, "default");
         } catch (GraphRunnerException e) {
             throw new MpdaRuntimeException(e);
         }
     }
 
     @Override
-    public Flux<String> executeAsync(Map<String, Object> attribute) throws MpdaRuntimeException {
+    public Flux<SceneResponse> executeAsync(Map<String, Object> attribute) throws MpdaRuntimeException {
         attribute.put(Constants.TOOLS, List.of("codeGenerateTool"));
         try {
-            AsyncGenerator<NodeOutput> generator = getGraph("default").stream(attribute,
-                    RunnableConfig.builder().threadId(cacheManager.getContext().getSceneId()).build());
-            return changeFlux(generator);
+            return streamResponse(attribute, "default");
         } catch (GraphRunnerException e) {
             throw new MpdaRuntimeException(e);
         }

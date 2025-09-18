@@ -1,10 +1,11 @@
 package com.dahuaboke.mpda.bot.rag.utils;
 
+import org.springframework.core.io.Resource;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.springframework.core.io.Resource;
 
 /**
  * @Desc: 基金pdf文件工具类
@@ -37,12 +38,12 @@ public class FundDocUtil {
         return mapRelation;
     }
 
-    public static List<Map<String,String>> splitIntoBatches(Map<String,String> map, int bachSize){
-        ArrayList<Map<String,String>> batches = new ArrayList<>();
+    public static List<Map<String, String>> splitIntoBatches(Map<String, String> map, int bachSize) {
+        ArrayList<Map<String, String>> batches = new ArrayList<>();
         HashMap<String, String> currentBatch = new HashMap<>();
         int i = 0;
-        for (Map.Entry<String,String> entry : map.entrySet()){
-            if(i >= bachSize){
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            if (i >= bachSize) {
                 batches.add(currentBatch);
                 currentBatch = new HashMap<>();
                 i = 0;
@@ -50,18 +51,18 @@ public class FundDocUtil {
             currentBatch.put(entry.getKey(), entry.getValue());
             i++;
         }
-        if(!currentBatch.isEmpty()){
+        if (!currentBatch.isEmpty()) {
             batches.add(currentBatch);
         }
         return batches;
     }
 
-    public static List<List<Resource>> splitIntoBatches(List<Resource> resources, int bachSize){
+    public static List<List<Resource>> splitIntoBatches(List<Resource> resources, int bachSize) {
         List<List<Resource>> batches = new ArrayList<>();
         List<Resource> currentBatch = new ArrayList<>();
         int i = 0;
-        for (Resource resource : resources){
-            if(i >= bachSize){
+        for (Resource resource : resources) {
+            if (i >= bachSize) {
                 batches.add(currentBatch);
                 currentBatch = new ArrayList<>();
                 i = 0;
@@ -69,7 +70,7 @@ public class FundDocUtil {
             currentBatch.add(resource);
             i++;
         }
-        if(!currentBatch.isEmpty()){
+        if (!currentBatch.isEmpty()) {
             batches.add(currentBatch);
         }
         return batches;

@@ -14,6 +14,13 @@ import com.dahuaboke.mpda.core.rag.entity.FundFieldMapper;
 import com.dahuaboke.mpda.core.rag.handler.EmbeddingSearchHandler;
 import com.dahuaboke.mpda.core.rag.rerank.Rerank;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.vectorstore.SearchRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -21,12 +28,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.vectorstore.SearchRequest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 
 /**
@@ -69,6 +70,18 @@ public class DocumentQueryService {
     private static boolean checkFundType(String fundCode) {
         // TODO 合并书涵编写的基金类型查询代码
         return true;
+    }
+
+    private static void writeTxt(FundProduct data, String fileName) {
+        ObjectMapper mapper = new ObjectMapper();
+        String json = null;
+        try {
+            json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(Map.of(fileName, data));
+            Files.write(Paths.get("D:/jsonDir06/" + fileName + ".json"), json.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     /**
@@ -116,7 +129,7 @@ public class DocumentQueryService {
 
                 mapper.setFieldByComment(fund, question, answer);
             } catch (Exception e) {
-                log.error("产品{}查询失败问题为: {}",productName,userQuery, e);
+                log.error("产品{}查询失败问题为: {}", productName, userQuery, e);
                 return false;
             }
         }
@@ -135,7 +148,7 @@ public class DocumentQueryService {
 
         // 写入数据库
         //writeDb(fund);
-        writeTxt(fund,productName);
+        writeTxt(fund, productName);
         return true;
     }
 
@@ -165,18 +178,6 @@ public class DocumentQueryService {
     private void writeDb(FundProduct data) {
         YwjqrProduct ywjqrProduct = objectMapper.convertValue(data, YwjqrProduct.class);
         productToolHandler.fundProduct(ywjqrProduct);
-    }
-
-    private static  void writeTxt(FundProduct data,String fileName) {
-        ObjectMapper mapper = new ObjectMapper();
-        String json = null;
-        try {
-            json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString( Map.of(fileName, data));
-            Files.write(Paths.get("D:/jsonDir06/"+ fileName + ".json"), json.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
     }
 
     private String[] callModel(FundProduct fundData) {

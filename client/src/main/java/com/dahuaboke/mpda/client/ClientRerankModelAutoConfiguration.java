@@ -24,13 +24,13 @@ public class ClientRerankModelAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public RerankModelRequestHandle rerankModelRequestHandle(CustomClient customClient, ClientProperties clientProperties){
+    public RerankModelRequestHandle rerankModelRequestHandle(CustomClient customClient, ClientProperties clientProperties) {
         return new RerankModelRequestHandle(customClient, clientProperties);
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public Rerank customRerankModel(RerankModelRequestHandle rerankModelRequestHandle){
+    public Rerank customRerankModel(RerankModelRequestHandle rerankModelRequestHandle) {
         return new CustomRerankModel(rerankModelRequestHandle);
     }
 }

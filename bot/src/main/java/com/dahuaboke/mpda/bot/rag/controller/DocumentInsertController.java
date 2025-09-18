@@ -48,7 +48,7 @@ public class DocumentInsertController {
                 try {
                     documentInsertService.processPdfResources(batch);
                 } catch (Exception e) {
-                    log.error("子线程{}处理文档插入批次异常,批次为{}",Thread.currentThread().getName(),batch,e);
+                    log.error("子线程{}处理文档插入批次异常,批次为{}", Thread.currentThread().getName(), batch, e);
                 }
             });
         }

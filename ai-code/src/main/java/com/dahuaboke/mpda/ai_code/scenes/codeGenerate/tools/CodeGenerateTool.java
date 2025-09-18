@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Map;
 
 /**
  * auth: dahua
@@ -45,7 +46,7 @@ public class CodeGenerateTool extends AbstractBaseTool<CodeGenerateTool.Input> {
         String content = input.content();
         try (PrintWriter printWriter = new PrintWriter(new FileWriter(filePath, false))) {
             printWriter.print(content);
-            return ToolResult.success("文件生成成功");
+            return ToolResult.success("文件生成成功", Map.of("test1", "123456987"));
         } catch (IOException e) {
             return ToolResult.error("文件生成失败", e.getMessage());
         }

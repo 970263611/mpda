@@ -1,7 +1,7 @@
 package com.dahuaboke.mpda.core.agent.prompt;
 
 
-import com.dahuaboke.mpda.core.agent.exception.MpdaInvocationException;
+import com.dahuaboke.mpda.core.exception.MpdaInvocationException;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;

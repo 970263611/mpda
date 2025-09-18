@@ -1,8 +1,9 @@
 package com.dahuaboke.mpda.core.agent.graph;
 
 
-import com.dahuaboke.mpda.core.agent.exception.MpdaGraphException;
-import com.dahuaboke.mpda.core.agent.exception.MpdaRuntimeException;
+import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
+import com.dahuaboke.mpda.core.exception.MpdaGraphException;
+import com.dahuaboke.mpda.core.exception.MpdaRuntimeException;
 import org.springframework.ai.chat.messages.Message;
 import reactor.core.publisher.Flux;
 
@@ -17,9 +18,9 @@ public interface Graph {
 
     void init(Set<String> keys) throws MpdaGraphException;
 
-    String execute(Map<String, Object> attribute) throws MpdaRuntimeException;
+    SceneResponse execute(Map<String, Object> attribute) throws MpdaRuntimeException;
 
-    Flux<String> executeAsync(Map<String, Object> attribute) throws MpdaRuntimeException;
+    Flux<SceneResponse> executeAsync(Map<String, Object> attribute) throws MpdaRuntimeException;
 
     void addMemory(Message message);
 

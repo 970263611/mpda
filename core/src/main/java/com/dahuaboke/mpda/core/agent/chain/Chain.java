@@ -1,9 +1,10 @@
 package com.dahuaboke.mpda.core.agent.chain;
 
 
-import com.dahuaboke.mpda.core.agent.exception.MpdaException;
-import com.dahuaboke.mpda.core.agent.exception.MpdaGraphException;
+import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
 import com.dahuaboke.mpda.core.context.CoreContext;
+import com.dahuaboke.mpda.core.exception.MpdaException;
+import com.dahuaboke.mpda.core.exception.MpdaGraphException;
 import reactor.core.publisher.Flux;
 
 /**
@@ -14,7 +15,7 @@ public interface Chain {
 
     void init() throws MpdaGraphException;
 
-    String slide(CoreContext context) throws MpdaException;
+    SceneResponse slide(CoreContext context) throws MpdaException;
 
-    Flux<String> slideAsync(CoreContext context) throws MpdaException;
+    Flux<SceneResponse> slideAsync(CoreContext context) throws MpdaException;
 }

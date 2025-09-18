@@ -2,10 +2,11 @@ package com.dahuaboke.mpda.bot.web.service;
 
 import com.dahuaboke.mpda.bot.model.common.CommonResponse;
 import com.dahuaboke.mpda.bot.model.common.ResponseCode;
-import com.dahuaboke.mpda.bot.model.request.ChatBotRequest;
 import com.dahuaboke.mpda.bot.model.response.ChatBotResponse;
-import com.dahuaboke.mpda.core.agent.exception.MpdaException;
 import com.dahuaboke.mpda.core.agent.scene.SceneManager;
+import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
+import com.dahuaboke.mpda.core.context.CoreContext;
+import com.dahuaboke.mpda.core.exception.MpdaException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,14 +25,14 @@ public class ChatService {
     @Autowired
     private SceneManager sceneManager;
 
-    public CommonResponse<ChatBotResponse> chat(ChatBotRequest chatBotRequest) throws MpdaException {
+    public CommonResponse<ChatBotResponse> chat(CoreContext context) throws MpdaException {
         try {
-            if (chatBotRequest == null) {
+            if (context == null) {
                 return CommonResponse.error(ResponseCode.MISSING_PARAM);
             }
 
-            String conversationId = chatBotRequest.getConversationId();
-            String query = chatBotRequest.getQuery();
+            String conversationId = context.getConversationId();
+            String query = context.getQuery();
 
             if (StringUtils.isEmpty(conversationId)) {
                 return CommonResponse.error(ResponseCode.MISSING_PARAM, "会话id不能为空");
@@ -41,9 +42,9 @@ public class ChatService {
                 return CommonResponse.error(ResponseCode.MISSING_PARAM, "请求内容不能为空");
             }
 
-            String result = sceneManager.apply(conversationId, query);
+            SceneResponse result = sceneManager.apply(context);
             ChatBotResponse chatBotResponse = new ChatBotResponse();
-            chatBotResponse.setResult(result);
+            chatBotResponse.setResult(result.output());
             // 返回成功响应
             return CommonResponse.success(chatBotResponse);
 
@@ -55,7 +56,7 @@ public class ChatService {
         }
     }
 
-    public Flux<String> chatStream(String conversationId, String query) throws MpdaException {
-        return sceneManager.applyAsync(conversationId, query);
+    public Flux<SceneResponse> chatStream(CoreContext context) throws MpdaException {
+        return sceneManager.applyAsync(context);
     }
 }

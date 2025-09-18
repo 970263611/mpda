@@ -1,10 +1,11 @@
 package com.dahuaboke.mpda.bot.web;
 
 import com.dahuaboke.mpda.bot.model.common.CommonResponse;
-import com.dahuaboke.mpda.bot.model.request.ChatBotRequest;
 import com.dahuaboke.mpda.bot.model.response.ChatBotResponse;
 import com.dahuaboke.mpda.bot.web.service.ChatService;
-import com.dahuaboke.mpda.core.agent.exception.MpdaException;
+import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
+import com.dahuaboke.mpda.core.context.CoreContext;
+import com.dahuaboke.mpda.core.exception.MpdaException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,20 +27,25 @@ public class ChatController {
     @Autowired
     private ObjectMapper objectMapper;
 
-
     @RequestMapping("/chat")
     public CommonResponse<ChatBotResponse> chat(
-            @RequestBody ChatBotRequest chatBotRequest) throws MpdaException {
-        return chatService.chat(chatBotRequest);
+            @RequestBody CoreContext context) throws MpdaException {
+        return chatService.chat(context);
     }
 
     @RequestMapping("/stream")
     public Flux<ServerSentEvent<String>> chatStream(
             @RequestHeader("Conversation-Id") String conversationId,
             @RequestBody String q) throws MpdaException {
-        Flux<String> response = chatService.chatStream(conversationId, q);
+        CoreContext context = new CoreContext(q, conversationId);
+        Flux<SceneResponse> response = chatService.chatStream(context);
         return response.map(res -> {
-            Map<String, Object> delta = Map.of("role", "assistant", "content", res);
+            try {
+                System.out.println("-------------------------------------------" + objectMapper.writeValueAsString(res.extend()));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+            Map<String, Object> delta = Map.of("role", "assistant", "content", res.output());
             Map<String, Object> choice = Map.of("index", 0, "delta", delta, "finish_reason", "");
             List<Map<String, Object>> choices = List.of(choice);
             try {

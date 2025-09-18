@@ -18,4 +18,6 @@ public class Constants {
 
     public static final String SCENE_MERGE = "______sceneMerge______";
 
+    public static final String EXTEND = "______extend______";
+
 }

@@ -1,13 +1,14 @@
 package com.dahuaboke.mpda.core.agent.chain;
 
 
-import com.dahuaboke.mpda.core.agent.exception.MpdaGraphException;
-import com.dahuaboke.mpda.core.agent.exception.MpdaRuntimeException;
 import com.dahuaboke.mpda.core.agent.graph.Graph;
 import com.dahuaboke.mpda.core.agent.prompt.AgentPrompt;
+import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
 import com.dahuaboke.mpda.core.context.CacheManager;
 import com.dahuaboke.mpda.core.context.CoreContext;
 import com.dahuaboke.mpda.core.context.consts.Constants;
+import com.dahuaboke.mpda.core.exception.MpdaGraphException;
+import com.dahuaboke.mpda.core.exception.MpdaRuntimeException;
 import com.dahuaboke.mpda.core.memory.AssistantMessageWrapper;
 import com.dahuaboke.mpda.core.memory.UserMessageWrapper;
 import reactor.core.publisher.Flux;
@@ -36,6 +37,7 @@ public abstract class AbstractChain implements Chain {
             put(Constants.RESULT, null);
             put(Constants.TOOLS, null);
             put(Constants.IS_TOOL_QUERY, null);
+            put(Constants.EXTEND, null);
         }};
     }
 
@@ -45,23 +47,23 @@ public abstract class AbstractChain implements Chain {
     }
 
     @Override
-    public String slide(CoreContext context) throws MpdaRuntimeException {
+    public SceneResponse slide(CoreContext context) throws MpdaRuntimeException {
         prepare(context);
         graph.addMemory(UserMessageWrapper.builder().text(context.getQuery()).build());
-        String reply = executeGraph();
-        graph.addMemory(new AssistantMessageWrapper(reply));
+        SceneResponse reply = executeGraph();
+        graph.addMemory(new AssistantMessageWrapper(reply.output()));
         return reply;
     }
 
     @Override
-    public Flux<String> slideAsync(CoreContext context) throws MpdaRuntimeException {
+    public Flux<SceneResponse> slideAsync(CoreContext context) throws MpdaRuntimeException {
         String conversationId = context.getConversationId();
         String sceneId = context.getSceneId();
         prepare(context);
         graph.addMemory(UserMessageWrapper.builder().text(context.getQuery()).build());
-        Flux<String> reply = executeGraphAsync();
+        Flux<SceneResponse> reply = executeGraphAsync();
         StringBuilder replyMessage = new StringBuilder();
-        reply.subscribe(replyTemp -> replyMessage.append(replyTemp)
+        reply.subscribe(replyTemp -> replyMessage.append(replyTemp.output())
                 , error -> {
                     // TODO
                 }
@@ -69,9 +71,9 @@ public abstract class AbstractChain implements Chain {
         return reply;
     }
 
-    abstract public String executeGraph() throws MpdaRuntimeException;
+    abstract public SceneResponse executeGraph() throws MpdaRuntimeException;
 
-    abstract public Flux<String> executeGraphAsync() throws MpdaRuntimeException;
+    abstract public Flux<SceneResponse> executeGraphAsync() throws MpdaRuntimeException;
 
     private void prepare(CoreContext context) {
         attribute.remove(Constants.TOOLS);
@@ -79,6 +81,7 @@ public abstract class AbstractChain implements Chain {
         attribute.put(Constants.QUERY, context.getQuery());
         attribute.put(Constants.CONVERSATION_ID, context.getConversationId());
         attribute.put(Constants.SCENE_ID, context.getSceneId());
+        attribute.put(Constants.EXTEND, context.getMetadata());
         cacheManager.setAttribute(attribute);
     }
 }

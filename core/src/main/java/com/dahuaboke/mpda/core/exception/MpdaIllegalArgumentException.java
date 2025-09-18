@@ -1,4 +1,4 @@
-package com.dahuaboke.mpda.core.agent.exception;
+package com.dahuaboke.mpda.core.exception;
 
 
 /**
