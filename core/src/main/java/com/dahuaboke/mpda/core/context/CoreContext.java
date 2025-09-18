@@ -52,7 +52,7 @@ public class CoreContext {
         this.extend = extend;
     }
 
-    public void addMetadata(String key, Object data) {
+    public void addExtend(String key, Object data) {
         if (this.extend == null) {
             this.extend = new LinkedHashMap<>();
         }
