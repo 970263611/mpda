@@ -1,11 +1,13 @@
 package com.dahuaboke.mpda.core.aop;
 
 
+import com.dahuaboke.mpda.core.agent.scene.SceneWrapper;
 import com.dahuaboke.mpda.core.context.CacheManager;
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
-import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.annotation.*;
+import org.aspectj.lang.reflect.MethodSignature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +19,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class SceneAspect {
 
+    private static final Logger logger = LoggerFactory.getLogger(SceneAspect.class);
+
     @Autowired
     private CacheManager cacheManager;
 
@@ -27,6 +31,53 @@ public class SceneAspect {
 
     @Before("sceneWrapperPointcut()")
     public void beforeExecute(JoinPoint joinPoint) {
+        Inner inner = buildInner(joinPoint);
+        logger.info("{} >>> ({}) in >>> {}({})", inner.conversationId, inner.type, inner.simpleName, inner.description);
+    }
 
+    @AfterReturning("sceneWrapperPointcut()")
+    public void afterReturnExecute(JoinPoint joinPoint) {
+        Inner inner = buildInner(joinPoint);
+        logger.info("{} <<< ({}) out <<< {}({})", inner.conversationId, inner.type, inner.simpleName, inner.description);
+    }
+
+    @AfterThrowing("sceneWrapperPointcut()")
+    public void afterThrowingExecute(JoinPoint joinPoint, Throwable throwable) {
+        Inner inner = buildInner(joinPoint);
+        logger.info("{} !!! ({}) throw exception !!! {}({})", inner.conversationId, inner.type, inner.simpleName, inner.description, throwable);
+    }
+
+    private Inner buildInner(JoinPoint joinPoint) {
+        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        String methodName = signature.getName();
+        String type;
+        if ("apply".equals(methodName)) {
+            type = "sync";
+        } else if ("applyAsync".equals(methodName)) {
+            type = "async";
+        } else {
+            type = "unknow";
+        }
+        Object target = joinPoint.getTarget();
+        SceneWrapper sceneWrapper = (SceneWrapper) target;
+        String conversationId = cacheManager.getContext().getConversationId();
+        String simpleName = sceneWrapper.getSceneClass().getSimpleName();
+        String description = sceneWrapper.getDescription();
+        return new Inner(conversationId, simpleName, description, type);
+    }
+
+    class Inner {
+
+        private String conversationId;
+        private String simpleName;
+        private String description;
+        private String type;
+
+        public Inner(String conversationId, String simpleName, String description, String type) {
+            this.conversationId = conversationId;
+            this.simpleName = simpleName;
+            this.description = description;
+            this.type = type;
+        }
     }
 }

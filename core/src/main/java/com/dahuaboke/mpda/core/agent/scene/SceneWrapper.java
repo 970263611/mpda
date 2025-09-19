@@ -9,7 +9,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import reactor.core.publisher.Flux;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -74,34 +73,16 @@ public class SceneWrapper {
         return childrenWrapper == null;
     }
 
+    public Set<SceneWrapper> getChildrenWrapper() {
+        return childrenWrapper;
+    }
+
     public SceneResponse apply(CoreContext context) throws MpdaException {
         return chain.slide(context);
     }
 
     public Flux<SceneResponse> applyAsync(CoreContext context) throws MpdaException {
         return chain.slideAsync(context);
-    }
-
-    public SceneWrapper next(CoreContext context) throws MpdaException {
-        return next(context, 0);
-    }
-
-    private SceneWrapper next(CoreContext context, int retry) throws MpdaException {
-        SceneResponse execute = apply(context);
-        String output = execute.output();
-        if (output.startsWith("<think>")) {
-            output = output.replaceFirst("(?s)<think>.*?</think>", "");
-        }
-        String finalExecute = output.trim();
-        Optional<SceneWrapper> match = childrenWrapper.stream().filter(child -> child.getSceneId().equals(finalExecute)).findFirst();
-        if (match.isPresent()) {
-            return match.get();
-        }
-        retry++;
-        if (retry >= 3) {
-            return new UnknowWrapper();
-        }
-        return next(context, retry);
     }
 
     public static final class Builder {
