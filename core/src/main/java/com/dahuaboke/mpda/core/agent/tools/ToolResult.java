@@ -1,7 +1,5 @@
 package com.dahuaboke.mpda.core.agent.tools;
 
-import java.util.Map;
-
 import static com.dahuaboke.mpda.core.agent.tools.ToolResult.Status.ERROR;
 import static com.dahuaboke.mpda.core.agent.tools.ToolResult.Status.SUCCESS;
 
@@ -9,7 +7,6 @@ public class ToolResult {
 
     private Status status;
     private String message;
-    private Map<String,Object> toolInputArguments;
     private Object data;
 
     public ToolResult() {
@@ -59,14 +56,6 @@ public class ToolResult {
 
     public void setMessage(String message) {
         this.message = message;
-    }
-
-    public Map<String, Object> getToolInputArguments() {
-        return toolInputArguments;
-    }
-
-    public void setToolInputArguments(Map<String, Object> toolInputArguments) {
-        this.toolInputArguments = toolInputArguments;
     }
 
     public Object getData() {
