@@ -41,7 +41,16 @@ public class RecommendationTool extends ProductTool<RecommendationTool.Input> {
         try {
             List<ProdInfoDto> prodInfoDtos = productToolHandler.filterProdInfo(new FilterProdInfoReq(input.yearRita()
                     , input.fundType(), input.fundClassificationCode(), input.withDrawal()));
-
+            //TODO 此处为测试数据
+            ProdInfoDto prodInfoDto1 = new ProdInfoDto();
+            prodInfoDto1.setFundCode("001122");
+            ProdInfoDto prodInfoDto2 = new ProdInfoDto();
+            prodInfoDto2.setFundCode("002233");
+            ProdInfoDto prodInfoDto3 = new ProdInfoDto();
+            prodInfoDto3.setFundCode("003344");
+            prodInfoDtos.add(prodInfoDto1);
+            prodInfoDtos.add(prodInfoDto2);
+            prodInfoDtos.add(prodInfoDto3);
             List<Map> tempResult = new ArrayList<>();
             prodInfoDtos.stream().forEach(prodInfoDto -> {
                 Map temp = new HashMap();

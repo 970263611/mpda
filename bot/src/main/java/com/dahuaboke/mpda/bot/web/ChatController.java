@@ -61,4 +61,31 @@ public class ChatController {
         });
     }
 
+    @RequestMapping("/platFromStream")
+    public Flux<ServerSentEvent<String>> platFromStream(
+            @RequestBody CoreContext context) throws MpdaException {
+        Flux<SceneResponse> response = chatService.chatStream(context);
+        return response.map(res -> {
+            String extend = "";
+            try {
+                if (res.extend() != null) {
+                    extend = objectMapper.writeValueAsString(res.extend().graphExtend());
+                }
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+            CommonResponse<String> success = CommonResponse.success(res.output(), extend);
+            try {
+                String jsonData = objectMapper.writeValueAsString(success);
+                return ServerSentEvent.<String>builder()
+                        .id(UUID.randomUUID().toString())
+                        .event("message")
+                        .data(jsonData)
+                        .build();
+            } catch (JsonProcessingException e) {
+                return ServerSentEvent.<String>builder().build();
+            }
+        });
+    }
+
 }

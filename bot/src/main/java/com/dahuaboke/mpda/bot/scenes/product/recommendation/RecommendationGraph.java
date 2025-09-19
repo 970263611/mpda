@@ -16,12 +16,14 @@ import com.dahuaboke.mpda.core.node.HumanNode;
 import com.dahuaboke.mpda.core.node.LlmNode;
 import com.dahuaboke.mpda.core.node.StreamLlmNode;
 import com.dahuaboke.mpda.core.node.ToolNode;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
-import java.util.List;
-import java.util.Map;
 
 import static com.alibaba.cloud.ai.graph.action.AsyncEdgeAction.edge_async;
 import static com.alibaba.cloud.ai.graph.action.AsyncNodeAction.node_async;
@@ -88,7 +90,7 @@ public class RecommendationGraph extends AbstractGraph {
         attribute.put(Constants.TOOLS, List.of("recommendationTool"));
         recommendationPrompt.changePrompt("guide");
         try {
-            return streamResponse(attribute, "default");
+            return streamResponse(attribute, "default", null);
         } catch (GraphRunnerException e) {
             throw new MpdaRuntimeException(e);
         }
@@ -101,7 +103,23 @@ public class RecommendationGraph extends AbstractGraph {
      */
     @Override
     public SceneExtend buildSceneExtend(Object graphExtend, Object toolExtend) {
-        //TODO 推荐场景,通过工具扩展信息，做额外计算，并添加额外图扩展信息
-        return null;
+        //推荐场景,通过工具扩展信息，做额外计算，并添加额外图扩展信息
+        ArrayList<String> fundCodes = new ArrayList<>();
+        if (toolExtend != null) {
+            List<Object> extend = (List<Object>) toolExtend;
+            for (Object resp : extend) {
+                List<Map<String, String>> map = (List<Map<String, String>>) resp;
+                map.forEach(entry -> fundCodes.add(entry.get("fundCode")));
+            }
+        }
+
+        Map<String, Object> graphExtendMap = new HashMap<>();
+        graphExtendMap.put("fundCode", fundCodes);
+        if (fundCodes.size() > 0) {
+            graphExtendMap.put("buyLink", true);
+        }
+        return new SceneExtend(graphExtendMap, toolExtend);
+
     }
+
 }

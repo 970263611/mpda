@@ -8,7 +8,8 @@ package com.dahuaboke.mpda.bot.model.common;
 public class CommonResponse<T> {
     private String code;
     private String msg;
-    private T data;
+    private T content;
+    private T extend;
     private Long timestamp;
 
     public CommonResponse() {
@@ -25,7 +26,14 @@ public class CommonResponse<T> {
 
     public static <T> CommonResponse<T> success(T data) {
         CommonResponse<T> response = success();
-        response.setData(data);
+        response.setContent(data);
+        return response;
+    }
+
+    public static <T> CommonResponse<T> success(T data,T extend) {
+        CommonResponse<T> response = success();
+        response.setContent(data);
+        response.setExtend(extend);
         return response;
     }
 
@@ -66,12 +74,20 @@ public class CommonResponse<T> {
         this.msg = msg;
     }
 
-    public T getData() {
-        return data;
+    public T getContent() {
+        return content;
     }
 
-    public void setData(T data) {
-        this.data = data;
+    public void setContent(T content) {
+        this.content = content;
+    }
+
+    public T getExtend() {
+        return extend;
+    }
+
+    public void setExtend(T extend) {
+        this.extend = extend;
     }
 
     public Long getTimestamp() {

@@ -50,8 +50,7 @@ public class ToolNode implements NodeAction {
                 String resData = res.responseData();
                 try {
                     ToolResult toolResult = objectMapper.readValue(resData, ToolResult.class);
-                    toolResult.setToolInputArguments(getToolInputArguments(chatResponse));
-                    extend.add(toolResult);
+                    extend.add(toolResult.getData());
                 } catch (JsonProcessingException e) {
                     throw new MpdaRuntimeException(e); // TODO
                 }
@@ -94,25 +93,6 @@ public class ToolNode implements NodeAction {
         return toolResponseMessageWrapper;
     }
 
-    private HashMap<String, Object> getToolInputArguments(ChatResponse chatResponse){
 
-        HashMap<String, Object> toolInputMap = new HashMap<>();
-        Optional<Generation> toolCallGeneration = chatResponse.getResults()
-                .stream()
-                .filter(g -> !org.springframework.util.CollectionUtils.isEmpty(g.getOutput().getToolCalls()))
-                .findFirst();
-
-        if (toolCallGeneration.isEmpty()) {
-            throw new IllegalStateException("No tool call requested by the chat model");
-        }
-
-        AssistantMessage assistantMessage = toolCallGeneration.get().getOutput();
-        for (AssistantMessage.ToolCall toolCall : assistantMessage.getToolCalls()) {
-            String toolName = toolCall.name();
-            String toolInputArguments = toolCall.arguments();
-            toolInputMap.put(toolName,toolInputArguments);
-        }
-        return toolInputMap;
-    }
 
 }

@@ -16,12 +16,13 @@ import com.dahuaboke.mpda.core.node.HumanNode;
 import com.dahuaboke.mpda.core.node.LlmNode;
 import com.dahuaboke.mpda.core.node.StreamLlmNode;
 import com.dahuaboke.mpda.core.node.ToolNode;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
-import java.util.List;
-import java.util.Map;
 
 import static com.alibaba.cloud.ai.graph.action.AsyncEdgeAction.edge_async;
 import static com.alibaba.cloud.ai.graph.action.AsyncNodeAction.node_async;
@@ -77,7 +78,7 @@ public class MarketRankingGraph extends AbstractGraph {
         attribute.put(Constants.TOOLS, List.of("marketRankingTool"));
         marketRankingPrompt.changePrompt("guide");
         try {
-            return response(attribute, "default",attribute.get(Constants.SCENE_ID));
+            return response(attribute, "default", attribute.get(Constants.SCENE_ID));
         } catch (GraphRunnerException e) {
             throw new MpdaRuntimeException(e);
         }
@@ -88,7 +89,7 @@ public class MarketRankingGraph extends AbstractGraph {
         attribute.put(Constants.TOOLS, List.of("marketRankingTool"));
         marketRankingPrompt.changePrompt("guide");
         try {
-            return streamResponse(attribute, "default");
+            return streamResponse(attribute, "default", null);
         } catch (GraphRunnerException e) {
             throw new MpdaRuntimeException(e);
         }
@@ -101,7 +102,13 @@ public class MarketRankingGraph extends AbstractGraph {
      */
     @Override
     public SceneExtend buildSceneExtend(Object graphExtend, Object toolExtend) {
-        //TODO 市场排名报告场景,通过工具扩展信息，做额外计算，并添加额外图扩展信息
-        return null;
+        //市场排名报告场景,通过工具扩展信息，做额外计算，并添加额外图扩展信息
+        Map<String, Object> graphExtendMap = new HashMap<>();
+        //TODO 目前市场排名代码为测试数据，后续代码完善再调整此处解析
+        if (toolExtend != null) {
+            graphExtendMap.put("downloadLink", true);
+        }
+        return new SceneExtend(graphExtendMap, toolExtend);
     }
+
 }

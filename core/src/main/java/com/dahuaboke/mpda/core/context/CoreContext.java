@@ -20,6 +20,9 @@ public class CoreContext {
         this.conversationId = conversationId;
     }
 
+    public CoreContext() {
+    }
+
     public String getQuery() {
         return query;
     }
