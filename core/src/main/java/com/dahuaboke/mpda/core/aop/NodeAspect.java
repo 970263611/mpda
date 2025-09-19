@@ -1,11 +1,13 @@
 package com.dahuaboke.mpda.core.aop;
 
 
-import com.dahuaboke.mpda.core.context.trace.TraceManager;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
-import org.aspectj.lang.annotation.Pointcut;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.alibaba.cloud.ai.graph.OverAllState;
+import com.alibaba.cloud.ai.graph.action.NodeAction;
+import com.dahuaboke.mpda.core.context.consts.Constants;
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
@@ -16,15 +18,41 @@ import org.springframework.stereotype.Component;
 @Component
 public class NodeAspect {
 
-    @Autowired
-    private TraceManager traceManager;
+    private static final Logger logger = LoggerFactory.getLogger(NodeAspect.class);
 
-    @Pointcut("within(com.dahuaboke.mpda.core.node..*) && within(com.alibaba.cloud.ai.graph.action.NodeAction+) && execution(* apply(..))")
+    @Pointcut("within(com.dahuaboke.mpda.core.node..*) && " +
+            "within(com.alibaba.cloud.ai.graph.action.NodeAction+) && " +
+            "execution(* apply(..))")
     public void nodePointcut() {
     }
 
-    @Before("sceneWrapperPointcut()")
-    public void beforeExecute() {
+    @Before("nodePointcut()")
+    public void beforeExecute(JoinPoint joinPoint) {
+        Object arg = joinPoint.getArgs()[0];
+        OverAllState state = (OverAllState) arg;
+        String conversationId = state.value(Constants.CONVERSATION_ID, String.class).orElse("unknow");
+        Object target = joinPoint.getTarget();
+        NodeAction nodeAction = (NodeAction) target;
+        logger.debug("{} >>> in >>> {}", conversationId, nodeAction.getClass().getSimpleName());
+    }
 
+    @AfterReturning("nodePointcut()")
+    public void afterReturnExecute(JoinPoint joinPoint) {
+        Object arg = joinPoint.getArgs()[0];
+        OverAllState state = (OverAllState) arg;
+        String conversationId = state.value(Constants.CONVERSATION_ID, String.class).orElse("unknow");
+        Object target = joinPoint.getTarget();
+        NodeAction nodeAction = (NodeAction) target;
+        logger.debug("{} <<< out <<< {}", conversationId, nodeAction.getClass().getSimpleName());
+    }
+
+    @AfterThrowing("nodePointcut()")
+    public void afterThrowingExecute(JoinPoint joinPoint, Throwable throwable) {
+        Object arg = joinPoint.getArgs()[0];
+        OverAllState state = (OverAllState) arg;
+        String conversationId = state.value(Constants.CONVERSATION_ID, String.class).orElse("unknow");
+        Object target = joinPoint.getTarget();
+        NodeAction nodeAction = (NodeAction) target;
+        logger.debug("{} !!! throw exception !!! {}", conversationId, nodeAction.getClass().getSimpleName(), throwable);
     }
 }

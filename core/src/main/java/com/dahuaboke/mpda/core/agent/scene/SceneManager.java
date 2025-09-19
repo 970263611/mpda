@@ -20,10 +20,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * auth: dahua
@@ -130,11 +127,34 @@ public class SceneManager implements BeanPostProcessor {
             try {
                 context.setSceneId(runtimeWrapper.getSceneId());
                 cacheManager.setContext(context);
-                runtimeWrapper = runtimeWrapper.next(context);
+                runtimeWrapper = next(context, runtimeWrapper);
             } finally {
                 cacheManager.removeContext();
             }
         }
         return runtimeWrapper;
+    }
+
+    private SceneWrapper next(CoreContext context, SceneWrapper runtimeWrapper) throws MpdaException {
+        return next(context, runtimeWrapper, 0);
+    }
+
+    private SceneWrapper next(CoreContext context, SceneWrapper runtimeWrapper, int retry) throws MpdaException {
+        SceneResponse execute = runtimeWrapper.apply(context);
+        String output = execute.output();
+        if (output.startsWith("<think>")) {
+            output = output.replaceFirst("(?s)<think>.*?</think>", "");
+        }
+        String finalExecute = output.trim();
+        Set<SceneWrapper> childrenWrapper = runtimeWrapper.getChildrenWrapper();
+        Optional<SceneWrapper> match = childrenWrapper.stream().filter(child -> child.getSceneId().equals(finalExecute)).findFirst();
+        if (match.isPresent()) {
+            return match.get();
+        }
+        retry++;
+        if (retry >= 3) {
+            return new UnknowWrapper();
+        }
+        return next(context, runtimeWrapper, retry);
     }
 }

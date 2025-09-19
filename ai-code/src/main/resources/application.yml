@@ -24,4 +24,5 @@ spring:
 
 logging:
   level:
+    com.dahuaboke.mpda.core.aop: debug
     root: info
