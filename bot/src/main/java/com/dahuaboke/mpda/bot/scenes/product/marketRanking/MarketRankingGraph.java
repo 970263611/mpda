@@ -7,6 +7,7 @@ import com.alibaba.cloud.ai.graph.exception.GraphRunnerException;
 import com.alibaba.cloud.ai.graph.exception.GraphStateException;
 import com.dahuaboke.mpda.bot.scenes.product.marketRanking.edge.MarketRankingDispatcher;
 import com.dahuaboke.mpda.core.agent.graph.AbstractGraph;
+import com.dahuaboke.mpda.core.agent.scene.entity.SceneExtend;
 import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
 import com.dahuaboke.mpda.core.context.consts.Constants;
 import com.dahuaboke.mpda.core.exception.MpdaGraphException;
@@ -76,7 +77,7 @@ public class MarketRankingGraph extends AbstractGraph {
         attribute.put(Constants.TOOLS, List.of("marketRankingTool"));
         marketRankingPrompt.changePrompt("guide");
         try {
-            return response(attribute, "default");
+            return response(attribute, "default",attribute.get(Constants.SCENE_ID));
         } catch (GraphRunnerException e) {
             throw new MpdaRuntimeException(e);
         }
@@ -91,5 +92,16 @@ public class MarketRankingGraph extends AbstractGraph {
         } catch (GraphRunnerException e) {
             throw new MpdaRuntimeException(e);
         }
+    }
+
+    /**
+     * @param graphExtend 包装额外扩展信息，比如下载链接标识，购买链接标识等
+     * @param toolExtend  包含该场景执行工具函数的，函数名称，参数(通过函数名称判断参数是否是基金代码)
+     * @return SceneExtend
+     */
+    @Override
+    public SceneExtend buildSceneExtend(Object graphExtend, Object toolExtend) {
+        //TODO 市场排名报告场景,通过工具扩展信息，做额外计算，并添加额外图扩展信息
+        return null;
     }
 }

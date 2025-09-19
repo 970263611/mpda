@@ -17,13 +17,11 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.ToolResponseMessage;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.model.Generation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * auth: dahua
@@ -52,17 +50,17 @@ public class ToolNode implements NodeAction {
                 String resData = res.responseData();
                 try {
                     ToolResult toolResult = objectMapper.readValue(resData, ToolResult.class);
-                    Object data = toolResult.getData();
-                    if (data != null) {
-                        extend.add(data);
-                    }
+                    toolResult.setToolInputArguments(getToolInputArguments(chatResponse));
+                    extend.add(toolResult);
                 } catch (JsonProcessingException e) {
                     throw new MpdaRuntimeException(e); // TODO
                 }
             });
         }
         ToolResponseMessageWrapper toolResponseMessageWrapper = buildToolResponseMessageWrapper(state, toolResponseMessage);
-        Map apply = new HashMap() {{
+
+
+        Map<String,Object> apply = new HashMap<>() {{
             put(Constants.QUERY, toolResponseMessageWrapper);
             put(Constants.IS_TOOL_QUERY, true);
         }};
@@ -95,4 +93,26 @@ public class ToolNode implements NodeAction {
         memoryManager.addMemory(conversationId, sceneId, toolResponseMessageWrapper);
         return toolResponseMessageWrapper;
     }
+
+    private HashMap<String, Object> getToolInputArguments(ChatResponse chatResponse){
+
+        HashMap<String, Object> toolInputMap = new HashMap<>();
+        Optional<Generation> toolCallGeneration = chatResponse.getResults()
+                .stream()
+                .filter(g -> !org.springframework.util.CollectionUtils.isEmpty(g.getOutput().getToolCalls()))
+                .findFirst();
+
+        if (toolCallGeneration.isEmpty()) {
+            throw new IllegalStateException("No tool call requested by the chat model");
+        }
+
+        AssistantMessage assistantMessage = toolCallGeneration.get().getOutput();
+        for (AssistantMessage.ToolCall toolCall : assistantMessage.getToolCalls()) {
+            String toolName = toolCall.name();
+            String toolInputArguments = toolCall.arguments();
+            toolInputMap.put(toolName,toolInputArguments);
+        }
+        return toolInputMap;
+    }
+
 }
