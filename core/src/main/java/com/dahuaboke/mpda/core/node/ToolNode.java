@@ -3,13 +3,17 @@ package com.dahuaboke.mpda.core.node;
 
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.action.NodeAction;
+import com.dahuaboke.mpda.core.agent.tools.ToolResult;
 import com.dahuaboke.mpda.core.agent.tools.ToolUtil;
 import com.dahuaboke.mpda.core.client.entity.LlmResponse;
 import com.dahuaboke.mpda.core.context.consts.Constants;
+import com.dahuaboke.mpda.core.exception.MpdaRuntimeException;
 import com.dahuaboke.mpda.core.memory.AssistantMessageWrapper;
 import com.dahuaboke.mpda.core.memory.MemoryManager;
 import com.dahuaboke.mpda.core.memory.ToolResponseMessageWrapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.ToolResponseMessage;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -17,9 +21,7 @@ import org.springframework.ai.chat.model.Generation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * auth: dahua
@@ -41,15 +43,29 @@ public class ToolNode implements NodeAction {
     public Map<String, Object> apply(OverAllState state) throws Exception {
         ChatResponse chatResponse = chatResponse(state);
         ToolResponseMessage toolResponseMessage = executeTool(chatResponse);
-
+        List<ToolResponseMessage.ToolResponse> responses = toolResponseMessage.getResponses();
+        List<Object> extend = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(responses)) {
+            responses.forEach(res -> {
+                String resData = res.responseData();
+                try {
+                    ToolResult toolResult = objectMapper.readValue(resData, ToolResult.class);
+                    toolResult.setToolInputArguments(getToolInputArguments(chatResponse));
+                    extend.add(toolResult);
+                } catch (JsonProcessingException e) {
+                    throw new MpdaRuntimeException(e); // TODO
+                }
+            });
+        }
         ToolResponseMessageWrapper toolResponseMessageWrapper = buildToolResponseMessageWrapper(state, toolResponseMessage);
+
+
         Map<String,Object> apply = new HashMap<>() {{
             put(Constants.QUERY, toolResponseMessageWrapper);
             put(Constants.IS_TOOL_QUERY, true);
         }};
-        HashMap<String, Object> toolInputArguments = getToolInputArguments(chatResponse);
-        if (!toolInputArguments.isEmpty()) {
-            apply.put(Constants.EXTEND, toolInputArguments);
+        if (CollectionUtils.isNotEmpty(extend)) {
+            apply.put(Constants.EXTEND, extend);
         }
         return apply;
     }
@@ -79,6 +95,7 @@ public class ToolNode implements NodeAction {
     }
 
     private HashMap<String, Object> getToolInputArguments(ChatResponse chatResponse){
+
         HashMap<String, Object> toolInputMap = new HashMap<>();
         Optional<Generation> toolCallGeneration = chatResponse.getResults()
                 .stream()
