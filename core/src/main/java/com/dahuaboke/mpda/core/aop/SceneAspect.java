@@ -32,19 +32,19 @@ public class SceneAspect {
     @Before("sceneWrapperPointcut()")
     public void beforeExecute(JoinPoint joinPoint) {
         Inner inner = buildInner(joinPoint);
-        logger.info("{} >>> ({}) in >>> {}({})", inner.conversationId, inner.type, inner.simpleName, inner.description);
+        logger.debug("{} >>> ({}) in >>> {}({})", inner.conversationId, inner.type, inner.simpleName, inner.description);
     }
 
     @AfterReturning("sceneWrapperPointcut()")
     public void afterReturnExecute(JoinPoint joinPoint) {
         Inner inner = buildInner(joinPoint);
-        logger.info("{} <<< ({}) out <<< {}({})", inner.conversationId, inner.type, inner.simpleName, inner.description);
+        logger.debug("{} <<< ({}) out <<< {}({})", inner.conversationId, inner.type, inner.simpleName, inner.description);
     }
 
     @AfterThrowing("sceneWrapperPointcut()")
     public void afterThrowingExecute(JoinPoint joinPoint, Throwable throwable) {
         Inner inner = buildInner(joinPoint);
-        logger.info("{} !!! ({}) throw exception !!! {}({})", inner.conversationId, inner.type, inner.simpleName, inner.description, throwable);
+        logger.debug("{} !!! ({}) throw exception !!! {}({})", inner.conversationId, inner.type, inner.simpleName, inner.description, throwable);
     }
 
     private Inner buildInner(JoinPoint joinPoint) {

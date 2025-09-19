@@ -33,7 +33,7 @@ public class NodeAspect {
         String conversationId = state.value(Constants.CONVERSATION_ID, String.class).orElse("unknow");
         Object target = joinPoint.getTarget();
         NodeAction nodeAction = (NodeAction) target;
-        logger.info("{} >>> in >>> {}", conversationId, nodeAction.getClass().getSimpleName());
+        logger.debug("{} >>> in >>> {}", conversationId, nodeAction.getClass().getSimpleName());
     }
 
     @AfterReturning("nodePointcut()")
@@ -43,7 +43,7 @@ public class NodeAspect {
         String conversationId = state.value(Constants.CONVERSATION_ID, String.class).orElse("unknow");
         Object target = joinPoint.getTarget();
         NodeAction nodeAction = (NodeAction) target;
-        logger.info("{} <<< out <<< {}", conversationId, nodeAction.getClass().getSimpleName());
+        logger.debug("{} <<< out <<< {}", conversationId, nodeAction.getClass().getSimpleName());
     }
 
     @AfterThrowing("nodePointcut()")
@@ -53,6 +53,6 @@ public class NodeAspect {
         String conversationId = state.value(Constants.CONVERSATION_ID, String.class).orElse("unknow");
         Object target = joinPoint.getTarget();
         NodeAction nodeAction = (NodeAction) target;
-        logger.info("{} !!! throw exception !!! {}", conversationId, nodeAction.getClass().getSimpleName(), throwable);
+        logger.debug("{} !!! throw exception !!! {}", conversationId, nodeAction.getClass().getSimpleName(), throwable);
     }
 }
