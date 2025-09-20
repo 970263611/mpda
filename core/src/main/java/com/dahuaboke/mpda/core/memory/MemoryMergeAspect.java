@@ -4,7 +4,7 @@ import com.dahuaboke.mpda.core.agent.scene.Scene;
 import com.dahuaboke.mpda.core.context.CacheManager;
 import com.dahuaboke.mpda.core.context.consts.Constants;
 import org.apache.commons.lang3.ArrayUtils;
-import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
@@ -27,12 +27,12 @@ public class MemoryMergeAspect {
     @Autowired
     private CacheManager cacheManager;
 
-    @Pointcut("@annotation(com.dahuaboke.mpda.core.trace.memory.MemoryMerge)")
+    @Pointcut("@annotation(com.dahuaboke.mpda.core.memory.MemoryMerge)")
     public void pointcut() {
     }
 
     @Before("pointcut()")
-    public void before(ProceedingJoinPoint joinPoint) {
+    public void before(JoinPoint joinPoint) {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
         MemoryMerge memoryMerge = method.getAnnotation(MemoryMerge.class);

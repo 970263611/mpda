@@ -6,7 +6,7 @@ import org.springframework.util.Assert;
 
 import java.util.Map;
 
-public class UserMessageWrapper extends AbstractMessage {
+public class UserMessageWrapper extends AbstractMessage implements MessageWrapper {
 
     private final long time;
 
@@ -19,6 +19,7 @@ public class UserMessageWrapper extends AbstractMessage {
         return new Builder();
     }
 
+    @Override
     public long getTime() {
         return time;
     }

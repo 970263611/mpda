@@ -6,11 +6,13 @@ import com.alibaba.cloud.ai.graph.StateGraph;
 import com.alibaba.cloud.ai.graph.exception.GraphRunnerException;
 import com.alibaba.cloud.ai.graph.exception.GraphStateException;
 import com.dahuaboke.mpda.ai_code.scenes.codeGenerate.edge.CodeGenerateDispatcher;
+import com.dahuaboke.mpda.ai_code.scenes.smallTalk.SmallTalkScene;
 import com.dahuaboke.mpda.core.agent.graph.AbstractGraph;
 import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
 import com.dahuaboke.mpda.core.context.consts.Constants;
 import com.dahuaboke.mpda.core.exception.MpdaGraphException;
 import com.dahuaboke.mpda.core.exception.MpdaRuntimeException;
+import com.dahuaboke.mpda.core.memory.MemoryMerge;
 import com.dahuaboke.mpda.core.node.HumanNode;
 import com.dahuaboke.mpda.core.node.LlmNode;
 import com.dahuaboke.mpda.core.node.StreamLlmNode;
@@ -78,6 +80,7 @@ public class CodeGenerateGraph extends AbstractGraph {
         }
     }
 
+    @MemoryMerge(SmallTalkScene.class)
     @Override
     public Flux<SceneResponse> executeAsync(Map<String, Object> attribute) throws MpdaRuntimeException {
         attribute.put(Constants.TOOLS, List.of("codeGenerateTool"));

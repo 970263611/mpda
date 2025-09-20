@@ -13,7 +13,6 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * auth: dahua
@@ -80,21 +79,15 @@ public class MemoryManager implements SmartLifecycle {
             if (messages == null) {
                 messages = new ArrayList<>();
             }
+            List<Message> finalMessages = new ArrayList<>(messages);
             if (!CollectionUtils.isEmpty(sceneMerge)) {
-                List<Message> finalMessages = messages;
                 sceneMerge.stream().forEach(merge -> {
                     finalMessages.addAll(getMemory(conversationId, merge));
                 });
             }
-            return messages.stream().sorted((m1, m2) -> {
-                if (m1 instanceof UserMessageWrapper user1 && m2 instanceof UserMessageWrapper user2) {
-                    return Long.valueOf(user1.getTime() - user2.getTime()).intValue();
-                }
-                if (m1 instanceof AssistantMessageWrapper assistant1 && m1 instanceof AssistantMessageWrapper assistant2) {
-                    return Long.valueOf(assistant1.getTime() - assistant2.getTime()).intValue();
-                }
-                if (m1 instanceof ToolResponseMessageWrapper tool1 && m1 instanceof ToolResponseMessageWrapper tool2) {
-                    return Long.valueOf(tool1.getTime() - tool2.getTime()).intValue();
+            return finalMessages.stream().sorted((m1, m2) -> {
+                if (m1 instanceof MessageWrapper w1 && m2 instanceof MessageWrapper w2) {
+                    return Long.valueOf(w1.getTime() - w2.getTime()).intValue();
                 }
                 return 0;
             }).toList();

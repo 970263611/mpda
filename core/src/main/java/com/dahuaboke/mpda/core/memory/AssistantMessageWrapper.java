@@ -6,7 +6,7 @@ import org.springframework.ai.content.Media;
 import java.util.List;
 import java.util.Map;
 
-public class AssistantMessageWrapper extends AssistantMessage {
+public class AssistantMessageWrapper extends AssistantMessage implements MessageWrapper {
 
     private final long time;
 
@@ -30,6 +30,7 @@ public class AssistantMessageWrapper extends AssistantMessage {
         this.time = System.currentTimeMillis();
     }
 
+    @Override
     public long getTime() {
         return time;
     }
