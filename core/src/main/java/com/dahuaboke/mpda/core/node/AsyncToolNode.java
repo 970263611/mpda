@@ -25,7 +25,7 @@ public class AsyncToolNode extends ToolNode implements SmartLifecycle { // TODO
 
     private BlockingQueue<ChatResponse> queue = new LinkedBlockingQueue();
     private Thread pullThread;
-    private volatile boolean isRunning = false;
+    private volatile boolean isRunning;
 
     @Override
     public Map<String, Object> apply(OverAllState state) throws Exception {

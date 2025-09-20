@@ -4,10 +4,12 @@ package com.dahuaboke.mpda.core.aop;
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.action.NodeAction;
 import com.dahuaboke.mpda.core.context.consts.Constants;
+import com.dahuaboke.mpda.core.trace.TraceManager;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -19,6 +21,9 @@ import org.springframework.stereotype.Component;
 public class NodeAspect {
 
     private static final Logger logger = LoggerFactory.getLogger(NodeAspect.class);
+
+    @Autowired
+    private TraceManager traceManager;
 
     @Pointcut("within(com.dahuaboke.mpda.core.node..*) && " +
             "within(com.alibaba.cloud.ai.graph.action.NodeAction+) && " +
@@ -33,7 +38,10 @@ public class NodeAspect {
         String conversationId = state.value(Constants.CONVERSATION_ID, String.class).orElse("unknow");
         Object target = joinPoint.getTarget();
         NodeAction nodeAction = (NodeAction) target;
-        logger.debug("{} >>> in >>> {}", conversationId, nodeAction.getClass().getSimpleName());
+        String trace = String.format("%s >>> in >>> %s @time: %d",
+                conversationId, nodeAction.getClass().getSimpleName(), System.currentTimeMillis());
+        traceManager.addTrace(conversationId, trace);
+        logger.debug(trace);
     }
 
     @AfterReturning("nodePointcut()")
@@ -43,7 +51,10 @@ public class NodeAspect {
         String conversationId = state.value(Constants.CONVERSATION_ID, String.class).orElse("unknow");
         Object target = joinPoint.getTarget();
         NodeAction nodeAction = (NodeAction) target;
-        logger.debug("{} <<< out <<< {}", conversationId, nodeAction.getClass().getSimpleName());
+        String trace = String.format("%s <<< out <<< %s @time: %d",
+                conversationId, nodeAction.getClass().getSimpleName(), System.currentTimeMillis());
+        traceManager.addTrace(conversationId, trace);
+        logger.debug(trace);
     }
 
     @AfterThrowing("nodePointcut()")
@@ -53,6 +64,9 @@ public class NodeAspect {
         String conversationId = state.value(Constants.CONVERSATION_ID, String.class).orElse("unknow");
         Object target = joinPoint.getTarget();
         NodeAction nodeAction = (NodeAction) target;
-        logger.debug("{} !!! throw exception !!! {}", conversationId, nodeAction.getClass().getSimpleName(), throwable);
+        String trace = String.format("%s !!! throw exception !!! %s @time: %d",
+                conversationId, nodeAction.getClass().getSimpleName(), System.currentTimeMillis(), throwable);
+        traceManager.addTrace(conversationId, trace);
+        logger.debug(trace);
     }
 }

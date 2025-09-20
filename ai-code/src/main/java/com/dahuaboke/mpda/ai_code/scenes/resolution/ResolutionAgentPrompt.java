@@ -22,7 +22,8 @@ public class ResolutionAgentPrompt implements AgentPrompt {
                 2.用户的聊天意向分为以下几类：
                     {scenes}
                 3.仅返回对应的意向编号，注意不要添加任何其他符号
-                4.示例：
+                4.匹配意向是严谨且合理的，如果无法根据语义匹配，则返回default字符串
+                5.示例：
                     数据：
                         | 编号                | 场景     |
                         | ------------------- | -------- |

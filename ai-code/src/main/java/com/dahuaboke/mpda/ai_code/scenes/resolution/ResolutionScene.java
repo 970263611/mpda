@@ -22,7 +22,7 @@ public class ResolutionScene implements Scene {
 
     @Override
     public String description() {
-        return null;
+        return "场景分发";
     }
 
     @Override

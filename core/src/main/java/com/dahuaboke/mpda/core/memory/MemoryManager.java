@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * auth: dahua
@@ -21,9 +22,7 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class MemoryManager implements SmartLifecycle {
 
-    //TODO 定时删除
     private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-
     @Value("${mpda.scene.maxMemory:10}")
     private int maxMemory;
     @Value("${mpda.scene.memoryTimeout:30}") // minute
@@ -32,18 +31,8 @@ public class MemoryManager implements SmartLifecycle {
     private int memoryCheck;
     @Autowired
     private CacheManager cacheManager;
-    private Map<String, Long> memoryTimer = new TreeMap<>(new Comparator<>() {
-        @Override
-        public int compare(String key1, String key2) {
-            Long time1 = memoryTimer.get(key1);
-            Long time2 = memoryTimer.get(key2);
-            if (time1 == null && time2 == null) return 0;
-            if (time1 == null) return 1;
-            if (time2 == null) return -1;
-            return Long.compare(time1, time2);
-        }
-    });
-    private volatile boolean isRunning = false;
+    private volatile boolean isRunning;
+    private Map<String, Long> memoryTimer = new HashMap<>();
 
     public void addMemory(Message message) {
         String conversationId = cacheManager.getContext().getConversationId();
@@ -131,8 +120,6 @@ public class MemoryManager implements SmartLifecycle {
                 if (now - value > memoryTimeout * 60 * 1000) {
                     removeMemory(entry.getKey());
                     iterator.remove();
-                } else {
-                    break; //按照时间排序，如果存在非超时情况，则后续一定不超时，则可以直接跳出
                 }
             }
         }, memoryCheck, memoryCheck, TimeUnit.SECONDS);

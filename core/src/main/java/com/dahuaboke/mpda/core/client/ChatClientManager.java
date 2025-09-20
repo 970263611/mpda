@@ -78,7 +78,6 @@ public class ChatClientManager {
             message = (ToolResponseMessageWrapper) query;
         } else {
             message = UserMessageWrapper.builder().text((String) query).build();
-            memoryManager.addMemory(conversationId, sceneId, message);
         }
         List<Message> finalMessages = new ArrayList<>(messages);
         finalMessages.add(message);

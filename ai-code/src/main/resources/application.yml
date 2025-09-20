@@ -13,14 +13,14 @@ spring:
           model: qwen-plus
           internal-tool-execution-enabled: false
 
-    mcp:
-      client:
-        enabled: true
-        sse:
-          connections:
-            playwright:
-              url: http://localhost:8931
-              sse-endpoint: /sse
+#    mcp:
+#      client:
+#        enabled: true
+#        sse:
+#          connections:
+#            playwright:
+#              url: http://localhost:8931
+#              sse-endpoint: /sse
 
 logging:
   level:

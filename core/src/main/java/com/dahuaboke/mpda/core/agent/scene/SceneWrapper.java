@@ -34,7 +34,7 @@ public class SceneWrapper {
     }
 
     public String getDescription() {
-        return scene.description();
+        return scene == null ? null : scene.description();
     }
 
     public String getSceneId() {
@@ -42,7 +42,7 @@ public class SceneWrapper {
     }
 
     public Class<? extends Scene> getSceneClass() {
-        return scene.getClass();
+        return scene == null ? null : scene.getClass();
     }
 
     public void addChildWrapper(SceneWrapper childWrapper) {

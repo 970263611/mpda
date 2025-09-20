@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -22,6 +23,10 @@ public class CacheManager {
      * memory
      */
     private final Map<String, Map<String, LimitedList<Message>>> memories = new LinkedHashMap();
+    /**
+     * trace
+     */
+    private final Map<String, List<String>> traces = new LinkedHashMap();
     /**
      * thread local
      */
@@ -71,5 +76,9 @@ public class CacheManager {
 
     public Map<String, Map<String, LimitedList<Message>>> getMemories() {
         return memories;
+    }
+
+    public Map<String, List<String>> getTraces() {
+        return traces;
     }
 }

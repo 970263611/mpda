@@ -1,8 +1,10 @@
 package com.dahuaboke.mpda.core.aop;
 
 
+import com.dahuaboke.mpda.core.agent.scene.Scene;
 import com.dahuaboke.mpda.core.agent.scene.SceneWrapper;
 import com.dahuaboke.mpda.core.context.CacheManager;
+import com.dahuaboke.mpda.core.trace.TraceManager;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.aspectj.lang.reflect.MethodSignature;
@@ -23,28 +25,39 @@ public class SceneAspect {
 
     @Autowired
     private CacheManager cacheManager;
+    @Autowired
+    private TraceManager traceManager;
 
-    @Pointcut("execution(* com.dahuaboke.mpda.core.agent.scene.SceneWrapper.apply(..)) || " +
-            "execution(* com.dahuaboke.mpda.core.agent.scene.SceneWrapper.applyAsync(..))")
+    @Pointcut("execution(* com.dahuaboke.mpda.core.agent.scene.SceneWrapper+.apply(..)) || " +
+            "execution(* com.dahuaboke.mpda.core.agent.scene.SceneWrapper+.applyAsync(..))")
     public void sceneWrapperPointcut() {
     }
 
     @Before("sceneWrapperPointcut()")
     public void beforeExecute(JoinPoint joinPoint) {
         Inner inner = buildInner(joinPoint);
-        logger.debug("{} >>> ({}) in >>> {}({})", inner.conversationId, inner.type, inner.simpleName, inner.description);
+        String trace = String.format("%s >>> (%s) in >>> %s(%s) @time: %d",
+                inner.conversationId, inner.type, inner.simpleName, inner.description, System.currentTimeMillis());
+        traceManager.addTrace(inner.conversationId, trace);
+        logger.debug(trace);
     }
 
     @AfterReturning("sceneWrapperPointcut()")
     public void afterReturnExecute(JoinPoint joinPoint) {
         Inner inner = buildInner(joinPoint);
-        logger.debug("{} <<< ({}) out <<< {}({})", inner.conversationId, inner.type, inner.simpleName, inner.description);
+        String trace = String.format("%s <<< (%s) out <<< %s(%s) @time: %d",
+                inner.conversationId, inner.type, inner.simpleName, inner.description, System.currentTimeMillis());
+        traceManager.addTrace(inner.conversationId, trace);
+        logger.debug(trace);
     }
 
     @AfterThrowing("sceneWrapperPointcut()")
     public void afterThrowingExecute(JoinPoint joinPoint, Throwable throwable) {
         Inner inner = buildInner(joinPoint);
-        logger.debug("{} !!! ({}) throw exception !!! {}({})", inner.conversationId, inner.type, inner.simpleName, inner.description, throwable);
+        String trace = String.format("%s !!! (%s) throw exception !!! %s(%s) : %s @time: %d",
+                inner.conversationId, inner.type, inner.simpleName, inner.description, throwable.getMessage(), System.currentTimeMillis());
+        traceManager.addTrace(inner.conversationId, trace);
+        logger.debug(trace, throwable);
     }
 
     private Inner buildInner(JoinPoint joinPoint) {
@@ -61,7 +74,8 @@ public class SceneAspect {
         Object target = joinPoint.getTarget();
         SceneWrapper sceneWrapper = (SceneWrapper) target;
         String conversationId = cacheManager.getContext().getConversationId();
-        String simpleName = sceneWrapper.getSceneClass().getSimpleName();
+        Class<? extends Scene> sceneClass = sceneWrapper.getSceneClass();
+        String simpleName = sceneClass == null ? "unknow" : sceneClass.getSimpleName();
         String description = sceneWrapper.getDescription();
         return new Inner(conversationId, simpleName, description, type);
     }

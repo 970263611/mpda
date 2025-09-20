@@ -18,6 +18,7 @@ public class ChatService {
     @Autowired
     private SceneManager sceneManager;
 
+
     public Flux<SceneResponse> chat(CoreContext context) throws MpdaException {
         return sceneManager.applyAsync(context);
     }
