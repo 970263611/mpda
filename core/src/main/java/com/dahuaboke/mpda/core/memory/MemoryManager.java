@@ -5,24 +5,45 @@ import com.dahuaboke.mpda.core.context.CacheManager;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * auth: dahua
  * time: 2025/9/17 17:29
  */
 @Component
-public class MemoryManager {
+public class MemoryManager implements SmartLifecycle {
 
     //TODO 定时删除
+    private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
+    @Value("${mpda.scene.maxMemory:10}")
+    private int maxMemory;
+    @Value("${mpda.scene.memoryTimeout:30}") // minute
+    private int memoryTimeout;
+    @Value("${mpda.scene.memoryCheck:30}") // minute
+    private int memoryCheck;
     @Autowired
     private CacheManager cacheManager;
+    private Map<String, Long> memoryTimer = new TreeMap<>(new Comparator<>() {
+        @Override
+        public int compare(String key1, String key2) {
+            Long time1 = memoryTimer.get(key1);
+            Long time2 = memoryTimer.get(key2);
+            if (time1 == null && time2 == null) return 0;
+            if (time1 == null) return 1;
+            if (time2 == null) return -1;
+            return Long.compare(time1, time2);
+        }
+    });
+    private volatile boolean isRunning = false;
 
     public void addMemory(Message message) {
         String conversationId = cacheManager.getContext().getConversationId();
@@ -31,23 +52,24 @@ public class MemoryManager {
     }
 
     public void addMemory(String conversationId, String sceneId, Message message) {
-        Map<String, Map<String, List<Message>>> memories = cacheManager.getMemories();
+        Map<String, Map<String, LimitedList<Message>>> memories = cacheManager.getMemories();
         if (memories.containsKey(conversationId)) {
-            Map<String, List<Message>> sceneMessages = memories.get(conversationId);
+            Map<String, LimitedList<Message>> sceneMessages = memories.get(conversationId);
             if (sceneMessages.containsKey(sceneId)) {
                 sceneMessages.get(sceneId).add(message);
             } else {
-                sceneMessages.put(sceneId, new ArrayList() {{
+                sceneMessages.put(sceneId, new LimitedList(maxMemory) {{
                     add(message);
                 }});
             }
         } else {
             memories.put(conversationId, new LinkedHashMap<>() {{
-                put(sceneId, new ArrayList() {{
+                put(sceneId, new LimitedList(maxMemory) {{
                     add(message);
                 }});
             }});
         }
+        memoryTimer.put(conversationId, System.currentTimeMillis());
     }
 
     public List<Message> getMemory() {
@@ -55,7 +77,7 @@ public class MemoryManager {
     }
 
     public List<Message> getMemory(String conversationId, String sceneId) {
-        Map<String, Map<String, List<Message>>> memories = cacheManager.getMemories();
+        Map<String, Map<String, LimitedList<Message>>> memories = cacheManager.getMemories();
         if (memories.containsKey(conversationId)) {
             return memories.get(conversationId).get(sceneId);
         }
@@ -63,7 +85,7 @@ public class MemoryManager {
     }
 
     public List<Message> getMemory(String conversationId, String sceneId, List<String> sceneMerge) {
-        Map<String, Map<String, List<Message>>> memories = cacheManager.getMemories();
+        Map<String, Map<String, LimitedList<Message>>> memories = cacheManager.getMemories();
         if (memories.containsKey(conversationId)) {
             List<Message> messages = memories.get(conversationId).get(sceneId);
             if (messages == null) {
@@ -89,5 +111,42 @@ public class MemoryManager {
             }).toList();
         }
         return List.of();
+    }
+
+    public void removeMemory(String conversationId) {
+        Map<String, Map<String, LimitedList<Message>>> memories = cacheManager.getMemories();
+        if (memories.containsKey(conversationId)) {
+            memories.remove(conversationId);
+        }
+    }
+
+    @Override
+    public void start() {
+        scheduler.scheduleWithFixedDelay(() -> {
+            Iterator<Map.Entry<String, Long>> iterator = memoryTimer.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<String, Long> entry = iterator.next();
+                long value = entry.getValue();
+                long now = System.currentTimeMillis();
+                if (now - value > memoryTimeout * 60 * 1000) {
+                    removeMemory(entry.getKey());
+                    iterator.remove();
+                } else {
+                    break; //按照时间排序，如果存在非超时情况，则后续一定不超时，则可以直接跳出
+                }
+            }
+        }, memoryCheck, memoryCheck, TimeUnit.SECONDS);
+        isRunning = true;
+    }
+
+    @Override
+    public void stop() {
+        scheduler.shutdown();
+        isRunning = false;
+    }
+
+    @Override
+    public boolean isRunning() {
+        return isRunning;
     }
 }

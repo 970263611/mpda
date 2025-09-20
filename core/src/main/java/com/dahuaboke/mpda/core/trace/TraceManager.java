@@ -1,4 +1,4 @@
-package com.dahuaboke.mpda.core.context.trace;
+package com.dahuaboke.mpda.core.trace;
 
 
 import org.springframework.stereotype.Component;

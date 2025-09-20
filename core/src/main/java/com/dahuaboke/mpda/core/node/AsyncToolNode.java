@@ -62,6 +62,7 @@ public class AsyncToolNode extends ToolNode implements SmartLifecycle { // TODO
     @Override
     public void stop() {
         pullThread.interrupt();
+        isRunning = false;
     }
 
     @Override

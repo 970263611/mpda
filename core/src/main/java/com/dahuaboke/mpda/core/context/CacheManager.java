@@ -3,12 +3,12 @@ package com.dahuaboke.mpda.core.context;
 import com.dahuaboke.mpda.core.agent.scene.Scene;
 import com.dahuaboke.mpda.core.agent.scene.SceneWrapper;
 import com.dahuaboke.mpda.core.exception.MpdaIllegalConfigException;
+import com.dahuaboke.mpda.core.memory.LimitedList;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 @Component
@@ -17,16 +17,14 @@ public class CacheManager {
     /**
      * scene
      */
-
     private final Map<String, SceneWrapper> sceneWrappers = new HashMap<>();
     /**
      * memory
      */
-    private final Map<String, Map<String, List<Message>>> memories = new LinkedHashMap();
+    private final Map<String, Map<String, LimitedList<Message>>> memories = new LinkedHashMap();
     /**
      * thread local
      */
-
     private ThreadLocal<CoreContext> contextThreadLocal = new ThreadLocal<>();
     private ThreadLocal<Map<String, Object>> attributeThreadLocal = new ThreadLocal<>();
 
@@ -71,7 +69,7 @@ public class CacheManager {
                 wrapper -> wrapper.getSceneClass().equals(clz)).findFirst().orElseThrow(MpdaIllegalConfigException::new).getSceneId();
     }
 
-    public Map<String, Map<String, List<Message>>> getMemories() {
+    public Map<String, Map<String, LimitedList<Message>>> getMemories() {
         return memories;
     }
 }
