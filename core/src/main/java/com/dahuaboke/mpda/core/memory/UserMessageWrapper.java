@@ -8,11 +8,11 @@ import java.util.Map;
 
 public class UserMessageWrapper extends AbstractMessage implements MessageWrapper {
 
-    private final long time;
-
-    public UserMessageWrapper(String content, long time) {
+    public UserMessageWrapper(String conversationId, String sceneId, String content) {
         super(MessageType.USER, content, Map.of());
-        this.time = time;
+        this.metadata.put("conversationId", conversationId);
+        this.metadata.put("sceneId", sceneId);
+        this.metadata.put("time", System.currentTimeMillis());
     }
 
     public static Builder builder() {
@@ -21,22 +21,44 @@ public class UserMessageWrapper extends AbstractMessage implements MessageWrappe
 
     @Override
     public long getTime() {
-        return time;
+        return (long) this.metadata.get("time");
+    }
+
+    @Override
+    public String getConversationId() {
+        return (String) this.metadata.get("conversationId");
+    }
+
+    @Override
+    public String getSceneId() {
+        return (String) this.metadata.get("sceneId");
     }
 
     public static class Builder {
         private String content;
-        private long time;
+        private String conversationId;
+        private String sceneId;
 
         public Builder text(String content) {
             this.content = content;
             return this;
         }
 
+        public Builder conversationId(String conversationId) {
+            this.conversationId = conversationId;
+            return this;
+        }
+
+        public Builder sceneId(String sceneId) {
+            this.sceneId = sceneId;
+            return this;
+        }
+
         public UserMessageWrapper build() {
             Assert.notNull(content, "Content can not null");
-            time = System.currentTimeMillis();
-            return new UserMessageWrapper(content, time);
+            Assert.notNull(conversationId, "ConversationId can not null");
+            Assert.notNull(sceneId, "SceneId can not null");
+            return new UserMessageWrapper(conversationId, sceneId, content);
         }
     }
 }

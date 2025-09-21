@@ -3,15 +3,18 @@ package com.dahuaboke.mpda.core.context;
 import com.dahuaboke.mpda.core.agent.scene.Scene;
 import com.dahuaboke.mpda.core.agent.scene.SceneWrapper;
 import com.dahuaboke.mpda.core.exception.MpdaIllegalConfigException;
-import com.dahuaboke.mpda.core.memory.LimitedList;
+import com.dahuaboke.mpda.core.trace.TraceMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
+/**
+ * auth: dahua
+ * time: 2025/9/21 13:30
+ */
 @Component
 public class CacheManager {
 
@@ -22,11 +25,11 @@ public class CacheManager {
     /**
      * memory
      */
-    private final Map<String, Map<String, LimitedList<Message>>> memories = new LinkedHashMap();
+    private final Map<String, Map<String, LimitedListWrapper<Message>>> memories = new LinkedHashMap();
     /**
      * trace
      */
-    private final Map<String, List<String>> traces = new LinkedHashMap();
+    private final Map<String, LimitedListWrapper<TraceMessage>> traces = new LinkedHashMap();
     /**
      * thread local
      */
@@ -74,11 +77,11 @@ public class CacheManager {
                 wrapper -> wrapper.getSceneClass().equals(clz)).findFirst().orElseThrow(MpdaIllegalConfigException::new).getSceneId();
     }
 
-    public Map<String, Map<String, LimitedList<Message>>> getMemories() {
+    public Map<String, Map<String, LimitedListWrapper<Message>>> getMemories() {
         return memories;
     }
 
-    public Map<String, List<String>> getTraces() {
+    public Map<String, LimitedListWrapper<TraceMessage>> getTraces() {
         return traces;
     }
 }

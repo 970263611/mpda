@@ -33,7 +33,9 @@ public class HumanNode implements NodeAction {
     }
 
     private AsyncGenerator<? extends NodeOutput> buildResponse(String key, String content, OverAllState state) {
-        ChatResponse chatResponse = new ChatResponse(List.of(new Generation(new AssistantMessageWrapper(content))));
+        String conversationId = state.value(Constants.CONVERSATION_ID, String.class).get();
+        String sceneId = state.value(Constants.SCENE_ID, String.class).get();
+        ChatResponse chatResponse = new ChatResponse(List.of(new Generation(new AssistantMessageWrapper(conversationId, sceneId, content))));
         Flux<ChatResponse> just = Flux.just(chatResponse);
         return StreamingChatGenerator.builder()
                 .startingNode("humanNode")

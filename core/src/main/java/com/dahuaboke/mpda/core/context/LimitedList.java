@@ -1,5 +1,8 @@
-package com.dahuaboke.mpda.core.memory;
+package com.dahuaboke.mpda.core.context;
 
+import com.dahuaboke.mpda.core.exception.MpdaInvocationException;
+
+import java.util.Collection;
 import java.util.LinkedList;
 
 /**
@@ -21,5 +24,10 @@ public class LimitedList<L> extends LinkedList<L> {
             remove();
         }
         return true;
+    }
+
+    @Override
+    public boolean addAll(int index, Collection<? extends L> c) {
+        throw new MpdaInvocationException();
     }
 }

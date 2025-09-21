@@ -10,16 +10,26 @@ import org.springframework.ai.chat.messages.ToolResponseMessage;
  */
 public class ToolResponseMessageWrapper extends ToolResponseMessage implements MessageWrapper {
 
-    private final long time;
-
     @JsonCreator
-    public ToolResponseMessageWrapper(ToolResponseMessage toolResponseMessage) {
+    public ToolResponseMessageWrapper(String conversationId, String sceneId, ToolResponseMessage toolResponseMessage) {
         super(toolResponseMessage.getResponses(), toolResponseMessage.getMetadata());
-        this.time = System.currentTimeMillis();
+        this.metadata.put("conversationId", conversationId);
+        this.metadata.put("sceneId", sceneId);
+        this.metadata.put("time", System.currentTimeMillis());
     }
 
     @Override
     public long getTime() {
-        return time;
+        return (long) this.metadata.get("time");
+    }
+
+    @Override
+    public String getConversationId() {
+        return (String) this.metadata.get("conversationId");
+    }
+
+    @Override
+    public String getSceneId() {
+        return (String) this.metadata.get("sceneId");
     }
 }

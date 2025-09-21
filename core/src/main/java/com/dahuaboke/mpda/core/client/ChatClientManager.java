@@ -77,7 +77,7 @@ public class ChatClientManager {
         if (isToolQuery) {
             message = (ToolResponseMessageWrapper) query;
         } else {
-            message = UserMessageWrapper.builder().text((String) query).build();
+            message = UserMessageWrapper.builder().text((String) query).conversationId(conversationId).sceneId(sceneId).build();
         }
         List<Message> finalMessages = new ArrayList<>(messages);
         finalMessages.add(message);

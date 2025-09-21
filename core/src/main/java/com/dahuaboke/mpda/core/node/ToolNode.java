@@ -17,11 +17,13 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.ToolResponseMessage;
 import org.springframework.ai.chat.model.ChatResponse;
-import org.springframework.ai.chat.model.Generation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * auth: dahua
@@ -76,7 +78,8 @@ public class ToolNode implements NodeAction {
         ChatResponse chatResponse = llmResponse.chatResponse();
         AssistantMessage assistantMessage = chatResponse.getResult().getOutput();
         AssistantMessageWrapper assistantMessageWrapper =
-                new AssistantMessageWrapper(assistantMessage.getText(), assistantMessage.getMetadata(), assistantMessage.getToolCalls(), assistantMessage.getMedia());
+                new AssistantMessageWrapper(conversationId, sceneId, assistantMessage.getText(), assistantMessage.getMetadata(), assistantMessage.getToolCalls()
+                        , assistantMessage.getMedia());
         memoryManager.addMemory(conversationId, sceneId, assistantMessageWrapper);
         return chatResponse;
     }
@@ -88,7 +91,7 @@ public class ToolNode implements NodeAction {
     protected ToolResponseMessageWrapper buildToolResponseMessageWrapper(OverAllState state, ToolResponseMessage toolResponseMessage) {
         String conversationId = state.value(Constants.CONVERSATION_ID, String.class).get();
         String sceneId = state.value(Constants.SCENE_ID, String.class).get();
-        ToolResponseMessageWrapper toolResponseMessageWrapper = new ToolResponseMessageWrapper(toolResponseMessage);
+        ToolResponseMessageWrapper toolResponseMessageWrapper = new ToolResponseMessageWrapper(conversationId, sceneId, toolResponseMessage);
         memoryManager.addMemory(conversationId, sceneId, toolResponseMessageWrapper);
         return toolResponseMessageWrapper;
     }

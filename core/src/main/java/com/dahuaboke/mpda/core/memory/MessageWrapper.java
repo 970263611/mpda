@@ -9,4 +9,8 @@ import org.springframework.ai.chat.messages.Message;
 public interface MessageWrapper extends Message {
 
     long getTime();
+
+    String getConversationId();
+
+    String getSceneId();
 }

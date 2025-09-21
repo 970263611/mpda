@@ -2,12 +2,16 @@ package com.dahuaboke.mpda.core.trace;
 
 
 import com.dahuaboke.mpda.core.context.CacheManager;
+import com.dahuaboke.mpda.core.context.LimitedListWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -20,41 +24,46 @@ import java.util.concurrent.TimeUnit;
 public class TraceManager implements SmartLifecycle {
 
     private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-    @Value("${mpda.scene.traceTimeout:5}") // minute
+    @Value("${mpda.trace.max:50}")
+    private int maxTrace;
+    @Value("${mpda.trace.timeout:5}") // minute
     private int traceTimeout;
+    @Value("${mpda.trace.check:30}") // second
+    private int traceCheck;
     @Autowired
     private CacheManager cacheManager;
     private volatile boolean isRunning;
     private Map<String, Long> traceTimer = new HashMap<>();
 
-    public void addTrace(String key, String trace) {
-        Map<String, List<String>> traces = cacheManager.getTraces();
-        if (traces.containsKey(key)) {
-            List<String> traceList = traces.get(key);
+    public void addTrace(TraceMessage traceMessage) {
+        Map<String, LimitedListWrapper<TraceMessage>> traces = cacheManager.getTraces();
+        String conversationId = traceMessage.getConversationId();
+        if (traces.containsKey(conversationId)) {
+            List<TraceMessage> traceList = traces.get(conversationId);
             if (traceList == null) {
-                traceList = new LinkedList<>();
+                traceList = new LimitedListWrapper<>(maxTrace);
             }
-            traceList.add(trace);
+            traceList.add(traceMessage);
         } else {
-            traces.put(key, new LinkedList<>() {{
-                add(trace);
+            traces.put(conversationId, new LimitedListWrapper<>(maxTrace) {{
+                add(traceMessage);
             }});
         }
     }
 
-    public void removeTrace(String key) {
-        Map<String, List<String>> traces = cacheManager.getTraces();
-        if (traces.containsKey(key)) {
-            traces.remove(key);
+    public void removeTrace(String conversationId) {
+        Map<String, LimitedListWrapper<TraceMessage>> traces = cacheManager.getTraces();
+        if (traces.containsKey(conversationId)) {
+            traces.remove(conversationId);
         }
     }
 
-    public List<String> getTrace(String key) {
+    public List<TraceMessage> getTrace(String conversationId) {
         try {
-            Map<String, List<String>> traces = cacheManager.getTraces();
-            return traces.get(key);
+            Map<String, LimitedListWrapper<TraceMessage>> traces = cacheManager.getTraces();
+            return traces.get(conversationId);
         } finally {
-            removeTrace(key);
+            removeTrace(conversationId);
         }
     }
 
@@ -73,7 +82,7 @@ public class TraceManager implements SmartLifecycle {
                     break; //按照时间排序，如果存在非超时情况，后续一定不超时，则可以直接跳出
                 }
             }
-        }, traceTimeout, traceTimeout, TimeUnit.SECONDS);
+        }, traceCheck, traceCheck, TimeUnit.SECONDS);
         isRunning = true;
     }
 

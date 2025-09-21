@@ -49,9 +49,13 @@ public abstract class AbstractChain implements Chain {
     @Override
     public SceneResponse slide(CoreContext context) throws MpdaRuntimeException {
         prepare(context);
-        graph.addMemory(UserMessageWrapper.builder().text(context.getQuery()).build());
+        graph.addMemory(UserMessageWrapper.builder()
+                .text(context.getQuery())
+                .conversationId(context.getConversationId())
+                .sceneId(context.getSceneId())
+                .build());
         SceneResponse reply = executeGraph();
-        graph.addMemory(new AssistantMessageWrapper(reply.output()));
+        graph.addMemory(new AssistantMessageWrapper(context.getConversationId(), context.getSceneId(), reply.output()));
         return reply;
     }
 
@@ -60,14 +64,14 @@ public abstract class AbstractChain implements Chain {
         String conversationId = context.getConversationId();
         String sceneId = context.getSceneId();
         prepare(context);
-        graph.addMemory(UserMessageWrapper.builder().text(context.getQuery()).build());
+        graph.addMemory(UserMessageWrapper.builder().text(context.getQuery()).conversationId(conversationId).sceneId(sceneId).build());
         Flux<SceneResponse> reply = executeGraphAsync();
         StringBuilder replyMessage = new StringBuilder();
         reply.subscribe(replyTemp -> replyMessage.append(replyTemp.output())
                 , error -> {
                     // TODO
                 }
-                , () -> graph.addMemory(conversationId, sceneId, new AssistantMessageWrapper(replyMessage.toString())));
+                , () -> graph.addMemory(conversationId, sceneId, new AssistantMessageWrapper(context.getConversationId(), context.getSceneId(), replyMessage.toString())));
         return reply;
     }
 

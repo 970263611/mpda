@@ -2,6 +2,7 @@ package com.dahuaboke.mpda.core.memory;
 
 
 import com.dahuaboke.mpda.core.context.CacheManager;
+import com.dahuaboke.mpda.core.context.LimitedListWrapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,11 +23,11 @@ import java.util.concurrent.TimeUnit;
 public class MemoryManager implements SmartLifecycle {
 
     private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-    @Value("${mpda.scene.maxMemory:10}")
+    @Value("${mpda.memory.max:10}")
     private int maxMemory;
-    @Value("${mpda.scene.memoryTimeout:30}") // minute
+    @Value("${mpda.memory.timeout:30}") // minute
     private int memoryTimeout;
-    @Value("${mpda.scene.memoryCheck:30}") // minute
+    @Value("${mpda.memory.check:30}") // second
     private int memoryCheck;
     @Autowired
     private CacheManager cacheManager;
@@ -40,19 +41,19 @@ public class MemoryManager implements SmartLifecycle {
     }
 
     public void addMemory(String conversationId, String sceneId, Message message) {
-        Map<String, Map<String, LimitedList<Message>>> memories = cacheManager.getMemories();
+        Map<String, Map<String, LimitedListWrapper<Message>>> memories = cacheManager.getMemories();
         if (memories.containsKey(conversationId)) {
-            Map<String, LimitedList<Message>> sceneMessages = memories.get(conversationId);
+            Map<String, LimitedListWrapper<Message>> sceneMessages = memories.get(conversationId);
             if (sceneMessages.containsKey(sceneId)) {
                 sceneMessages.get(sceneId).add(message);
             } else {
-                sceneMessages.put(sceneId, new LimitedList(maxMemory) {{
+                sceneMessages.put(sceneId, new LimitedListWrapper(maxMemory) {{
                     add(message);
                 }});
             }
         } else {
             memories.put(conversationId, new LinkedHashMap<>() {{
-                put(sceneId, new LimitedList(maxMemory) {{
+                put(sceneId, new LimitedListWrapper(maxMemory) {{
                     add(message);
                 }});
             }});
@@ -65,7 +66,7 @@ public class MemoryManager implements SmartLifecycle {
     }
 
     public List<Message> getMemory(String conversationId, String sceneId) {
-        Map<String, Map<String, LimitedList<Message>>> memories = cacheManager.getMemories();
+        Map<String, Map<String, LimitedListWrapper<Message>>> memories = cacheManager.getMemories();
         if (memories.containsKey(conversationId)) {
             return memories.get(conversationId).get(sceneId);
         }
@@ -73,7 +74,7 @@ public class MemoryManager implements SmartLifecycle {
     }
 
     public List<Message> getMemory(String conversationId, String sceneId, List<String> sceneMerge) {
-        Map<String, Map<String, LimitedList<Message>>> memories = cacheManager.getMemories();
+        Map<String, Map<String, LimitedListWrapper<Message>>> memories = cacheManager.getMemories();
         if (memories.containsKey(conversationId)) {
             List<Message> messages = memories.get(conversationId).get(sceneId);
             if (messages == null) {
@@ -96,7 +97,7 @@ public class MemoryManager implements SmartLifecycle {
     }
 
     public void removeMemory(String conversationId) {
-        Map<String, Map<String, LimitedList<Message>>> memories = cacheManager.getMemories();
+        Map<String, Map<String, LimitedListWrapper<Message>>> memories = cacheManager.getMemories();
         if (memories.containsKey(conversationId)) {
             memories.remove(conversationId);
         }
