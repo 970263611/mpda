@@ -3,7 +3,7 @@
 
     <include resource="org/springframework/boot/logging/logback/defaults.xml" />
     <!-- 定义通用属性 -->
-    <property name="LOG_HOME" value="${sys:logHomeRoot:-/lc/app}" />
+    <property name="LOG_HOME" value="${sys:logHomeRoot:-/app/tyzy/ai-bot/log}" />
     <property name="APP_NAME" value="bot" />
 
     <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n" />

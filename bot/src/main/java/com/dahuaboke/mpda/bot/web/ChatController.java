@@ -74,6 +74,9 @@ public class ChatController {
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
+            if ("".equals(extend) || "{}".equals(extend)) {
+                extend = null;
+            }
             CommonResponse<String> success = CommonResponse.success(res.output(), extend);
             try {
                 String jsonData = objectMapper.writeValueAsString(success);

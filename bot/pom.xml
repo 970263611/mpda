@@ -97,4 +97,24 @@
             <version>2.11.0</version>
         </dependency>
     </dependencies>
+    <!-- 打包类型，Spring Boot应用通常为jar -->
+    <packaging>jar</packaging>
+
+    <!-- Spring Boot打包插件 -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.4.5</version> <!-- 与Spring Boot版本对应 -->
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal> <!-- 重新打包成可执行jar -->
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

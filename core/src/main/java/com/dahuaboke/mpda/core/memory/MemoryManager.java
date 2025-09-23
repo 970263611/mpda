@@ -83,7 +83,10 @@ public class MemoryManager implements SmartLifecycle {
             List<Message> finalMessages = new ArrayList<>(messages);
             if (!CollectionUtils.isEmpty(sceneMerge)) {
                 sceneMerge.stream().forEach(merge -> {
-                    finalMessages.addAll(getMemory(conversationId, merge));
+                    List<Message> memory = getMemory(conversationId, merge);
+                    if (memory != null) {
+                        finalMessages.addAll(memory);
+                    }
                 });
             }
             return finalMessages.stream().sorted((m1, m2) -> {
