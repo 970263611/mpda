@@ -25,7 +25,7 @@ public class ChatService {
     @Autowired
     private SceneManager sceneManager;
 
-    public CommonResponse<ChatBotResponse> chat(CoreContext context) throws MpdaException {
+    public CommonResponse<ChatBotResponse,Object> chat(CoreContext context) throws MpdaException {
         try {
             if (context == null) {
                 return CommonResponse.error(ResponseCode.MISSING_PARAM);

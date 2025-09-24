@@ -5,11 +5,11 @@ package com.dahuaboke.mpda.bot.model.common;
  * @Author：zhh
  * @Date：2025/9/15 9:15
  */
-public class CommonResponse<T> {
+public class CommonResponse<T,E> {
     private String code;
     private String msg;
     private T content;
-    private T extend;
+    private E extend;
     private Long timestamp;
 
     public CommonResponse() {
@@ -17,42 +17,42 @@ public class CommonResponse<T> {
     }
 
     // 成功响应
-    public static <T> CommonResponse<T> success() {
-        CommonResponse<T> response = new CommonResponse<>();
+    public static <T,E> CommonResponse<T,E> success() {
+        CommonResponse<T,E> response = new CommonResponse<>();
         response.setCode(ResponseCode.SUCCESS.getCode());
         response.setMsg(ResponseCode.SUCCESS.getMsg());
         return response;
     }
 
-    public static <T> CommonResponse<T> success(T data) {
-        CommonResponse<T> response = success();
+    public static <T,E> CommonResponse<T,E> success(T data) {
+        CommonResponse<T,E> response = success();
         response.setContent(data);
         return response;
     }
 
-    public static <T> CommonResponse<T> success(T data,T extend) {
-        CommonResponse<T> response = success();
+    public static <T,E> CommonResponse<T,E> success(T data,E extend) {
+        CommonResponse<T,E> response = success();
         response.setContent(data);
         response.setExtend(extend);
         return response;
     }
 
     // 错误响应
-    public static <T> CommonResponse<T> error(ResponseCode responseCode) {
-        CommonResponse<T> response = new CommonResponse<>();
+    public static <T,E> CommonResponse<T,E> error(ResponseCode responseCode) {
+        CommonResponse<T,E> response = new CommonResponse<>();
         response.setCode(responseCode.getCode());
         response.setMsg(responseCode.getMsg());
         return response;
     }
 
-    public static <T> CommonResponse<T> error(ResponseCode responseCode, String customMsg) {
-        CommonResponse<T> response = error(responseCode);
+    public static <T,E> CommonResponse<T,E> error(ResponseCode responseCode, String customMsg) {
+        CommonResponse<T,E> response = error(responseCode);
         response.setMsg(customMsg);
         return response;
     }
 
-    public static <T> CommonResponse<T> error(String code, String msg) {
-        CommonResponse<T> response = new CommonResponse<>();
+    public static <T,E> CommonResponse<T,E> error(String code, String msg) {
+        CommonResponse<T,E> response = new CommonResponse<>();
         response.setCode(code);
         response.setMsg(msg);
         return response;
@@ -82,11 +82,12 @@ public class CommonResponse<T> {
         this.content = content;
     }
 
-    public T getExtend() {
+
+    public E getExtend() {
         return extend;
     }
 
-    public void setExtend(T extend) {
+    public void setExtend(E extend) {
         this.extend = extend;
     }
 

@@ -31,7 +31,7 @@ public class AppStartupListener implements ApplicationListener<ApplicationReadyE
 
     private static final Logger logger = LoggerFactory.getLogger(AppStartupListener.class);
 
-    @Value("${server.port:18080}")
+    @Value("${server.port:18081}")
     // Using Spring's original here to keep consistent with configuration file.
     private String serverPort;
 

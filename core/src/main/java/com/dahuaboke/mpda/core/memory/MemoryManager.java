@@ -3,17 +3,21 @@ package com.dahuaboke.mpda.core.memory;
 
 import com.dahuaboke.mpda.core.context.CacheManager;
 import com.dahuaboke.mpda.core.context.LimitedListWrapper;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Component;
-
-import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * auth: dahua
@@ -23,15 +27,21 @@ import java.util.concurrent.TimeUnit;
 public class MemoryManager implements SmartLifecycle {
 
     private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+
     @Value("${mpda.memory.max:10}")
     private int maxMemory;
+
     @Value("${mpda.memory.timeout:30}") // minute
     private int memoryTimeout;
+
     @Value("${mpda.memory.check:30}") // second
     private int memoryCheck;
+
     @Autowired
     private CacheManager cacheManager;
+
     private volatile boolean isRunning;
+
     private Map<String, Long> memoryTimer = new HashMap<>();
 
     public void addMemory(Message message) {
@@ -133,4 +143,5 @@ public class MemoryManager implements SmartLifecycle {
     public boolean isRunning() {
         return isRunning;
     }
+
 }

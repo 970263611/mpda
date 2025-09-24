@@ -8,14 +8,17 @@ import com.dahuaboke.mpda.core.context.CoreContext;
 import com.dahuaboke.mpda.core.exception.MpdaException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.codec.ServerSentEvent;
-import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
-
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.codec.ServerSentEvent;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
 
 @CrossOrigin
 @RestController
@@ -28,7 +31,7 @@ public class ChatController {
     private ObjectMapper objectMapper;
 
     @RequestMapping("/chat")
-    public CommonResponse<ChatBotResponse> chat(
+    public CommonResponse<ChatBotResponse, Object> chat(
             @RequestBody CoreContext context) throws MpdaException {
         return chatService.chat(context);
     }
@@ -66,7 +69,7 @@ public class ChatController {
             @RequestBody CoreContext context) throws MpdaException {
         Flux<SceneResponse> response = chatService.chatStream(context);
         return response.map(res -> {
-            String extend = "";
+            Object extend = null;
             try {
                 if (res.extend() != null) {
                     extend = objectMapper.writeValueAsString(res.extend().graphExtend());
@@ -74,10 +77,10 @@ public class ChatController {
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
-            if ("".equals(extend) || "{}".equals(extend)) {
+            if ("null".equals(extend) || "".equals(extend)) {
                 extend = null;
             }
-            CommonResponse<String> success = CommonResponse.success(res.output(), extend);
+            CommonResponse<String, Object> success = CommonResponse.success(res.output(), extend);
             try {
                 String jsonData = objectMapper.writeValueAsString(success);
                 return ServerSentEvent.<String>builder()
