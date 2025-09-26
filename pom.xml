@@ -13,6 +13,7 @@
         <module>core</module>
         <module>client</module>
         <module>ai-code</module>
+        <module>requirement</module>
     </modules>
 
     <properties>

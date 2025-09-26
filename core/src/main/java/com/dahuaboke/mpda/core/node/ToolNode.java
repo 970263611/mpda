@@ -60,7 +60,6 @@ public class ToolNode implements NodeAction {
         }
         ToolResponseMessageWrapper toolResponseMessageWrapper = buildToolResponseMessageWrapper(state, toolResponseMessage);
 
-
         Map<String,Object> apply = new HashMap<>() {{
             put(Constants.QUERY, toolResponseMessageWrapper);
             put(Constants.IS_TOOL_QUERY, true);
