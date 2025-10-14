@@ -1,10 +1,10 @@
 package com.dahuaboke.mpda.requirement.scenes.smallTalk;
 
 
-import com.dahuaboke.mpda.ai_code.scenes.resolution.ResolutionScene;
 import com.dahuaboke.mpda.core.agent.graph.Graph;
 import com.dahuaboke.mpda.core.agent.prompt.AgentPrompt;
 import com.dahuaboke.mpda.core.agent.scene.Scene;
+import com.dahuaboke.mpda.requirement.scenes.resolution.ResolutionScene;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

@@ -1,6 +1,8 @@
 package com.dahuaboke.mpda.core.context;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -14,6 +16,8 @@ public class CoreContext {
     private String conversationId;
     private String sceneId;
     private Map<String, Object> extend;
+    @JsonIgnore
+    private transient String sceneName;
 
     public CoreContext(String query, String conversationId) {
         this.query = query;
@@ -60,5 +64,13 @@ public class CoreContext {
             this.extend = new LinkedHashMap<>();
         }
         this.extend.put(key, data);
+    }
+
+    public String getSceneName() {
+        return sceneName;
+    }
+
+    public void setSceneName(String sceneName) {
+        this.sceneName = sceneName;
     }
 }

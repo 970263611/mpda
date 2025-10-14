@@ -19,7 +19,7 @@ public class ChatService {
     private SceneManager sceneManager;
 
 
-    public Flux<SceneResponse> chat(CoreContext context) throws MpdaException {
-        return sceneManager.applyAsync(context);
+    public SceneResponse split(CoreContext context) throws MpdaException {
+        return sceneManager.apply(context);
     }
 }

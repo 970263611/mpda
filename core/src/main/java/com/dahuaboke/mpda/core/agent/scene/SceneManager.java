@@ -126,6 +126,10 @@ public class SceneManager implements BeanPostProcessor {
         if (!isInit) {
             lazyInit();
         }
+        String sceneName = context.getSceneName();
+        if (sceneName != null) {
+            return sceneWrappers.get(sceneName);
+        }
         SceneWrapper runtimeWrapper = rootWrapper;
         while (!runtimeWrapper.isEnd()) {
             try {
