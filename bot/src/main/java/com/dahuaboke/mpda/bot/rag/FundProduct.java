@@ -3,14 +3,14 @@ package com.dahuaboke.mpda.bot.rag;
 import com.dahuaboke.mpda.core.rag.entity.FieldComment;
 
 /**
- * @Desc: 基金产品信息实体类
+ * @Desc: 基金信息实体类
  * @Author：zhh
  * @Date：2025/8/7 14:11
  */
 public class FundProduct {
 
     /**
-     * 基金产品ID
+     * 基金ID
      **/
 
     private String fundId;

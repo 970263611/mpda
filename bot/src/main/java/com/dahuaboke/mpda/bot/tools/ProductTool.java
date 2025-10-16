@@ -19,8 +19,8 @@ public abstract class ProductTool<I> extends AbstractBaseTool<I> {
     @Lazy
     protected ProductToolHandler productToolHandler;
 
-    protected String getMaxNetval(String productNo) {
-        return productToolHandler.maxNetval(new NetValReq(productNo));
+    protected String getMaxWithDrawal(String productNo) {
+        return productToolHandler.maxWithDrawal(new NetValReq(productNo));
     }
 
     protected String getYearRita(String productNo) {
@@ -31,4 +31,7 @@ public abstract class ProductTool<I> extends AbstractBaseTool<I> {
         DateTimeFormatter yyyyMMdd = DateTimeFormatter.ofPattern("yyyyMMdd");
         return productToolHandler.yearRita(new NetValReq(productNo, begTime.format(yyyyMMdd), endTime.format(yyyyMMdd)));
     }
+
+
+
 }

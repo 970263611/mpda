@@ -5,6 +5,7 @@ import com.alibaba.cloud.ai.graph.KeyStrategyFactory;
 import com.alibaba.cloud.ai.graph.StateGraph;
 import com.alibaba.cloud.ai.graph.exception.GraphRunnerException;
 import com.alibaba.cloud.ai.graph.exception.GraphStateException;
+import com.dahuaboke.mpda.bot.scenes.entity.PlatformExtend;
 import com.dahuaboke.mpda.bot.scenes.product.marketRanking.edge.MarketRankingDispatcher;
 import com.dahuaboke.mpda.core.agent.graph.AbstractGraph;
 import com.dahuaboke.mpda.core.agent.scene.entity.SceneExtend;
@@ -16,7 +17,6 @@ import com.dahuaboke.mpda.core.node.HumanNode;
 import com.dahuaboke.mpda.core.node.LlmNode;
 import com.dahuaboke.mpda.core.node.StreamLlmNode;
 import com.dahuaboke.mpda.core.node.ToolNode;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,19 +96,19 @@ public class MarketRankingGraph extends AbstractGraph {
     }
 
     /**
-     * @param graphExtend 包装额外扩展信息，比如下载链接标识，购买链接标识等
+     * @param graphExtend 包装额外扩展信息，比如下载链接标识
      * @param toolExtend  包含该场景执行工具函数的，函数名称，参数(通过函数名称判断参数是否是基金代码)
      * @return SceneExtend
      */
     @Override
     public SceneExtend buildSceneExtend(Object graphExtend, Object toolExtend) {
         //市场排名报告场景,通过工具扩展信息，做额外计算，并添加额外图扩展信息
-        Map<String, Object> graphExtendMap = new HashMap<>();
+        PlatformExtend platformExtend = new PlatformExtend();
         //TODO 目前市场排名代码为测试数据，后续代码完善再调整此处解析
         if (toolExtend != null) {
-            graphExtendMap.put("downloadLink", true);
+            platformExtend.setDownloadLink(true);
         }
-        return new SceneExtend(graphExtendMap, toolExtend);
+        return new SceneExtend(platformExtend, toolExtend);
     }
 
 }

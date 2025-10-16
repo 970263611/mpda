@@ -33,6 +33,7 @@ public class FundDocumentConverter implements DocumentConverter<FundEntity> {
 
             fundEntity.setFile_name((String) metadata.get("file_name"));
             fundEntity.setPage_number((int) metadata.get("page_number"));
+            fundEntity.setFile_type((String) metadata.get("file_type"));
             fundEntity.setExcerpt_keywords((List<String>) metadata.get("excerpt_keywords"));
             fundEntity.setFile_name_keywords((List<String>) metadata.get("file_name_keywords"));
             fundEntitys.add(fundEntity);
@@ -50,7 +51,9 @@ public class FundDocumentConverter implements DocumentConverter<FundEntity> {
             return Document.builder()
                     .id(fundEntity.getId())
                     .text(fundEntity.getContent())
-                    .metadata(Map.of("file_name", fundEntity.getFile_name(), "page_number", (double) fundEntity.getPage_number(), "excerpt_keywords", fundEntity.getExcerpt_keywords()))
+                    .metadata(Map.of("file_name", fundEntity.getFile_name(), "page_number", (double) fundEntity.getPage_number(), "excerpt_keywords", fundEntity.getExcerpt_keywords(),
+                            "file_name_keywords", fundEntity.getFile_name_keywords()
+                    ))
                     .score(fundEntity.getScore().doubleValue())
                     .build();
         }).collect(Collectors.toList());

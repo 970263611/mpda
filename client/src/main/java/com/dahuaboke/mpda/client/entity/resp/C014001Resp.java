@@ -50,4 +50,14 @@ public class C014001Resp extends BaseResp {
         this.rowCount = rowCount;
     }
 
+
+    @Override
+    public String toString() {
+        return "C014001Resp{" +
+                "successIdList=" + successIdList +
+                ", failedInsertList=" + failedInsertList +
+                ", rowCount=" + rowCount +
+                '}';
+    }
+
 }

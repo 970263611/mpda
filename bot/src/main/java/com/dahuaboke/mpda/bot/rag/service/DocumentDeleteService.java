@@ -2,8 +2,8 @@ package com.dahuaboke.mpda.bot.rag.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.dahuaboke.mpda.bot.rag.client.FundEntity;
-import com.dahuaboke.mpda.bot.rag.constants.FundConstant;
-import com.dahuaboke.mpda.bot.rag.monitor.ProcessingMonitor;
+import com.dahuaboke.mpda.bot.constants.FundConstant;
+import com.dahuaboke.mpda.bot.rag.ProcessingMonitor;
 import com.dahuaboke.mpda.client.entity.resp.C014005Resp;
 import com.dahuaboke.mpda.client.handle.VectorStoreRequestHandle;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -41,7 +41,9 @@ public class DocumentDeleteService {
             FundEntity fundEntity = JSONObject.parseObject(jsonStr, FundEntity.class);
             idList.add(fundEntity.getId());
         }
-        vectorStore.delete(idList);
+        if(!idList.isEmpty()){
+            vectorStore.delete(idList);
+        }
         return true;
     }
 
@@ -51,8 +53,9 @@ public class DocumentDeleteService {
         ProcessingMonitor.ProcessingResult<Map.Entry<String, Map<String, Object>>> result = processingMonitor.processBatch(
                 entries,
                 entry -> doDel(entry.getValue()),
+                entry -> System.out.println(),
                 Map.Entry::getKey,
-                "产品通过产品名称删除"
+                "基金通过基金名称删除"
         );
 
         // 将失败记录写入文件

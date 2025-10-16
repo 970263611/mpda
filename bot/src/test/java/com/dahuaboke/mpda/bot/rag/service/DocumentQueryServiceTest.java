@@ -1,12 +1,14 @@
 package com.dahuaboke.mpda.bot.rag.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.dahuaboke.mpda.bot.tools.dao.BrProductMapper;
+import com.dahuaboke.mpda.bot.tools.entity.BrProduct;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-import java.util.Map;
 
 /**
  * @Desc:
@@ -18,12 +20,21 @@ import java.util.Map;
 public class DocumentQueryServiceTest {
 
     @Autowired
-    private DocumentQueryService documentQueryService;
+    BrProductMapper brProductMapper;
+
+
+    @Autowired
+    private ProductReportQueryService documentQueryService;
 
     @Test
     public void testProcessProduct() {
-        documentQueryService.processProducts(Map.of("001982", "富国收益宝交易型货币B"));
     }
 
-
+    @Test
+    public void testMapper () {
+        //1. 查询br_product ，获取未处理文件
+        QueryWrapper<BrProduct> queryWrapper = new QueryWrapper<BrProduct>()
+                .eq("deal_flag", "0");
+        List<BrProduct> brProducts = brProductMapper.selectList(queryWrapper);
+    }
 }

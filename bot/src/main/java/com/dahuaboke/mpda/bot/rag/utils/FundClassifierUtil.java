@@ -1,8 +1,8 @@
 package com.dahuaboke.mpda.bot.rag.utils;
 
 
-import com.dahuaboke.mpda.bot.rag.FundProduct;
-
+import com.dahuaboke.mpda.bot.tools.entity.BrProductReport;
+import com.dahuaboke.mpda.bot.tools.entity.BrProductSummary;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -31,17 +31,17 @@ public class FundClassifierUtil {
     private static final String[] PASSIVE_KEYWORDS = {"复制", "复刻", "跟踪", "成份券"};
 
 
-    public static Map<String, String> classifyFund(FundProduct fundData) {
+    public static Map<String, String> classifyFund(BrProductReport fdProductReport , BrProductSummary fdProductSummary) {
         Map<String, String> result = new HashMap<>();
         result.put("final_category", "无");
         // 1. 检查基金资产净值是否 >= 10亿元
-        if (!checkNetAssetValue(findDouble(fundData.getNetAssetValue()))) {
+        if (!checkNetAssetValue(findDouble(fdProductReport.getAssetNval()))) {
             result.put("reason", "基金资产净值小于10亿元");
             return result;
         }
 
         // 2. 计算债券比例
-        BondRatios ratios = calculateBondRatios(fundData);
+        BondRatios ratios = calculateBondRatios(fdProductReport);
 
         if (ratios.interestRateRatio < INTEREST_RATE_RATIO && ratios.creditRatio < CREDIT_RATIO) {
             result.put("reason", "利率债和信用债持仓占比均小于80%");
@@ -50,7 +50,7 @@ public class FundClassifierUtil {
 
         // 3. 判断基金类型
         if (ratios.creditRatio >= CREDIT_RATIO) {
-            String style = determineInvestmentStyle(fundData.getInvestmentStrategy());
+            String style = determineInvestmentStyle(fdProductSummary.getIvstStgyName());
             if (style == null) {
                 result.put("final_category", "信用债");
                 result.put("reason", "不符合信用债基金分类条件");
@@ -66,7 +66,7 @@ public class FundClassifierUtil {
 
         if (ratios.interestRateRatio >= INTEREST_RATE_RATIO) {
             // 4. 判断投资风格
-            String style = determineInvestmentStyle(fundData.getInvestmentStrategy());
+            String style = determineInvestmentStyle(fdProductSummary.getIvstStgyName());
             if (style == null) {
                 result.put("final_category", "利率债");
                 result.put("reason", "不符合利率债基金分类条件");
@@ -75,7 +75,7 @@ public class FundClassifierUtil {
 
             // 5. 如果是被动型，进一步分类期限
             if ("被动型".equals(style)) {
-                String durationType = classifyPassiveDuration(fundData.getFundShortName());
+                String durationType = classifyPassiveDuration(fdProductReport.getProdtSname());
                 if (durationType == null) {
                     result.put("final_category", "利率债/利率债-被动式");
                     result.put("reason", "被动型利率债基金但无法确定期限");
@@ -95,25 +95,20 @@ public class FundClassifierUtil {
         return netAssetValue >= FUND_SIZE;
     }
 
-    /**
-     * 计算债券比例
-     *
-     * @param fundData
-     * @return
-     */
-    private static BondRatios calculateBondRatios(FundProduct fundData) {
+
+    private static BondRatios calculateBondRatios(BrProductReport fundData) {
         BondRatios ratios = new BondRatios();
 
         // 利率债持仓占比 = 国家债券 + 央行票据 + 政策性金融债
-        ratios.interestRateRatio = findDouble(fundData.getNationalBondRatio())
-                + findDouble(fundData.getCentralBankBillRatio())
-                + findDouble(fundData.getPolicyFinancialBondRatio());
+        ratios.interestRateRatio = findDouble(fundData.getFirstIssueBondBillNo())
+                + findDouble(fundData.getPbcBuyRtslPamt())
+                + findDouble(fundData.getPlcyFdbtAmt());
 
         // 信用债持仓占比 = 企业债券 + 企业短期融资券 + 中期票据 + (金融债券 - 政策性金融债)
-        ratios.creditRatio = findDouble(fundData.getCorporateBondRatio())
-                + findDouble(fundData.getShortTermFinancingBillRatio())
-                + findDouble(fundData.getMediumTermNoteRatio())
-                + (findDouble(fundData.getFinancialBondRatio()) - findDouble(fundData.getPolicyFinancialBondRatio()));
+        ratios.creditRatio = findDouble(fundData.getBeInvesCorpShrHoldRatio())
+                + findDouble(fundData.getDocBillRatio())
+                + findDouble(fundData.getBibTmOcqn())
+                + (findDouble(fundData.getAmtAppoRatio()) - findDouble(fundData.getPlcyFdbtAmt()));
 
         return ratios;
     }

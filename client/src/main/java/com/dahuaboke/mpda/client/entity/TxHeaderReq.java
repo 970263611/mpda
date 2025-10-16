@@ -15,17 +15,17 @@ public class TxHeaderReq {
     /**
      * 发起系统或组件编码  11填调用方系统号
      */
-    private String startSysOrCmptNo = "99711240002";
+    private String startSysOrCmptNo = "99370000000";
 
     /**
      * 发送系统或组件编码
      */
-    private String sendSysOrCmptNo = "99711240002";
+    private String sendSysOrCmptNo = "99370000000";
 
     /**
      * 发起渠道标识码
      */
-    private String startChnlFgCd = "01";
+    private String startChnlFgCd = "99";
 
     /**
      * 业务发起机构号
@@ -34,9 +34,10 @@ public class TxHeaderReq {
     private String busiSendInstNo = "11005293";
 
     /**
-     * 数据中心代码 H-合肥;F-丰台;Y-亦庄
+     * 该字段存放发送报文系统/组件所部署的数据中心代码，每次发送报文都要更新该字段。
+     * 用1位字符代表数据中心，数据中心代码 F-丰台数据中心；Y-亦庄数据中心；H-合肥数据中心；L-廊坊数据中心
      */
-    private String dataCenterCode = "Y";
+    private String dataCenterCode = "L";
 
     /**
      * 交易发起时间 YYYYMMDDHHmmssSSS
@@ -57,29 +58,29 @@ public class TxHeaderReq {
     /**
      * 公共报文头长度
      */
-    private String msgrptFmtVerNo = "00001";
+    private String msgrptFmtVerNo = "10000";
 
     /**
      * 报文协议类型
      */
-    private String msgAgrType = "T";
+    private String msgAgrType = "1";
 
     /**
      * 公共报文头长度
      * N..10
      */
-    private String pubMsgHeadLen = "0000000000";
+    private String pubMsgHeadLen = "999";
 
     /**
      * 嵌入报文长度  10
      * N..10
      */
-    private String embedMsgrptLen = "0000000000";
+    private String embedMsgrptLen = "999";
 
     /**
      * 目标系统或组件编码 11
      */
-    private String targetSysOrCmptNo = "99900150000";
+    private String targetSysOrCmptNo = "99900180002";
 
     /**
      * 服务类型代码
@@ -94,7 +95,7 @@ public class TxHeaderReq {
     /**
      * 服务版本号
      */
-    private String servVerNo = "00001";
+    private String servVerNo = "10000";
 
     /**
      * 报文鉴别码
@@ -103,28 +104,39 @@ public class TxHeaderReq {
     private String msgrptMac = "00000000000000000000000000000000";
 
     /**
-     * 全局业务跟踪号
-     * 参考《QPSBC 0052—2020 中国邮政储蓄银行信息系统全局业务跟踪号标准》
-     * 系统号（11）+时间戳（13）+8位随机数
-     * 32
+     * 4段32位编码。
+     * 第一段：时间戳，长度14位，表示交易发起时间，格式为YYYYMMDDHHMMSS;
+     * 第二段：源系统，长度7位，标识交易发起的系统；
+     * 第三位：发起交易实例序号，长度5位；
+     * 第四段：长度6位，由机器自身的序列号生成器产生，从0开始递增，每取出一个序列号后即向上加一，到达999999后循环从0开始，序列号与时间不相关。（必传且不能写死）
      */
     private String globalBusiTrackNo = "20220817000123456000000000001411";
 
     /**
      * 子交易序号
+     * 子交易序列号由三部分组成：七位系统编码（系统编码大于七位则取前七位）
+     * +五位workid（workid生成逻辑为从系统变量获取workid，然后从环境变量中获取，如果不存在就会拼接mac地址+dubboPort+maxWorkerId拼接，目前平台写了一个demo，WorkIdGeneratorUtil仅供参考！！目标就是不同的服务workid不同即可）
+     * +20位序列号（传20位0即可）----（必传且不能写死）
      */
     private String subtxNo = "10000000000000000000000000000001";
 
     /**
-     * 子交易序号
+     * 请求系统流水号  与globalBusiTrackNo的值一致
      */
-    private String reqSysSriNo = "2021077317321202021200123";
+    private String reqSysSriNo = "20220817000123456000000000001411";
 
-    private String resvedInputInfo = "info";
+    /**
+     * 描述交易主要映射要素信息，可以是卡号、账号、本号、客户编号其中一个；前2位代表映射要素类型（09-回单编号），后34位填写映射要素值。
+     */
+    private String mainMapElemIntInfo = "090000000000000000000000000000000001";
 
-    private String testGroup = "zhm";
+    /**
+     * resvedInputInfo字段是场景编码，产品给这个需求定场景编号了没
+     */
+    private String resvedInputInfo = "0288";
 
-    public TxHeaderReq(String startSysOrCmptNo, String sendSysOrCmptNo, String startChnlFgCd, String busiSendInstNo, String dataCenterCode, String txStartTime, String txSendTime, String msgrptTotalLen, String msgrptFmtVerNo, String msgAgrType, String pubMsgHeadLen, String embedMsgrptLen, String targetSysOrCmptNo, String servTpCd, String servNo, String servVerNo, String msgrptMac, String globalBusiTrackNo, String subtxNo, String reqSysSriNo, String resvedInputInfo, String testGroup) {
+
+    public TxHeaderReq(String startSysOrCmptNo, String sendSysOrCmptNo, String startChnlFgCd, String busiSendInstNo, String dataCenterCode, String txStartTime, String txSendTime, String msgrptTotalLen, String msgrptFmtVerNo, String msgAgrType, String pubMsgHeadLen, String embedMsgrptLen, String targetSysOrCmptNo, String servTpCd, String servNo, String servVerNo, String msgrptMac, String globalBusiTrackNo, String subtxNo, String reqSysSriNo, String mainMapElemIntInfo, String resvedInputInfo) {
         this.startSysOrCmptNo = startSysOrCmptNo;
         this.sendSysOrCmptNo = sendSysOrCmptNo;
         this.startChnlFgCd = startChnlFgCd;
@@ -145,8 +157,8 @@ public class TxHeaderReq {
         this.globalBusiTrackNo = globalBusiTrackNo;
         this.subtxNo = subtxNo;
         this.reqSysSriNo = reqSysSriNo;
+        this.mainMapElemIntInfo = mainMapElemIntInfo;
         this.resvedInputInfo = resvedInputInfo;
-        this.testGroup = testGroup;
     }
 
     public TxHeaderReq() {
@@ -312,6 +324,14 @@ public class TxHeaderReq {
         this.reqSysSriNo = reqSysSriNo;
     }
 
+    public String getMainMapElemIntInfo() {
+        return mainMapElemIntInfo;
+    }
+
+    public void setMainMapElemIntInfo(String mainMapElemIntInfo) {
+        this.mainMapElemIntInfo = mainMapElemIntInfo;
+    }
+
     public String getResvedInputInfo() {
         return resvedInputInfo;
     }
@@ -320,12 +340,32 @@ public class TxHeaderReq {
         this.resvedInputInfo = resvedInputInfo;
     }
 
-    public String getTestGroup() {
-        return testGroup;
-    }
-
-    public void setTestGroup(String testGroup) {
-        this.testGroup = testGroup;
+    @Override
+    public String toString() {
+        return "TxHeaderReq{" +
+                "startSysOrCmptNo='" + startSysOrCmptNo + '\'' +
+                ", sendSysOrCmptNo='" + sendSysOrCmptNo + '\'' +
+                ", startChnlFgCd='" + startChnlFgCd + '\'' +
+                ", busiSendInstNo='" + busiSendInstNo + '\'' +
+                ", dataCenterCode='" + dataCenterCode + '\'' +
+                ", txStartTime='" + txStartTime + '\'' +
+                ", txSendTime='" + txSendTime + '\'' +
+                ", msgrptTotalLen='" + msgrptTotalLen + '\'' +
+                ", msgrptFmtVerNo='" + msgrptFmtVerNo + '\'' +
+                ", msgAgrType='" + msgAgrType + '\'' +
+                ", pubMsgHeadLen='" + pubMsgHeadLen + '\'' +
+                ", embedMsgrptLen='" + embedMsgrptLen + '\'' +
+                ", targetSysOrCmptNo='" + targetSysOrCmptNo + '\'' +
+                ", servTpCd='" + servTpCd + '\'' +
+                ", servNo='" + servNo + '\'' +
+                ", servVerNo='" + servVerNo + '\'' +
+                ", msgrptMac='" + msgrptMac + '\'' +
+                ", globalBusiTrackNo='" + globalBusiTrackNo + '\'' +
+                ", subtxNo='" + subtxNo + '\'' +
+                ", reqSysSriNo='" + reqSysSriNo + '\'' +
+                ", mainMapElemIntInfo='" + mainMapElemIntInfo + '\'' +
+                ", resvedInputInfo='" + resvedInputInfo + '\'' +
+                '}';
     }
 
 }

@@ -27,4 +27,11 @@ public class TxBodyResp<R> {
         this.txEntity = txEntity;
     }
 
+    @Override
+    public String toString() {
+        return "TxBodyResp{" +
+                "txEntity=" + txEntity +
+                '}';
+    }
+
 }

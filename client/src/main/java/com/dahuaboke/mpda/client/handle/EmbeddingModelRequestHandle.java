@@ -34,8 +34,8 @@ public class EmbeddingModelRequestHandle {
      */
     public float[] sendC014007(String text) {
         CommonReq<C014007Req> bodyReq = new CommonReq<>();
-        TxHeaderReq headerReq = CommonHeaderUtils.build(coreClientProperties.getSendSysNo(),
-                coreClientProperties.getTargetSysNo(), RagConstant.RAG_V1_C014007);
+        TxHeaderReq headerReq = CommonHeaderUtils.build(coreClientProperties,RagConstant.RAG_V1_C014007);
+
         bodyReq.setTxHeader(headerReq);
 
         TxBodyReq<C014007Req> txBodyReq = new TxBodyReq<>();

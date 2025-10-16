@@ -63,4 +63,14 @@ public class C014005Req {
         this.orderCondition = orderCondition;
     }
 
+    @Override
+    public String toString() {
+        return "C014005Req{" +
+                "indexName='" + indexName + '\'' +
+                ", systemNo='" + systemNo + '\'' +
+                ", conditionMap=" + conditionMap +
+                ", orderCondition=" + orderCondition +
+                '}';
+    }
+
 }

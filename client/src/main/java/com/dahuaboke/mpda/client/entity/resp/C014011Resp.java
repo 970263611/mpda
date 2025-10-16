@@ -50,13 +50,22 @@ public class C014011Resp extends BaseResp {
         this.processData = processData;
     }
 
+    @Override
+    public String toString() {
+        return "C014011Resp{" +
+                "originalText='" + originalText + '\'' +
+                ", totalResult='" + totalResult + '\'' +
+                ", processData=" + processData +
+                '}';
+    }
+
     public static class ProcessData {
 
         private double score;
 
-        private String passage;
+        private String text;
 
-        private int rank;
+        private int index;
 
         public double getScore() {
             return score;
@@ -66,20 +75,29 @@ public class C014011Resp extends BaseResp {
             this.score = score;
         }
 
-        public String getPassage() {
-            return passage;
+        public String getText() {
+            return text;
         }
 
-        public void setPassage(String passage) {
-            this.passage = passage;
+        public void setText(String text) {
+            this.text = text;
         }
 
-        public int getRank() {
-            return rank;
+        public int getIndex() {
+            return index;
         }
 
-        public void setRank(int rank) {
-            this.rank = rank;
+        public void setIndex(int index) {
+            this.index = index;
+        }
+
+        @Override
+        public String toString() {
+            return "ProcessData{" +
+                    "score=" + score +
+                    ", text='" + text + '\'' +
+                    ", index=" + index +
+                    '}';
         }
 
     }

@@ -1,6 +1,7 @@
 package com.dahuaboke.mpda.bot.rag.utils;
 
 
+import com.dahuaboke.mpda.bot.tools.enums.BondFundType;
 import com.dahuaboke.mpda.core.rag.convert.PdfDocumentConvert;
 import com.dahuaboke.mpda.core.rag.reader.DefaultDocumentReader;
 import org.junit.jupiter.api.Test;
@@ -43,4 +44,11 @@ public class FundDocUtilTest {
             System.out.println(documents);
         }
     }
+
+    @Test
+    public void testBond(){
+        String str ="利率债/利率债-被动式/利率债指数1-5年 ";
+        BondFundType bondFundType = BondFundType.getBondFundType(str);
+    }
+
 }

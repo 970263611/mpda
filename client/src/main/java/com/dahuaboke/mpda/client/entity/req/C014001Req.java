@@ -49,4 +49,13 @@ public class C014001Req<T> {
     }
 
 
+    @Override
+    public String toString() {
+        return "C014001Req{" +
+                "indexName='" + indexName + '\'' +
+                ", systemNo='" + systemNo + '\'' +
+                ", dataMapList=" + dataMapList +
+                '}';
+    }
+
 }

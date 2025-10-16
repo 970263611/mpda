@@ -35,6 +35,14 @@ public class TxBodyReq<T> {
         this.txEntity = txEntity;
     }
 
+    @Override
+    public String toString() {
+        return "TxBodyReq{" +
+                "txComni=" + txComni +
+                ", txEntity=" + txEntity +
+                '}';
+    }
+
     class TxComni {
 
         private String oprTellerNo;
@@ -52,6 +60,13 @@ public class TxBodyReq<T> {
 
         public void setOprTellerNo(String oprTellerNo) {
             this.oprTellerNo = oprTellerNo;
+        }
+
+        @Override
+        public String toString() {
+            return "TxComni{" +
+                    "oprTellerNo='" + oprTellerNo + '\'' +
+                    '}';
         }
 
     }

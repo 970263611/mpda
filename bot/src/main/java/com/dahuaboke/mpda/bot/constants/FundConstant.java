@@ -1,4 +1,4 @@
-package com.dahuaboke.mpda.bot.rag.constants;
+package com.dahuaboke.mpda.bot.constants;
 
 /**
  * @Desc: 基金常量
@@ -12,5 +12,8 @@ public class FundConstant {
     public static final String INDEX_NAME = "pdf_inner_rule_index";
 
     public static final String EMBEDDING = "embedding";
+
+
+
 
 }

@@ -17,8 +17,12 @@ public class C014011Req {
     /**
      * 对比文本
      */
-    private List<String> passages;
+    private List<String> texts;
 
+    /**
+     * 场景id
+     */
+    private String sceneId;
 
     public String getQuery() {
         return query;
@@ -28,12 +32,29 @@ public class C014011Req {
         this.query = query;
     }
 
-    public List<String> getPassages() {
-        return passages;
+    public List<String> getTexts() {
+        return texts;
     }
 
-    public void setPassages(List<String> passages) {
-        this.passages = passages;
+    public void setTexts(List<String> texts) {
+        this.texts = texts;
+    }
+
+    public String getSceneId() {
+        return sceneId;
+    }
+
+    public void setSceneId(String sceneId) {
+        this.sceneId = sceneId;
+    }
+
+    @Override
+    public String toString() {
+        return "C014011Req{" +
+                "query='" + query + '\'' +
+                ", texts=" + texts +
+                ", sceneId='" + sceneId + '\'' +
+                '}';
     }
 
 }

@@ -2,6 +2,9 @@ package com.dahuaboke.mpda.bot.web;
 
 import com.dahuaboke.mpda.bot.model.common.CommonResponse;
 import com.dahuaboke.mpda.bot.model.response.ChatBotResponse;
+import com.dahuaboke.mpda.bot.scenes.entity.PlatformExtend;
+import com.dahuaboke.mpda.bot.tools.ContentManageTool;
+import com.dahuaboke.mpda.bot.tools.dto.ContentManageResponse;
 import com.dahuaboke.mpda.bot.web.service.ChatService;
 import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
 import com.dahuaboke.mpda.core.context.CoreContext;
@@ -30,6 +33,8 @@ public class ChatController {
     @Autowired
     private ObjectMapper objectMapper;
 
+
+
     @RequestMapping("/chat")
     public CommonResponse<ChatBotResponse, Object> chat(
             @RequestBody CoreContext context) throws MpdaException {
@@ -43,11 +48,11 @@ public class ChatController {
         CoreContext context = new CoreContext(q, conversationId);
         Flux<SceneResponse> response = chatService.chatStream(context);
         return response.map(res -> {
-            try {
-                System.out.println("-------------------------------------------" + objectMapper.writeValueAsString(res.extend()));
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
+//            try {
+//                System.out.println("-------------------------------------------" + objectMapper.writeValueAsString(res.extend()));
+//            } catch (JsonProcessingException e) {
+//                throw new RuntimeException(e);
+//            }
             Map<String, Object> delta = Map.of("role", "assistant", "content", res.output());
             Map<String, Object> choice = Map.of("index", 0, "delta", delta, "finish_reason", "");
             List<Map<String, Object>> choices = List.of(choice);
@@ -69,16 +74,9 @@ public class ChatController {
             @RequestBody CoreContext context) throws MpdaException {
         Flux<SceneResponse> response = chatService.chatStream(context);
         return response.map(res -> {
-            Object extend = null;
-            try {
-                if (res.extend() != null) {
-                    extend = objectMapper.writeValueAsString(res.extend().graphExtend());
-                }
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-            if ("null".equals(extend) || "".equals(extend)) {
-                extend = null;
+            PlatformExtend extend = new PlatformExtend();
+            if (res.extend() != null) {
+                extend = (PlatformExtend) res.extend().graphExtend();
             }
             CommonResponse<String, Object> success = CommonResponse.success(res.output(), extend);
             try {
@@ -93,6 +91,8 @@ public class ChatController {
             }
         });
     }
+
+
 
 
 }

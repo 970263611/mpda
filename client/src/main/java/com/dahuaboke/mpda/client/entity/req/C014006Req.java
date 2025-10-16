@@ -1,5 +1,6 @@
 package com.dahuaboke.mpda.client.entity.req;
 
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -112,4 +113,19 @@ public class C014006Req {
     public void setSize(int size) {
         this.size = size;
     }
+
+    @Override
+    public String toString() {
+        return "C014006Req{" +
+                "indexName='" + indexName + '\'' +
+                ", systemNo='" + systemNo + '\'' +
+                ", vectorFieldName='" + vectorFieldName + '\'' +
+                ", vector=" + Arrays.toString(vector) +
+                ", conditionMap=" + conditionMap +
+                ", topK=" + topK +
+                ", numCandidates=" + numCandidates +
+                ", size=" + size +
+                '}';
+    }
+
 }

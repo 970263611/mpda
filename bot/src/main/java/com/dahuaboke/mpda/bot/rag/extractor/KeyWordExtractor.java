@@ -39,7 +39,7 @@ public class KeyWordExtractor implements QueryExtractor {
             **关键词 (检查用户是否包含以下字段,若存在则提取，否则留空)** \s
             {keyWords}
             
-            1.只提取"关键词"中定义的字符串：若未提取到关键词，留空，不要产生不存在"关键词"的产品。             
+            1.只提取"关键词"中定义的字符串：若未提取到关键词，留空，不要产生不存在"关键词"的基金。             
             2.请将最终结果放在{prefix}和{suffix}之间：
             
              {prefix}

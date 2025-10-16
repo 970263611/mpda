@@ -422,7 +422,7 @@
         } else if (location === 'first') {
             focusable[0]?.focus();
         } else if (location === 'last') {
-            focusable.at(-1)?.focus();
+            focusable.slice(-1)[0]?.focus();
         } else if (typeof location === 'number') {
             focusable[location]?.focus();
         } else {
@@ -870,7 +870,7 @@
         vue.warn(`Vuetify error: ${message}`);
     }
     function deprecate(original, replacement) {
-        replacement = Array.isArray(replacement) ? replacement.slice(0, -1).map(s => `'${s}'`).join(', ') + ` or '${replacement.at(-1)}'` : `'${replacement}'`;
+        replacement = Array.isArray(replacement) ? replacement.slice(0, -1).map(s => `'${s}'`).join(', ') + ` or '${replacement.slice(-1)[0]}'` : `'${replacement}'`;
         vue.warn(`[Vuetify UPGRADE] '${original}' is deprecated, use ${replacement} instead.`);
     }
 
@@ -10824,7 +10824,7 @@
             });
             if (flipped.isFull) {
                 const values = flipped.values();
-                if (deepEqual(values.at(-1), values.at(-3)) && !deepEqual(values.at(-1), values.at(-2))) {
+                if (deepEqual(values.slice(-1)[0], values.at(-3)) && !deepEqual(values.slice(-1)[0], values.at(-2))) {
                     // Flipping is causing a container resize loop
                     return;
                 }
@@ -11612,7 +11612,7 @@
         vue.provide(StackSymbol, stack);
         const _zIndex = vue.shallowRef(Number(vue.toValue(zIndex)));
         useToggleScope(isActive, () => {
-            const lastZIndex = globalStack.at(-1)?.[1];
+            const lastZIndex = globalStack.slice(-1)[0]?.[1];
             _zIndex.value = lastZIndex ? lastZIndex + 10 : Number(vue.toValue(zIndex));
             if (createStackEntry) {
                 globalStack.push([vm.uid, _zIndex.value]);
@@ -11629,7 +11629,7 @@
         const globalTop = vue.shallowRef(true);
         if (createStackEntry) {
             vue.watchEffect(() => {
-                const _isTop = globalStack.at(-1)?.[0] === vm.uid;
+                const _isTop = globalStack.slice(-1)[0]?.[0] === vm.uid;
                 setTimeout(() => globalTop.value = _isTop);
             });
         }
@@ -13455,7 +13455,7 @@
                 function findItem() {
                     let result = findItemBase();
                     if (result) return result;
-                    if (keyboardLookupPrefix.at(-1) === keyboardLookupPrefix.at(-2)) {
+                    if (keyboardLookupPrefix.slice(-1)[0] === keyboardLookupPrefix.at(-2)) {
                         // No matches but we have a repeated letter, try the next item with that prefix
                         keyboardLookupPrefix = keyboardLookupPrefix.slice(0, -1);
                         result = findItemBase();
@@ -14147,7 +14147,7 @@
                 if (val === oldVal) return;
                 if (val) {
                     isSelecting.value = true;
-                    search.value = props.multiple || hasSelectionSlot.value ? '' : String(model.value.at(-1)?.props.title ?? '');
+                    search.value = props.multiple || hasSelectionSlot.value ? '' : String(model.value.slice(-1)[0]?.props.title ?? '');
                     isPristine.value = true;
                     vue.nextTick(() => isSelecting.value = false);
                 } else {
@@ -18572,7 +18572,7 @@
             // Disallow literal + or _ keys (they require shift)
             combination.includes('++') || combination.includes('__') || combination === '+' || combination === '_' ||
             // Ends with a separator that is not part of a doubled literal
-            combination.length > 1 && (combination.endsWith('+') || combination.endsWith('_')) && combination.at(-2) !== combination.at(-1) ||
+            combination.length > 1 && (combination.endsWith('+') || combination.endsWith('_')) && combination.at(-2) !== combination.slice(-1)[0] ||
             // Stand-alone doubled separators (dangling)
             combination === '++' || combination === '--' || combination === '__';
         if (hasInvalidStructure) {

@@ -30,12 +30,7 @@ public class CustomRerankModel implements Rerank {
             return List.of();
         }
 
-        Map<String, Document> documentMap = documents.stream()
-                .collect(Collectors.toMap(
-                        Document::getText,
-                        document -> document
-                ));
-        List<String> docs = documentMap.keySet().stream().toList();
+        List<String> docs = documents.stream().map(Document::getText).toList();
 
         C014011Resp c014011Resp = rerankModelRequestHandle.sendC014011(searchRequest.getQuery(), docs);
         List<C014011Resp.ProcessData> processData = c014011Resp.getProcessData();
@@ -44,7 +39,7 @@ public class CustomRerankModel implements Rerank {
         return processData.stream()
                 .sorted(Comparator.comparingDouble(C014011Resp.ProcessData::getScore).reversed())
                 .limit(topK)
-                .map(data -> documentMap.get(data.getPassage()))
+                .map(data -> documents.get(data.getIndex()))
                 .toList();
     }
 }

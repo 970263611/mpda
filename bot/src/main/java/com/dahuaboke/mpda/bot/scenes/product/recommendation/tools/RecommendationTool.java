@@ -5,14 +5,10 @@ import com.dahuaboke.mpda.bot.tools.ProductTool;
 import com.dahuaboke.mpda.bot.tools.dto.FilterProdInfoReq;
 import com.dahuaboke.mpda.bot.tools.dto.ProdInfoDto;
 import com.dahuaboke.mpda.core.agent.tools.ToolResult;
+import java.util.List;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * auth: dahua
@@ -23,7 +19,7 @@ public class RecommendationTool extends ProductTool<RecommendationTool.Input> {
 
     @Override
     public String getDescription() {
-        return "根据年化利率/基金类型/债券基金类型/月最大回车率来查询匹配的产品信息";
+        return "根据年化利率/债券基金类型/月最大回撤率来查询匹配的产品信息";
     }
 
     @Override
@@ -40,8 +36,8 @@ public class RecommendationTool extends ProductTool<RecommendationTool.Input> {
     public ToolResult execute(RecommendationTool.Input input) {
         try {
             List<ProdInfoDto> prodInfoDtos = productToolHandler.filterProdInfo(new FilterProdInfoReq(input.yearRita()
-                    , input.fundType(), input.fundClassificationCode(), input.withDrawal()));
-            //TODO 此处为测试数据
+                    , input.fundClassificationCode(), input.withDrawal()));
+            /*//TODO 此处为测试数据
             ProdInfoDto prodInfoDto1 = new ProdInfoDto();
             prodInfoDto1.setFundCode("001122");
             ProdInfoDto prodInfoDto2 = new ProdInfoDto();
@@ -61,7 +57,7 @@ public class RecommendationTool extends ProductTool<RecommendationTool.Input> {
                 temp.put("maxNetval", getMaxNetval(prodInfoDto.getFundCode()));
                 temp.put("yearRita", getYearRita(prodInfoDto.getFundCode()));
                 tempResult.add(temp);
-            });
+            });*/
 
 //            String nxzj = """
 //                    产品名称	产品代码	产品类型	最新净值
@@ -74,26 +70,24 @@ public class RecommendationTool extends ProductTool<RecommendationTool.Input> {
 //
 //
 //            return ToolResult.success("查询成功", nxzj);
-            return ToolResult.success("查询成功", tempResult);
+            return ToolResult.success("查询成功", prodInfoDtos);
         } catch (RestClientException e) {
             return ToolResult.error("查询失败");
         }
     }
 
     public record Input(@ToolParam(description = "年化利率（非必填）") String yearRita
-            , @ToolParam(description = """
-                基金类型（非必填）
-                    0：货币类型基金
-                    1：股票型基金
-                    2：债券型基金
-                    3：混合型基金
-                    4：保本型基金
-                    5：指数型
-                    6：短债性
-                    7：QDII
+            ,  @ToolParam(description = """
+                债基类型（非必填）
+                    0：无
+                    1：信用债-指数型
+                    2：信用债主动-开放式
+                    3：利率债主动-开放式
+                    4：利率债指数1-3年
+                    5：利率债指数3-5年
+                    6：利率债指数1-5年
                 此参数需要根据用户的描述匹配对应的数字，实际调用时传递的为数字
-            """) List<String> fundType
-            , @ToolParam(description = "债券基金类型（利率债/利率债主动-开放式）（非必填）") String fundClassificationCode
+            """) String fundClassificationCode
             , @ToolParam(description = "月最大回撤率（非必填）") String withDrawal) {
     }
 }

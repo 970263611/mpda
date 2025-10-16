@@ -1,7 +1,7 @@
 package com.dahuaboke.mpda.bot.tools.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.dahuaboke.mpda.bot.tools.entity.YwjqrNetvalue;
+import com.dahuaboke.mpda.bot.tools.entity.BrNetvalue;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -11,6 +11,6 @@ import org.apache.ibatis.annotations.Mapper;
  * @date: 2022/2/28 16:13
  */
 @Mapper
-public interface FundNetvalueMapper extends BaseMapper<YwjqrNetvalue> {
+public interface BrNetvalueMapper extends BaseMapper<BrNetvalue> {
 
 }

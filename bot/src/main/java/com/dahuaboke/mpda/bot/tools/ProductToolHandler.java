@@ -2,18 +2,19 @@ package com.dahuaboke.mpda.bot.tools;
 
 
 import com.dahuaboke.mpda.bot.tools.dto.FilterProdInfoReq;
+import com.dahuaboke.mpda.bot.tools.dto.MarketRankDto;
 import com.dahuaboke.mpda.bot.tools.dto.NetValReq;
 import com.dahuaboke.mpda.bot.tools.dto.ProdInfoDto;
-import com.dahuaboke.mpda.bot.tools.entity.YwjqrProduct;
+import com.dahuaboke.mpda.bot.tools.entity.BrMarketProductReport;
 import com.dahuaboke.mpda.bot.tools.service.RobotService;
 import com.dahuaboke.mpda.core.utils.DateUtil;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * auth: dahua
@@ -25,68 +26,13 @@ public class ProductToolHandler {
     private RobotService robotService;
 
     /**
-     * 产品信息入库
-     *
-     * @param ywjqrProduct
-     * @return
-     */
-    @RequestMapping(value = "/insert/fundProduct")
-    public String fundProduct(YwjqrProduct ywjqrProduct) {
-        int insert = robotService.insert(ywjqrProduct);
-        return "" + insert;
-    }
-
-    /**
-     * 根据基金代码更新产品信息
-     *
-     * @param ywjqrProduct
-     * @return
-     */
-    @RequestMapping(value = "/update/fundProduct")
-    public String updateFundProduct(YwjqrProduct ywjqrProduct) {
-        int update = robotService.update(ywjqrProduct);
-        return "" + update;
-    }
-
-    /**
-     * 根据基金代码查询产品信息
-     *
-     * @param ywjqrProduct
-     * @return
-     */
-    @RequestMapping(value = "/select/fundCode")
-    public List<YwjqrProduct> selectByFundCode(YwjqrProduct ywjqrProduct) {
-        List<YwjqrProduct> ywjqrProducts = robotService.selectList(ywjqrProduct);
-        return ywjqrProducts;
-    }
-
-    /**
-     * 最大回撤
-     *
-     * @param netValReq
-     * @return
-     */
-    @RequestMapping("/select/maxNetval")
-    public String maxNetval(NetValReq netValReq) {
-        if (StringUtils.isEmpty(netValReq.getEndDate())) {
-            netValReq.setEndDate(DateUtil.getBusinessToday());
-        }
-        if (StringUtils.isEmpty(netValReq.getBegDate())) {
-            String txDate = DateUtil.getDayBy(DateUtil.getBusinessToday(), 0, 0, -90);
-            netValReq.setBegDate(txDate);
-        }
-        return robotService.maxNetval(netValReq);
-    }
-
-    /**
      * 查产品信息
      *
      * @param netValReq
      * @return ProdInfoDto
      */
-    @RequestMapping("/select/prodInfo")
     public ProdInfoDto selectProdInfo(NetValReq netValReq) {
-        return robotService.selectProdInfo(netValReq);
+        return robotService.getInfo(netValReq.getProdtCode());
     }
 
     /**
@@ -94,7 +40,6 @@ public class ProductToolHandler {
      *
      * @return Map
      */
-    @GetMapping("/select/prodNoName")
     public Map<String, String> getMap() {
         return robotService.getMap();
     }
@@ -105,9 +50,27 @@ public class ProductToolHandler {
      * @param filterProdInfoReq
      * @return
      */
-    @RequestMapping("/select/filterProdInfo")
     public List<ProdInfoDto> filterProdInfo(FilterProdInfoReq filterProdInfoReq) {
         return robotService.filterProdInfo(filterProdInfoReq);
+    }
+
+    /**
+     * 最大回撤
+     *
+     * @param netValReq
+     * @return
+     */
+    public String maxWithDrawal(NetValReq netValReq) {
+        if (StringUtils.isEmpty(netValReq.getEndDate())) {
+            netValReq.setEndDate(DateUtil.getBusinessToday());
+        }
+        if (StringUtils.isEmpty(netValReq.getBegDate())) {
+            String txDate = DateUtil.getDayBy(DateUtil.getBusinessToday(), 0, 0, -90);
+            netValReq.setBegDate(txDate);
+        }
+        String withDrawal = robotService.getWithDrawal(netValReq);
+        BigDecimal divide = new BigDecimal(withDrawal);
+        return divide.multiply(new BigDecimal(100), new MathContext(5, RoundingMode.HALF_UP)) + "%";
     }
 
     /**
@@ -116,7 +79,6 @@ public class ProductToolHandler {
      * @param netValReq
      * @return
      */
-    @RequestMapping(value = "/select/yearRita")
     public String yearRita(NetValReq netValReq) {
         if (StringUtils.isEmpty(netValReq.getEndDate())) {
             netValReq.setEndDate(DateUtil.getBusinessToday());
@@ -125,7 +87,15 @@ public class ProductToolHandler {
             String txDate = DateUtil.getDayBy(DateUtil.getBusinessToday(), 0, 0, -30);
             netValReq.setBegDate(txDate);
         }
-        return robotService.yearRita(netValReq);
+        String netVal = robotService.yearRita(netValReq);
+        BigDecimal divide = new BigDecimal(netVal);
+        String tempAns = divide.multiply(new BigDecimal(100), new MathContext(5, RoundingMode.HALF_UP)).toString();
+        return tempAns + "%";
+    }
+
+
+    public List<MarketRankDto> getMarketRank(String finBondType) {
+        return robotService.getMarketRank(finBondType);
     }
 
 }

@@ -22,4 +22,11 @@ public class C014006Resp<R> extends BaseResp {
         this.resultMap = resultMap;
     }
 
+    @Override
+    public String toString() {
+        return "C014006Resp{" +
+                "resultMap=" + resultMap +
+                '}';
+    }
+
 }

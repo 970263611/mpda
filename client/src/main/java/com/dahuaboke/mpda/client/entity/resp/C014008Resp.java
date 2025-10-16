@@ -35,4 +35,12 @@ public class C014008Resp extends BaseResp {
         this.successTotalCount = successTotalCount;
     }
 
+    @Override
+    public String toString() {
+        return "C014008Resp{" +
+                "failedDelIdList=" + failedDelIdList +
+                ", successTotalCount=" + successTotalCount +
+                '}';
+    }
+
 }

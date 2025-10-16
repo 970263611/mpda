@@ -1,5 +1,6 @@
 package com.dahuaboke.mpda.core.rag.reader;
 
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -22,11 +23,16 @@ public class DefaultDocumentReader implements DocumentReader {
             return new UrlResource[]{new UrlResource(path)};
         } else {
             //相对路径转为file:前缀
-            if (!path.startsWith("file:") && !path.startsWith("/")) {
-                path = "file:" + path;
-            }
-            ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-            return resolver.getResources(path);
+           /* if (!path.startsWith("file:") && !path.startsWith("/")) {
+                String os = System.getProperty("os.name").toLowerCase();
+                if(os.contains("win")) {
+                    path = "file:" + path.replace("\\","/");
+                }else {
+                    path = "file:" + path;
+                }
+            }*/
+            FileSystemResource fileSystemResource = new FileSystemResource(path);
+            return new FileSystemResource[]{fileSystemResource};
         }
     }
 }

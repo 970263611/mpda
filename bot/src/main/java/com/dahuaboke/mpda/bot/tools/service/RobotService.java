@@ -1,20 +1,19 @@
 package com.dahuaboke.mpda.bot.tools.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.dahuaboke.mpda.bot.tools.dao.FundNetvalueMapper;
-import com.dahuaboke.mpda.bot.tools.dao.FundProductMapper;
-import com.dahuaboke.mpda.bot.tools.dao.YwjqrIntbankKindparaMapper;
+import com.dahuaboke.mpda.bot.tools.dao.BrMarketProductReportMapper;
+import com.dahuaboke.mpda.bot.tools.dao.BrNetvalueMapper;
+import com.dahuaboke.mpda.bot.tools.dao.BrProductReportMapper;
+import com.dahuaboke.mpda.bot.tools.dao.BrProductSummaryMapper;
 import com.dahuaboke.mpda.bot.tools.dto.FilterProdInfoReq;
+import com.dahuaboke.mpda.bot.tools.dto.MarketRankDto;
 import com.dahuaboke.mpda.bot.tools.dto.NetValReq;
 import com.dahuaboke.mpda.bot.tools.dto.ProdInfoDto;
-import com.dahuaboke.mpda.bot.tools.entity.YwjqrIntbankKindpara;
-import com.dahuaboke.mpda.bot.tools.entity.YwjqrNetvalue;
-import com.dahuaboke.mpda.bot.tools.entity.YwjqrProduct;
+import com.dahuaboke.mpda.bot.tools.entity.BrMarketProductReport;
+import com.dahuaboke.mpda.bot.tools.entity.BrNetvalue;
+import com.dahuaboke.mpda.bot.tools.entity.BrProductReport;
+import com.dahuaboke.mpda.bot.tools.entity.BrProductSummary;
 import com.dahuaboke.mpda.core.utils.DateUtil;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
-
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -22,104 +21,123 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 
 public class RobotService {
 
     @Autowired
-    private FundProductMapper fundProductMapper;
+    private BrProductReportMapper brProductReportMapper;
 
     @Autowired
-    private FundNetvalueMapper fundNetvalueMapper;
+    private BrProductSummaryMapper brProductSummaryMapper;
 
     @Autowired
-    private YwjqrIntbankKindparaMapper ywjqrIntbankKindparaMapper;
+    private BrNetvalueMapper brNetvalueMapper;
 
-    public int insert(YwjqrProduct ywjqrProduct) {
-        return fundProductMapper.insert(ywjqrProduct);
-    }
-
-    public int update(YwjqrProduct ywjqrProduct) {
-        LambdaQueryWrapper<YwjqrProduct> queryWrapper = new LambdaQueryWrapper<YwjqrProduct>()
-                .eq(YwjqrProduct::getFundCode, ywjqrProduct.getFundCode());
-        int update = fundProductMapper.update(ywjqrProduct, queryWrapper);
-        return update;
-    }
+    @Autowired
+    BrMarketProductReportMapper brMarketProductReportMapper;
 
 
-    public List<YwjqrProduct> selectList(YwjqrProduct ywjqrProduct) {
-        LambdaQueryWrapper<YwjqrProduct> queryWrapper = new LambdaQueryWrapper<YwjqrProduct>()
-                .eq(YwjqrProduct::getFundCode, ywjqrProduct.getFundCode());
-        List<YwjqrProduct> ywjqrProducts = fundProductMapper.selectList(queryWrapper);
-        return ywjqrProducts;
-    }
+   public ProdInfoDto getInfo(String code) {
+       ProdInfoDto prodInfoDto = new ProdInfoDto();
+       LambdaQueryWrapper<BrProductReport> queryWrapper = new LambdaQueryWrapper<BrProductReport>()
+               .eq(BrProductReport::getFundCode, code);
+       List<BrProductReport> brProductReports = brProductReportMapper.selectList(queryWrapper);
 
-    public String maxNetval(NetValReq netValReq) {
-        List<YwjqrNetvalue> ywjqrNetvalues = fundNetvalueMapper.selectList(new LambdaQueryWrapper<YwjqrNetvalue>()
-                .eq(YwjqrNetvalue::getProdtCode, netValReq.getProdtCode())
-                .between(YwjqrNetvalue::getNetValDate, netValReq.getBegDate(), netValReq.getEndDate())
-                .orderByAsc(YwjqrNetvalue::getNetValDate));
+       LambdaQueryWrapper<BrProductSummary> queryWrapper1 = new LambdaQueryWrapper<BrProductSummary>()
+               .eq(BrProductSummary::getFundCode, code);
+       List<BrProductSummary> brProductSummaries = brProductSummaryMapper.selectList(queryWrapper1);
+
+       BrProductReport report = new BrProductReport();
+       BrProductSummary summary = new BrProductSummary();
+       if(!brProductReports.isEmpty()){
+           report = brProductReports.get(0);
+       }
+       if(!brProductSummaries.isEmpty()){
+           summary = brProductSummaries.get(0);
+       }
+
+       BeanUtils.copyProperties(report, prodInfoDto);
+       BeanUtils.copyProperties(summary, prodInfoDto);
+       return prodInfoDto;
+   }
+
+
+    public String getWithDrawal(NetValReq netValReq) {
+        List<BrNetvalue> ywjqrNetvalues = brNetvalueMapper.selectList(new LambdaQueryWrapper<BrNetvalue>()
+                .eq(BrNetvalue::getFundCode, netValReq.getProdtCode())
+                .between(BrNetvalue::getNetValDate, netValReq.getBegDate(), netValReq.getEndDate())
+                .orderByAsc(BrNetvalue::getNetValDate));
         if (ywjqrNetvalues.size() == 0) {
             return "" + 0;
         }
         String maxNetVal = ywjqrNetvalues.get(0).getUnitNetVal();
         String ans = "0";
-        for (YwjqrNetvalue fund : ywjqrNetvalues) {
+        for (BrNetvalue fund : ywjqrNetvalues) {
             if (fund.getUnitNetVal().compareTo(maxNetVal) > 0) {
                 maxNetVal = fund.getUnitNetVal();
             } else {
                 BigDecimal bigDecimal1 = new BigDecimal(maxNetVal);
                 BigDecimal bigDecimal2 = new BigDecimal(fund.getUnitNetVal());
                 BigDecimal divide = bigDecimal1.subtract(bigDecimal2).divide(bigDecimal1, new MathContext(7, RoundingMode.HALF_UP));
-                String tempAns = divide.multiply(new BigDecimal(100), new MathContext(5, RoundingMode.HALF_UP)).toString();
-                ans = ans.compareTo(tempAns) > 0 ? ans : tempAns;
+                ans = ans.compareTo(String.valueOf(divide)) > 0 ? ans : String.valueOf(divide);
             }
         }
-        return ans + "%";
-    }
-
-    public ProdInfoDto selectProdInfo(NetValReq netValReq) {
-        ProdInfoDto prodInfoDto = new ProdInfoDto();
-        LambdaQueryWrapper<YwjqrProduct> queryWrapper1 = new LambdaQueryWrapper<YwjqrProduct>()
-                .eq(YwjqrProduct::getFundCode, netValReq.getProdtCode());
-        List<YwjqrProduct> ywjqrProducts = fundProductMapper.selectList(queryWrapper1);
-        YwjqrProduct product = new YwjqrProduct();
-        if (ywjqrProducts.size() > 0) {
-            product = ywjqrProducts.get(0);
-        }
-        LambdaQueryWrapper<YwjqrIntbankKindpara> queryWrapper2 = new LambdaQueryWrapper<YwjqrIntbankKindpara>()
-                .eq(YwjqrIntbankKindpara::getFundProdtNo, netValReq.getProdtCode());
-        List<YwjqrIntbankKindpara> ywjqrIntbankKindparas = ywjqrIntbankKindparaMapper.selectList(queryWrapper2);
-        YwjqrIntbankKindpara ywjqrIntbankKindpara = new YwjqrIntbankKindpara();
-        if (ywjqrIntbankKindparas.size() > 0) {
-            ywjqrIntbankKindpara = ywjqrIntbankKindparas.get(0);
-        }
-        BeanUtils.copyProperties(product, prodInfoDto);
-        BeanUtils.copyProperties(ywjqrIntbankKindpara, prodInfoDto);
-        return prodInfoDto;
+        return ans;
     }
 
 
-    public Map<String, String> getMap() {
-        Map<String, String> map = new HashMap<>();
-        List<YwjqrIntbankKindpara> ywjqrIntbankKindparas = ywjqrIntbankKindparaMapper.selectList(new LambdaQueryWrapper<YwjqrIntbankKindpara>());
-        for (YwjqrIntbankKindpara ywjqrIntbankKindpara : ywjqrIntbankKindparas) {
-            map.put(ywjqrIntbankKindpara.getFundProdtNo(), ywjqrIntbankKindpara.getProdtName());
+    public String yearRita(NetValReq netValReq) {
+        if (StringUtils.isEmpty(netValReq.getEndDate())) {
+            netValReq.setEndDate(DateUtil.getBusinessToday());
         }
-        return map;
+        if (StringUtils.isEmpty(netValReq.getBegDate())) {
+            String txDate = DateUtil.getDayBy(DateUtil.getBusinessToday(), 0, 0, -30);
+            netValReq.setBegDate(txDate);
+        }
+        List<BrNetvalue> ywjqrNetvalues = brNetvalueMapper.selectList(new LambdaQueryWrapper<BrNetvalue>()
+                .eq(BrNetvalue::getFundCode, netValReq.getProdtCode())
+                .between(BrNetvalue::getNetValDate, netValReq.getBegDate(), netValReq.getEndDate())
+                .orderByAsc(BrNetvalue::getNetValDate));
+        if (ywjqrNetvalues.size() == 0) {
+            return "" + 0;
+        }
+        String one = ywjqrNetvalues.get(0).getUnitNetVal();
+        String last = ywjqrNetvalues.get(ywjqrNetvalues.size() - 1).getUnitNetVal();
+        BigDecimal bigDecimal1 = new BigDecimal(one);
+        BigDecimal bigDecimal2 = new BigDecimal(last);
+        BigDecimal divide = bigDecimal2.subtract(bigDecimal1).divide(bigDecimal1, new MathContext(7, RoundingMode.HALF_UP));
+        return String.valueOf(divide);
     }
+
 
     public List<ProdInfoDto> filterProdInfo(FilterProdInfoReq filterProdInfoReq) {
         List<ProdInfoDto> list = new ArrayList<>();
-        List<YwjqrIntbankKindpara> ywjqrIntbankKindparas = ywjqrIntbankKindparaMapper.selectListFilter(filterProdInfoReq);
-        for (YwjqrIntbankKindpara ywjqrIntbankKindpara : ywjqrIntbankKindparas) {
-            String fundProdtNo = ywjqrIntbankKindpara.getFundProdtNo();
-            String withDrawal = getWithDrawal(fundProdtNo);
-            String yearRita = getYearRita(fundProdtNo);
+
+        LambdaQueryWrapper<BrProductReport> queryWrapper = new LambdaQueryWrapper<BrProductReport>()
+                .eq(BrProductReport::getClsReasonCode, filterProdInfoReq.getFundClassificationCode());
+        List<BrProductReport> brProductReports = brProductReportMapper.selectList(queryWrapper);
+
+
+        for (BrProductReport brProductReport : brProductReports) {
+            String fundCode = brProductReport.getFundCode();
+
             if (StringUtils.isEmpty(filterProdInfoReq.getWithDrawal()) && StringUtils.isEmpty(filterProdInfoReq.getYearRita())) {
-                ProdInfoDto info = getInfo(ywjqrIntbankKindpara.getFundProdtNo());
+                ProdInfoDto info = getInfo(fundCode);
                 list.add(info);
                 continue;
             }
+
+            NetValReq netValReq = new NetValReq();
+            netValReq.setBegDate(DateUtil.getBusinessToday());
+            netValReq.setEndDate(DateUtil.getDayBy(DateUtil.getBusinessToday(), 0, 0, -30));
+            netValReq.setProdtCode(fundCode);
+
+            String withDrawal = getWithDrawal(netValReq);
+            String yearRita = yearRita(netValReq);
+
             if (!StringUtils.isEmpty(filterProdInfoReq.getWithDrawal()) && !StringUtils.isEmpty(filterProdInfoReq.getYearRita())) {
                 if (filterProdInfoReq.getWithDrawal().contains("%"))
                     filterProdInfoReq.setWithDrawal(filterProdInfoReq.getWithDrawal().replace("%", ""));
@@ -131,9 +149,8 @@ public class RobotService {
                 BigDecimal bigDecimal4 = new BigDecimal(yearRita);
                 //1<3返回负数
                 if (bigDecimal1.compareTo(bigDecimal3) > 0 && bigDecimal2.compareTo(bigDecimal4) < 0) {
-                    ProdInfoDto info = getInfo(ywjqrIntbankKindpara.getFundProdtNo());
+                    ProdInfoDto info = getInfo(fundCode);
                     list.add(info);
-
                 }
                 continue;
             }
@@ -143,7 +160,7 @@ public class RobotService {
                 BigDecimal bigDecimal1 = new BigDecimal(filterProdInfoReq.getWithDrawal()).divide(BigDecimal.valueOf(100), new MathContext(5, RoundingMode.HALF_UP));
                 BigDecimal bigDecimal3 = new BigDecimal(withDrawal);
                 if (bigDecimal1.compareTo(bigDecimal3) > 0) {
-                    ProdInfoDto info = getInfo(ywjqrIntbankKindpara.getFundProdtNo());
+                    ProdInfoDto info = getInfo(fundCode);
                     list.add(info);
 
                 }
@@ -155,7 +172,7 @@ public class RobotService {
                 BigDecimal bigDecimal2 = new BigDecimal(filterProdInfoReq.getYearRita()).divide(BigDecimal.valueOf(100), new MathContext(5, RoundingMode.HALF_UP));
                 BigDecimal bigDecimal4 = new BigDecimal(yearRita);
                 if (bigDecimal2.compareTo(bigDecimal4) < 0) {
-                    ProdInfoDto info = getInfo(ywjqrIntbankKindpara.getFundProdtNo());
+                    ProdInfoDto info = getInfo(fundCode);
                     list.add(info);
                 }
             }
@@ -163,96 +180,34 @@ public class RobotService {
         return list;
     }
 
-    public String yearRita(NetValReq netValReq) {
-        if (StringUtils.isEmpty(netValReq.getEndDate())) {
-            netValReq.setEndDate(DateUtil.getBusinessToday());
+
+    public Map<String, String> getMap() {
+        Map<String, String> map = new HashMap<>();
+        List<BrProductReport> brProductReports = brProductReportMapper.selectList(new LambdaQueryWrapper<BrProductReport>());
+        for (BrProductReport report : brProductReports) {
+            map.put(report.getFundCode(), report.getFundFnm());
         }
-        if (StringUtils.isEmpty(netValReq.getBegDate())) {
-            String txDate = DateUtil.getDayBy(DateUtil.getBusinessToday(), 0, 0, -30);
-            netValReq.setBegDate(txDate);
-        }
-        List<YwjqrNetvalue> ywjqrNetvalues = fundNetvalueMapper.selectList(new LambdaQueryWrapper<YwjqrNetvalue>()
-                .eq(YwjqrNetvalue::getProdtCode, netValReq.getProdtCode())
-                .between(YwjqrNetvalue::getNetValDate, netValReq.getBegDate(), netValReq.getEndDate())
-                .orderByAsc(YwjqrNetvalue::getNetValDate));
-        if (ywjqrNetvalues.size() == 0) {
-            return "" + 0;
-        }
-        String one = ywjqrNetvalues.get(0).getUnitNetVal();
-        String last = ywjqrNetvalues.get(ywjqrNetvalues.size() - 1).getUnitNetVal();
-        BigDecimal bigDecimal1 = new BigDecimal(one);
-        BigDecimal bigDecimal2 = new BigDecimal(last);
-        BigDecimal divide = bigDecimal2.subtract(bigDecimal1).divide(bigDecimal1, new MathContext(7, RoundingMode.HALF_UP));
-        String tempAns = divide.multiply(new BigDecimal(100), new MathContext(5, RoundingMode.HALF_UP)).toString();
-        return tempAns + "%";
+        return map;
     }
 
+    public List<MarketRankDto> getMarketRank(String finBondType) {
+        LambdaQueryWrapper<BrMarketProductReport> queryWrapper = new LambdaQueryWrapper<BrMarketProductReport>();
+        queryWrapper.eq(BrMarketProductReport::getFinBondType,finBondType)
+                .orderByAsc(BrMarketProductReport::getReachStRankSeqNo)
+                .last("LIMIT " + 10);
 
-    private String getWithDrawal(String fundProdtNo) {
-        String endDate = DateUtil.getBusinessToday();
+        List<BrMarketProductReport> brMarketProductReports = brMarketProductReportMapper.selectList(queryWrapper);
+        ArrayList<MarketRankDto> rankDtos = new ArrayList<>();
+        brMarketProductReports.forEach(report->{
+            MarketRankDto marketRankDto = new MarketRankDto();
+            String fundCode = report.getFundCode();
+            ProdInfoDto info = getInfo(fundCode);
+            BeanUtils.copyProperties(info,marketRankDto);
+            BeanUtils.copyProperties(report,marketRankDto);
 
-        String begDate = DateUtil.getDayBy(DateUtil.getBusinessToday(), 0, 0, -30);
-
-        List<YwjqrNetvalue> ywjqrNetvalues = fundNetvalueMapper.selectList(new LambdaQueryWrapper<YwjqrNetvalue>()
-                .eq(YwjqrNetvalue::getProdtCode, fundProdtNo)
-                .between(YwjqrNetvalue::getNetValDate, begDate, endDate)
-                .orderByAsc(YwjqrNetvalue::getNetValDate));
-        if (ywjqrNetvalues.size() == 0) {
-            return "" + 0;
-        }
-        String maxNetVal = ywjqrNetvalues.get(0).getUnitNetVal();
-        String ans = "0";
-        for (YwjqrNetvalue fund : ywjqrNetvalues) {
-            if (fund.getUnitNetVal().compareTo(maxNetVal) > 0) {
-                maxNetVal = fund.getUnitNetVal();
-            } else {
-                BigDecimal bigDecimal1 = new BigDecimal(maxNetVal);
-                BigDecimal bigDecimal2 = new BigDecimal(fund.getUnitNetVal());
-                BigDecimal divide = bigDecimal1.subtract(bigDecimal2).divide(bigDecimal1, new MathContext(5, RoundingMode.HALF_UP));
-                ans = ans.compareTo(String.valueOf(divide)) > 0 ? ans : String.valueOf(divide);
-            }
-        }
-
-        return ans;
-    }
-
-    private String getYearRita(String fundProdtNo) {
-        String endDate = DateUtil.getBusinessToday();
-        String begDate = DateUtil.getDayBy(DateUtil.getBusinessToday(), 0, 0, -30);
-        List<YwjqrNetvalue> ywjqrNetvalues = fundNetvalueMapper.selectList(new LambdaQueryWrapper<YwjqrNetvalue>()
-                .eq(YwjqrNetvalue::getProdtCode, fundProdtNo)
-                .between(YwjqrNetvalue::getNetValDate, begDate, endDate)
-                .orderByAsc(YwjqrNetvalue::getNetValDate));
-        if (ywjqrNetvalues.size() == 0) {
-            return "" + 0;
-        }
-        String one = ywjqrNetvalues.get(0).getUnitNetVal();
-        String last = ywjqrNetvalues.get(ywjqrNetvalues.size() - 1).getUnitNetVal();
-        BigDecimal bigDecimal1 = new BigDecimal(one);
-        BigDecimal bigDecimal2 = new BigDecimal(last);
-        BigDecimal divide = bigDecimal2.subtract(bigDecimal1).divide(bigDecimal1, new MathContext(5, RoundingMode.HALF_UP));
-        return String.valueOf(divide);
-    }
-
-    public ProdInfoDto getInfo(String code) {
-        ProdInfoDto prodInfoDto = new ProdInfoDto();
-        LambdaQueryWrapper<YwjqrProduct> queryWrapper = new LambdaQueryWrapper<YwjqrProduct>()
-                .eq(YwjqrProduct::getFundCode, code);
-        List<YwjqrProduct> ywjqrProducts = fundProductMapper.selectList(queryWrapper);
-        YwjqrProduct product = new YwjqrProduct();
-        if (ywjqrProducts.size() > 0) {
-            product = ywjqrProducts.get(0);
-        }
-        LambdaQueryWrapper<YwjqrIntbankKindpara> queryWrapper2 = new LambdaQueryWrapper<YwjqrIntbankKindpara>()
-                .eq(YwjqrIntbankKindpara::getFundProdtNo, code);
-        List<YwjqrIntbankKindpara> ywjqrIntbankKindparas = ywjqrIntbankKindparaMapper.selectList(queryWrapper2);
-        YwjqrIntbankKindpara ywjqrIntbankKindpara = new YwjqrIntbankKindpara();
-        if (ywjqrIntbankKindparas.size() > 0) {
-            ywjqrIntbankKindpara = ywjqrIntbankKindparas.get(0);
-        }
-        BeanUtils.copyProperties(product, prodInfoDto);
-        BeanUtils.copyProperties(ywjqrIntbankKindpara, prodInfoDto);
-        return prodInfoDto;
+            rankDtos.add(marketRankDto);
+        });
+        return rankDtos;
     }
 
 }

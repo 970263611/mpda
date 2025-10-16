@@ -15,4 +15,12 @@ public class C014007Req {
     public void setText(String text) {
         this.text = text;
     }
+
+    @Override
+    public String toString() {
+        return "C014007Req{" +
+                "text='" + text + '\'' +
+                '}';
+    }
+
 }

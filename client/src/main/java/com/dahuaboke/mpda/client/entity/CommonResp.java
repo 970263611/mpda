@@ -35,4 +35,13 @@ public class CommonResp<R> {
     public void setTxBody(TxBodyResp<R> txBody) {
         this.txBody = txBody;
     }
+
+    @Override
+    public String toString() {
+        return "CommonResp{" +
+                "txHeader=" + txHeader +
+                ", txBody=" + txBody +
+                '}';
+    }
+
 }

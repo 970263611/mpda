@@ -154,7 +154,7 @@ public class CustomVectorStore extends AbstractObservationVectorStore {
     @NotNull
     @Override
     public VectorStoreObservationContext.Builder createObservationContextBuilder(@NotNull String operationName) {
-        return VectorStoreObservationContext.builder(VectorStoreProvider.ELASTICSEARCH.value(), operationName).collectionName(this.collectionName).dimensions(this.embeddingModel.dimensions());
+        return VectorStoreObservationContext.builder(VectorStoreProvider.ELASTICSEARCH.value(), operationName).collectionName(this.collectionName);
     }
 
     public static class Builder extends AbstractVectorStoreBuilder<CustomVectorStore.Builder> {

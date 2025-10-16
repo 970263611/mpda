@@ -38,7 +38,7 @@ public class InformationTool extends ProductTool<InformationTool.Input> {
             ProdInfoDto prodInfoDto = productToolHandler.selectProdInfo(new NetValReq(productNo));
             Map converted = objectMapper.convertValue(prodInfoDto, Map.class);
             if (converted != null) {
-                converted.put("maxNetval", getMaxNetval(productNo));
+                converted.put("maxWithDrawal", getMaxWithDrawal(productNo));
                 converted.put("yearRita", getYearRita(productNo));
                 LocalDateTime now = LocalDateTime.now();
                 LocalDateTime nowAnd3 = now.plusMonths(-3);

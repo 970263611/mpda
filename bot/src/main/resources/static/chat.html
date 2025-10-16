@@ -84,7 +84,7 @@
 
     <!-- Vuetify -->
     <script src="js/vuetify.js"></script>
-    <link href="css/vuetify.css" rel="stylesheet">
+    <link href="css/vuetify.css?v=1.0" rel="stylesheet">
 
     <!-- Vue i18n -->
     <script src="js/vue-i18n.global.prod.min.js"></script>
@@ -1643,7 +1643,7 @@
                                 message: message
                             })
                         } else {
-                            const lastGroup = groups.at(-1)
+                            const lastGroup = groups.slice(-1)[0]
                             if (lastGroup?.group == 'tool') {
                                 lastGroup.messages.push(message)
                                 dialogs[lastGroup.tab] = lastGroup.length
@@ -1798,7 +1798,7 @@
                             await this.postToolCall()
                         },
                         postToolCall: async function () {
-                            const last = this.conversation.at(-1)
+                            const last = this.conversation.slice(-1)[0]
                             if (!last || !last.tool_calls) {
                                 return
                             }
@@ -1952,7 +1952,7 @@
                     state: () => ({
                         url: [
                             "https://api.openai.com",
-                            "http://20.208.28.131",
+                            "http://20.12.0.41",
                             "https://api.deepinfra.com",
                             "https://api.deepseek.com",
                             "https://api.aiql.com"],
@@ -1972,7 +1972,7 @@
                     persist: {
                         enabled: true,
                         strategies: [{ storage: localStorage }],
-                        // paths: ["apiKey"] 
+                        // paths: ["apiKey"]
                     },
                     actions: {
                         resetState() {
@@ -2008,7 +2008,7 @@
                     persist: {
                         enabled: true,
                         strategies: [{ storage: localStorage }],
-                        // paths: ["apiKey"] 
+                        // paths: ["apiKey"]
                     },
 
                     actions: {
@@ -2136,7 +2136,7 @@
                         let buffer = ''
 
                         // Read the stream
-                        await read(reader, messageStore.conversation.at(-1), buffer, chatbotStore.stream);
+                        await read(reader, messageStore.conversation.slice(-1)[0], buffer, chatbotStore.stream);
                     } catch (error) {
                         snackbarStore.showErrorMessage(error.message);
                     } finally {
@@ -2211,7 +2211,7 @@
                 const parseJson = (content, target) => {
                     try {
                         const parsed = JSON.parse(content)
-                        // const choice = 
+                        // const choice =
                         parseChoices(parsed, target)
                         // parseChoice(choice, target)
                     } catch (e) {
@@ -2254,7 +2254,7 @@
                 const parseTool = (tools, target) => {
                     if (tools) {
                         tools.map((tool) => {
-                            const lastTool = target.tool_calls.at(-1)
+                            const lastTool = target.tool_calls.slice(-1)[0]
                             if (lastTool && (!tool.id || lastTool.id == tool.id)) {
                                 const source = tool.function
                                 for (const key in source) {
@@ -2275,8 +2275,10 @@
                         })
                     }
                 };
-
-                watch(computed(() => messageStore.conversation.at(-1)?.content),
+<!--messageStore ? messageStore.conversation.at(-1)?.content : ''-->
+console.log('messageStore', messageStore)
+console.log('messageStore--conversation', messageStore.conversation)
+                watch(computed(() => messageStore.conversation.slice(-1)[0]?.content),
                     (newValue, oldValue) => {
                         if (newValue !== oldValue) {
                             asyncScrollToBottom();

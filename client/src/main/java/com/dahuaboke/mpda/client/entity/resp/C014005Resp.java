@@ -23,4 +23,11 @@ public class C014005Resp<R> extends BaseResp {
         this.resultList = resultList;
     }
 
+    @Override
+    public String toString() {
+        return "C014005Resp{" +
+                "resultList=" + resultList +
+                '}';
+    }
+
 }

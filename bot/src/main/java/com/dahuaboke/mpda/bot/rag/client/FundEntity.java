@@ -32,6 +32,11 @@ public class FundEntity {
     private String file_name;
 
     /**
+     * 文件类型
+     */
+    private String file_type;
+
+    /**
      * 关键字
      */
     private List<String> excerpt_keywords;
@@ -84,6 +89,14 @@ public class FundEntity {
 
     public void setFile_name(String file_name) {
         this.file_name = file_name;
+    }
+
+    public String getFile_type() {
+        return file_type;
+    }
+
+    public void setFile_type(String file_type) {
+        this.file_type = file_type;
     }
 
     public List<String> getExcerpt_keywords() {

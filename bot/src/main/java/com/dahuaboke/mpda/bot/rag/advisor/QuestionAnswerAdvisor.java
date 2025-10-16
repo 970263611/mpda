@@ -162,14 +162,14 @@ public class QuestionAnswerAdvisor implements BaseAdvisor {
             documents.addAll(searchHandler.requestProductAndKey(searchRequest, productName, keys));
         }
 
-        //2. 通过关键字并没有匹配到数据,或者匹配到的数据过少, 通过产品名称提取出来
+        //2. 通过关键字并没有匹配到数据,或者匹配到的数据过少, 通过基金名称提取出来
         if (!productName.isEmpty() && (documents.isEmpty() || documents.size() < topK)) {
             List<Document> productDocs = searchHandler.requestProduct(searchRequest, productName, topK * 2);
             documents.addAll(productDocs);
         }
 
         //3. 兜底向量查询
-        if (documents.isEmpty() || documents.size() < topK) {
+        if (documents.isEmpty() || productName.isEmpty()) {
             documents.addAll(embeddingSearchHandler.handler(searchRequest, topK * 2));
         }
 

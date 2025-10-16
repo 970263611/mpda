@@ -1,5 +1,7 @@
 package com.dahuaboke.mpda.client.entity.resp;
 
+import java.util.Arrays;
+
 /**
  * @Desc: 文本转向量-C014007 返回体
  * @Author：zhh
@@ -32,4 +34,13 @@ public class C014007Resp extends BaseResp {
     public void setVector(float[] vector) {
         this.vector = vector;
     }
+
+    @Override
+    public String toString() {
+        return "C014007Resp{" +
+                "originalText='" + originalText + '\'' +
+                ", vector=" + Arrays.toString(vector) +
+                '}';
+    }
+
 }

@@ -20,6 +20,9 @@ public class ClientProperties {
     // 接收方系统号
     private String targetSysNo;
 
+    //产品需求场景编号
+    private String resvedInputInfo;
+
     public String getUrl() {
         return url;
     }
@@ -43,4 +46,13 @@ public class ClientProperties {
     public void setTargetSysNo(String targetSysNo) {
         this.targetSysNo = targetSysNo;
     }
+
+    public String getResvedInputInfo() {
+        return resvedInputInfo;
+    }
+
+    public void setResvedInputInfo(String resvedInputInfo) {
+        this.resvedInputInfo = resvedInputInfo;
+    }
+
 }

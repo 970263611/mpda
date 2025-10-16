@@ -33,4 +33,12 @@ public class BaseResp {
         this.code = code;
     }
 
+    @Override
+    public String toString() {
+        return "BaseResp{" +
+                "msg='" + msg + '\'' +
+                ", code='" + code + '\'' +
+                '}';
+    }
+
 }

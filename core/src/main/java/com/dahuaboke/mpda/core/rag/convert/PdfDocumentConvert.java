@@ -22,10 +22,18 @@ import java.util.List;
 @Component
 public class PdfDocumentConvert implements DocumentConvert {
 
+    //Windows适配参数
     private static final int PAGE_MARGIN = 70;
     private static final int BOTTOM_MARGIN = 60;
     private static final int TOP_TEXT_LINES_TO_DELETE = 3;
     private static final int BOTTOM_TEXT_LINES_TO_DELETE = 3;
+
+    //Linux适配参数
+    private static final int LINUX_PAGE_MARGIN = 40;
+    private static final int LINUX_BOTTOM_MARGIN = 50;
+    private static final int LINUX_TOP_TEXT_LINES_TO_DELETE = 1;
+    private static final int LINUX_BOTTOM_TEXT_LINES_TO_DELETE = 2;
+
 
     protected final Logger log = LoggerFactory.getLogger(PdfDocumentConvert.class);
 
@@ -34,13 +42,30 @@ public class PdfDocumentConvert implements DocumentConvert {
         String filename = resource.getFilename();
         log.debug("开始读取PDF文件: {}", filename);
 
+        int pageMargin;
+        int bottomMargin;
+        int topTextLinesToDelete;
+        int bottomTextLinesToDelete;
+        log.debug("os name is{}",System.getProperty("os.name").toLowerCase());
+        if (System.getProperty("os.name").toLowerCase().contains("win")) {
+            pageMargin = PAGE_MARGIN;
+            bottomMargin = BOTTOM_MARGIN;
+            topTextLinesToDelete = TOP_TEXT_LINES_TO_DELETE;
+            bottomTextLinesToDelete = BOTTOM_TEXT_LINES_TO_DELETE;
+        }else {
+            pageMargin = LINUX_PAGE_MARGIN;
+            bottomMargin = LINUX_BOTTOM_MARGIN;
+            topTextLinesToDelete = LINUX_TOP_TEXT_LINES_TO_DELETE;
+            bottomTextLinesToDelete = LINUX_BOTTOM_TEXT_LINES_TO_DELETE;
+        }
+
         // 配置PDF读取规则（边距、文本清理、按页拆分）
         PdfDocumentReaderConfig config = PdfDocumentReaderConfig.builder()
-                .withPageTopMargin(PAGE_MARGIN)
-                .withPageBottomMargin(BOTTOM_MARGIN)
+                .withPageTopMargin(pageMargin)
+                .withPageBottomMargin(bottomMargin)
                 .withPageExtractedTextFormatter(ExtractedTextFormatter.builder()
-                        .withNumberOfTopTextLinesToDelete(TOP_TEXT_LINES_TO_DELETE)
-                        .withNumberOfBottomTextLinesToDelete(BOTTOM_TEXT_LINES_TO_DELETE)
+                        .withNumberOfTopTextLinesToDelete(topTextLinesToDelete)
+                        .withNumberOfBottomTextLinesToDelete(bottomTextLinesToDelete)
                         .build())
                 .withPagesPerDocument(1)
                 .build();
@@ -54,5 +79,7 @@ public class PdfDocumentConvert implements DocumentConvert {
             return documents;
         }
     }
+
+
 
 }

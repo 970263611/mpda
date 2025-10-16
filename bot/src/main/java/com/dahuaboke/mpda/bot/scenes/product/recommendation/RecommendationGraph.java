@@ -5,6 +5,7 @@ import com.alibaba.cloud.ai.graph.KeyStrategyFactory;
 import com.alibaba.cloud.ai.graph.StateGraph;
 import com.alibaba.cloud.ai.graph.exception.GraphRunnerException;
 import com.alibaba.cloud.ai.graph.exception.GraphStateException;
+import com.dahuaboke.mpda.bot.scenes.entity.PlatformExtend;
 import com.dahuaboke.mpda.bot.scenes.product.recommendation.edge.RecommendationDispatcher;
 import com.dahuaboke.mpda.core.agent.graph.AbstractGraph;
 import com.dahuaboke.mpda.core.agent.scene.entity.SceneExtend;
@@ -17,7 +18,6 @@ import com.dahuaboke.mpda.core.node.LlmNode;
 import com.dahuaboke.mpda.core.node.StreamLlmNode;
 import com.dahuaboke.mpda.core.node.ToolNode;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,7 +97,7 @@ public class RecommendationGraph extends AbstractGraph {
     }
 
     /**
-     * @param graphExtend 包装额外扩展信息，比如下载链接标识，购买链接标识等
+     * @param graphExtend 包装额外扩展信息，购买链接标识
      * @param toolExtend  包含该场景执行工具函数的，函数名称，参数(通过函数名称判断参数是否是基金代码)
      * @return SceneExtend
      */
@@ -113,13 +113,12 @@ public class RecommendationGraph extends AbstractGraph {
             }
         }
 
-        Map<String, Object> graphExtendMap = new HashMap<>();
-        graphExtendMap.put("fundCode", fundCodes);
+        PlatformExtend platformExtend = new PlatformExtend();
         if (fundCodes.size() > 0) {
-            graphExtendMap.put("buyLink", true);
+            platformExtend.setFundCode(fundCodes);
+            platformExtend.setBuyLink(true);
         }
-        return new SceneExtend(graphExtendMap, toolExtend);
-
+        return new SceneExtend(platformExtend, toolExtend);
     }
 
 }

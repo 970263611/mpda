@@ -46,8 +46,7 @@ public class VectorStoreRequestHandle {
     public <T> C014001Resp sendC014001(String indexName, List<T> c014001Entities) {
         CommonReq<C014001Req<T>> bodyReq = new CommonReq<>();
         String sendSysNo = coreClientProperties.getSendSysNo();
-        TxHeaderReq headerReq = CommonHeaderUtils.build(sendSysNo,
-                coreClientProperties.getTargetSysNo(), RagConstant.RAG_V1_C014001);
+        TxHeaderReq headerReq = CommonHeaderUtils.build(coreClientProperties, RagConstant.RAG_V1_C014001);
         bodyReq.setTxHeader(headerReq);
 
         TxBodyReq<C014001Req<T>> insertReq = new TxBodyReq<>();
@@ -71,8 +70,7 @@ public class VectorStoreRequestHandle {
      */
     public C014005Resp sendC014005(String indexName, Map<String, Object> conditionMap, Map<String, String> orderCondition) {
         CommonReq<C014005Req> bodyReq = new CommonReq<>();
-        TxHeaderReq headerReq = CommonHeaderUtils.build(coreClientProperties.getSendSysNo(),
-                coreClientProperties.getTargetSysNo(), RagConstant.RAG_V1_C014005);
+        TxHeaderReq headerReq = CommonHeaderUtils.build(coreClientProperties, RagConstant.RAG_V1_C014005);
         bodyReq.setTxHeader(headerReq);
 
         TxBodyReq<C014005Req> txBodyReq = new TxBodyReq<>();
@@ -101,8 +99,7 @@ public class VectorStoreRequestHandle {
     public C014006Resp sendC014006(C014006Req c014006Req) {
         c014006Req.setSystemNo(coreClientProperties.getSendSysNo());
         CommonReq<C014006Req> bodyReq = new CommonReq<>();
-        TxHeaderReq headerReq = CommonHeaderUtils.build(coreClientProperties.getSendSysNo(),
-                coreClientProperties.getTargetSysNo(), RagConstant.RAG_V1_C014006);
+        TxHeaderReq headerReq = CommonHeaderUtils.build(coreClientProperties, RagConstant.RAG_V1_C014006);
         bodyReq.setTxHeader(headerReq);
 
         TxBodyReq<C014006Req> txBodyReq = new TxBodyReq<>();
@@ -123,8 +120,7 @@ public class VectorStoreRequestHandle {
      */
     public C014008Resp sendC014008(String indexName, List<String> idList) {
         CommonReq<C014008Req> bodyReq = new CommonReq<>();
-        TxHeaderReq headerReq = CommonHeaderUtils.build(coreClientProperties.getSendSysNo(),
-                coreClientProperties.getTargetSysNo(), RagConstant.RAG_V1_C014008);
+        TxHeaderReq headerReq = CommonHeaderUtils.build(coreClientProperties, RagConstant.RAG_V1_C014008);
         bodyReq.setTxHeader(headerReq);
 
         TxBodyReq<C014008Req> txBodyReq = new TxBodyReq<>();

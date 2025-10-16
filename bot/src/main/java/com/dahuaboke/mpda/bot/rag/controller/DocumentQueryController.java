@@ -1,23 +1,17 @@
 package com.dahuaboke.mpda.bot.rag.controller;
 
-import com.dahuaboke.mpda.bot.rag.service.DocumentQueryService;
-import com.dahuaboke.mpda.bot.rag.utils.FundDocUtil;
+import com.dahuaboke.mpda.bot.rag.service.ProductReportQueryService;
 import com.dahuaboke.mpda.core.rag.reader.DocumentReader;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/query")
@@ -29,7 +23,7 @@ public class DocumentQueryController {
             new ThreadFactoryBuilder().setNameFormat("pdf-query-%d").build());
 
     @Autowired
-    private DocumentQueryService documentQueryService;
+    private ProductReportQueryService documentQueryService;
 
     @Autowired
     private DocumentReader documentReader;
@@ -37,7 +31,8 @@ public class DocumentQueryController {
 
     @GetMapping("/batch")
     public void batch() throws Exception {
-        Map<String, String> productMap = new HashMap<>();
+        System.out.println("dsdsad");
+       /* Map<String, String> productMap = new HashMap<>();
 
         Resource[] resources = documentReader.read("D:/pdfFile/*.pdf");
         for (Resource resource : resources) {
@@ -55,7 +50,7 @@ public class DocumentQueryController {
                 }
             });
         }
-        executorService.shutdown();
+        executorService.shutdown();*/
     }
 
 }

@@ -35,5 +35,14 @@ public class CommonReq<T> {
     public void setTxBody(TxBodyReq<T> txBody) {
         this.txBody = txBody;
     }
+
+    @Override
+    public String toString() {
+        return "CommonReq{" +
+                "txHeader=" + txHeader +
+                ", txBody=" + txBody +
+                '}';
+    }
+
 }
 

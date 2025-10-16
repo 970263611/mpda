@@ -244,4 +244,31 @@ public class TxHeaderResp {
         this.resvedInputInfo = resvedInputInfo;
     }
 
+    @Override
+    public String toString() {
+        return "TxHeaderResp{" +
+                "pubMsgHeadLen='" + pubMsgHeadLen + '\'' +
+                ", msgrptFmtVerNo='" + msgrptFmtVerNo + '\'' +
+                ", msgrptTotalLen='" + msgrptTotalLen + '\'' +
+                ", embedMsgrptLen='" + embedMsgrptLen + '\'' +
+                ", msgAgrType='" + msgAgrType + '\'' +
+                ", startSysOrCmptNo='" + startSysOrCmptNo + '\'' +
+                ", sendSysOrCmptNo='" + sendSysOrCmptNo + '\'' +
+                ", dataCenterCode='" + dataCenterCode + '\'' +
+                ", txRecvTime='" + txRecvTime + '\'' +
+                ", txRespTime='" + txRespTime + '\'' +
+                ", msgrptMac='" + msgrptMac + '\'' +
+                ", globalBusiTrackNo='" + globalBusiTrackNo + '\'' +
+                ", subtxNo='" + subtxNo + '\'' +
+                ", servTpCd='" + servTpCd + '\'' +
+                ", servNo='" + servNo + '\'' +
+                ", servVerNo='" + servVerNo + '\'' +
+                ", servReturnTpCd='" + servReturnTpCd + '\'' +
+                ", servRespCd='" + servRespCd + '\'' +
+                ", servRespDescInfo='" + servRespDescInfo + '\'' +
+                ", reqSysSriNo='" + reqSysSriNo + '\'' +
+                ", resvedInputInfo='" + resvedInputInfo + '\'' +
+                '}';
+    }
+
 }

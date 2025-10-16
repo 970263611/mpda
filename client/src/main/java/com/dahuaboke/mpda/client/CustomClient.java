@@ -1,8 +1,10 @@
 package com.dahuaboke.mpda.client;
 
+import com.alibaba.fastjson.JSONObject;
 import com.dahuaboke.mpda.client.constants.RagConstant;
 import com.dahuaboke.mpda.client.entity.CommonReq;
 import com.dahuaboke.mpda.client.entity.CommonResp;
+import com.dahuaboke.mpda.core.exception.MpdaRuntimeException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -66,12 +68,6 @@ public class CustomClient {
             }
         };
         CommonResp<R> resp = request(url, commonReq, typeReference);
-        if (resp.getTxBody() == null) {
-            log.error("{} txBody is null  due to: {}:{}", url, resp.getTxHeader().getServRespCd(), resp.getTxHeader().getServRespDescInfo());
-        }
-        if (resp.getTxBody().getTxEntity() == null) {
-            log.error("{} txEntity is null  due to: {}:{}", url, resp.getTxHeader().getServRespCd(), resp.getTxHeader().getServRespDescInfo());
-        }
         return resp.getTxBody().getTxEntity();
     }
 
@@ -86,7 +82,22 @@ public class CustomClient {
 
         CommonResp<R> resp = commonRespResponseEntity.getBody();
         if (!RagConstant.SUCCESS_CODE.equals(resp.getTxHeader().getServRespCd())) {
-            log.error("interface {} fails to send due to: {}", url, resp.getTxHeader().getServRespDescInfo());
+            log.error("interface {} fails , req is {}, due to:{}:{}",
+                    url,
+                    commonReq.toString(),
+                    resp.getTxHeader().getServRespCd(),
+                    resp.getTxHeader().getServRespDescInfo()
+            );
+            throw new MpdaRuntimeException(resp.getTxHeader().getServRespCd()+":"+resp.getTxHeader().getServRespDescInfo());
+        }
+        if (resp.getTxBody() == null || resp.getTxBody().getTxEntity() == null) {
+            log.error("{} txBody is null, req is {} , due to: {}:{}",
+                    url,
+                    commonReq.toString(),
+                    resp.getTxHeader().getServRespCd(),
+                    resp.getTxHeader().getServRespDescInfo()
+            );
+            throw new MpdaRuntimeException(resp.getTxHeader().getServRespCd()+":"+resp.getTxHeader().getServRespDescInfo());
         }
         return resp;
     }

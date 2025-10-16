@@ -48,4 +48,13 @@ public class C014008Req {
         this.idList = idList;
     }
 
+    @Override
+    public String toString() {
+        return "C014008Req{" +
+                "indexName='" + indexName + '\'' +
+                ", system='" + system + '\'' +
+                ", idList=" + idList +
+                '}';
+    }
+
 }

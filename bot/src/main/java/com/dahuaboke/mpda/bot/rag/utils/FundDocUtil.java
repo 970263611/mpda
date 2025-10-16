@@ -1,11 +1,16 @@
 package com.dahuaboke.mpda.bot.rag.utils;
 
-import org.springframework.core.io.Resource;
-
+import com.dahuaboke.mpda.core.rag.entity.FundFieldMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.core.io.Resource;
 
 /**
  * @Desc: 基金pdf文件工具类
@@ -36,6 +41,12 @@ public class FundDocUtil {
 
         mapRelation.put(fundCode, fundName);
         return mapRelation;
+    }
+
+
+    public static Map<String, String> initAllQuery(Class cls) {
+        FundFieldMapper fundFieldMapper = new FundFieldMapper(cls);
+        return fundFieldMapper.getQuestionKeyWordMap();
     }
 
     public static List<Map<String, String>> splitIntoBatches(Map<String, String> map, int bachSize) {
@@ -74,5 +85,18 @@ public class FundDocUtil {
             batches.add(currentBatch);
         }
         return batches;
+    }
+
+
+    public void writeTxt(Object data, String fileName) {
+        ObjectMapper mapper = new ObjectMapper();
+        String json = null;
+        try {
+            json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(Map.of(fileName, data));
+            Files.write(Paths.get("D:/jsonDir06/" + fileName + ".json"), json.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
     }
 }

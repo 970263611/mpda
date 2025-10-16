@@ -39,7 +39,7 @@ public class SearchHandler {
                 .query(searchRequest.getQuery())
                 .topK(topK)
                 .filterExpression(new Filter.Expression(
-                        Filter.ExpressionType.EQ, new Filter.Key("file_name"), new Filter.Value("*" + matchers.get(0) + "*")
+                        Filter.ExpressionType.EQ, new Filter.Key("file_name_keywords"), new Filter.Value(matchers.get(0))
                 ))
                 .similarityThreshold(searchRequest.getSimilarityThreshold())
                 .build();
@@ -53,7 +53,7 @@ public class SearchHandler {
                 .filterExpression(new Filter.Expression(
                         Filter.ExpressionType.AND,
                         new Filter.Expression(
-                                Filter.ExpressionType.EQ, new Filter.Key("file_name"), new Filter.Value("*" + matchers.get(0) + "*")
+                                Filter.ExpressionType.EQ, new Filter.Key("file_name_keywords"), new Filter.Value(matchers.get(0))
                         ),
                         new Filter.Expression(
                                 Filter.ExpressionType.EQ, new Filter.Key("excerpt_keywords"), new Filter.Value(keys.get(0))
