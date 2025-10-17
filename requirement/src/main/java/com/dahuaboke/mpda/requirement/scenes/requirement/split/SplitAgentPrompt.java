@@ -13,7 +13,7 @@ import java.util.Map;
 @Component
 public class SplitAgentPrompt implements AgentPrompt {
 
-    private final String prompt = "请根据多个文件的内容，帮我进行需求拆分，变成多个需求条目，每个需求条目包含需求名称和需求描述。";
+    private final String prompt = "1.请根据多个文件的内容，帮我进行需求拆分，变成多个需求条目。2.每个需求条目包含需求名称和需求描述。3.用md美化输出";
 
     @Override
     public String description() {

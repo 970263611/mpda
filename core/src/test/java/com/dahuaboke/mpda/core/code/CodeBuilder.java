@@ -25,7 +25,7 @@ public class CodeBuilder {
     public static void main(String[] args) throws IOException {
         String projectName = "requirement";
         String packageName = "requirement";
-        String sceneName = "optimize";
+        String sceneName = "value";
 
         String path = "C:/Users/dahua/Desktop/mpda/requirement/src/main/java/com/dahuaboke/mpda/requirement/scenes/requirement/" + sceneName;
         create(projectName, packageName, sceneName, path);

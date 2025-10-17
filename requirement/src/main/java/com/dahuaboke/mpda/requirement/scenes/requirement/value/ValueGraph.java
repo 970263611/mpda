@@ -1,4 +1,4 @@
-package com.dahuaboke.mpda.requirement.scenes.requirement.check;
+package com.dahuaboke.mpda.requirement.scenes.requirement.value;
 
 
 import com.alibaba.cloud.ai.graph.KeyStrategyFactory;
@@ -20,10 +20,10 @@ import static com.alibaba.cloud.ai.graph.action.AsyncNodeAction.node_async;
 
 /**
  * auth: dahua
- * time: 2025/9/26 11:14
+ * time: 2025/10/17 9:46
  */
 @Component
-public class CheckGraph extends AbstractGraph {
+public class ValueGraph extends AbstractGraph {
 
     @Autowired
     private LlmNode llmNode;
