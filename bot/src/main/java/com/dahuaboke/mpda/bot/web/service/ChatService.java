@@ -3,6 +3,8 @@ package com.dahuaboke.mpda.bot.web.service;
 import com.dahuaboke.mpda.bot.model.common.CommonResponse;
 import com.dahuaboke.mpda.bot.model.common.ResponseCode;
 import com.dahuaboke.mpda.bot.model.response.ChatBotResponse;
+import com.dahuaboke.mpda.bot.scenes.entity.PlatformExtend;
+import com.dahuaboke.mpda.bot.web.WebResponse;
 import com.dahuaboke.mpda.core.agent.scene.SceneManager;
 import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
 import com.dahuaboke.mpda.core.context.CoreContext;
@@ -22,41 +24,38 @@ import reactor.core.publisher.Flux;
 public class ChatService {
 
     private static final Logger logger = LoggerFactory.getLogger(ChatService.class);
+
     @Autowired
     private SceneManager sceneManager;
 
-    public CommonResponse<ChatBotResponse,Object> chat(CoreContext context) throws MpdaException {
-        try {
-            if (context == null) {
-                return CommonResponse.error(ResponseCode.MISSING_PARAM);
-            }
 
-            String conversationId = context.getConversationId();
-            String query = context.getQuery();
+    public Flux<WebResponse> chatStream(CoreContext context) throws MpdaException {
 
-            if (StringUtils.isEmpty(conversationId)) {
-                return CommonResponse.error(ResponseCode.MISSING_PARAM, "会话id不能为空");
-            }
-
-            if (StringUtils.isEmpty(query)) {
-                return CommonResponse.error(ResponseCode.MISSING_PARAM, "请求内容不能为空");
-            }
-
-            SceneResponse result = sceneManager.apply(context);
-            ChatBotResponse chatBotResponse = new ChatBotResponse();
-            chatBotResponse.setResult(result.output());
-            // 返回成功响应
-            return CommonResponse.success(chatBotResponse);
-
-        } catch (IllegalArgumentException e) {
-            return CommonResponse.error(ResponseCode.PARAM_FORMAT_ERROR, e.getMessage());
-        } catch (Exception e) {
-            logger.error("处理聊天请求时发生错误", e);
-            return CommonResponse.error(ResponseCode.INTERNAL_ERROR);
+        if (context == null) {
+            return Flux.just(new WebResponse(ResponseCode.MISSING_PARAM.getCode(), ResponseCode.MISSING_PARAM.getMsg(), "", null));
         }
+
+        String conversationId = context.getConversationId();
+        String query = context.getQuery();
+        //String custRiskLvl = context.getCustRiskLvl();
+
+        if (StringUtils.isEmpty(conversationId)) {
+            return Flux.just(new WebResponse(ResponseCode.INVALID_SESSION.getCode(), ResponseCode.INVALID_SESSION.getMsg(), "", null));
+        }
+
+        if (StringUtils.isEmpty(query)) {
+            return Flux.just(new WebResponse(ResponseCode.MISSING_PARAM.getCode(), ResponseCode.MISSING_PARAM.getMsg(), "", null));
+        }
+        Flux<SceneResponse> sceneResponseFlux = sceneManager.applyAsync(context);
+        return sceneResponseFlux.map(sceneResponse -> {
+            PlatformExtend platformExtend;
+            if (sceneResponse.extend() == null || sceneResponse.extend().graphExtend() == null) {
+                platformExtend = new PlatformExtend();
+            } else {
+                platformExtend = (PlatformExtend) sceneResponse.extend().graphExtend();
+            }
+            return new WebResponse(ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMsg(), sceneResponse.output(), platformExtend);
+        });
     }
 
-    public Flux<SceneResponse> chatStream(CoreContext context) throws MpdaException {
-        return sceneManager.applyAsync(context);
-    }
 }

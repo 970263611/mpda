@@ -1,6 +1,6 @@
 package com.dahuaboke.mpda.bot.scenes.product.comparison.tools;
 
-import com.dahuaboke.mpda.bot.scenes.product.information.tools.InformationTool;
+import com.dahuaboke.mpda.bot.scenes.product.information.code.tools.InformationByIdTool;
 import com.dahuaboke.mpda.bot.tools.ProductTool;
 import com.dahuaboke.mpda.core.agent.tools.ToolResult;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -13,7 +13,7 @@ import java.util.Map;
 public class ComparisonTool extends ProductTool<ComparisonTool.Input> {
 
     @Autowired
-    private InformationTool informationTool;
+    private InformationByIdTool informationByIdTool;
 
     @Override
     public String getDescription() {
@@ -35,8 +35,8 @@ public class ComparisonTool extends ProductTool<ComparisonTool.Input> {
     @Override
     public ToolResult execute(Input input) {
         try {
-            ToolResult cpxx1 = informationTool.execute(new InformationTool.Input(input.p1()));
-            ToolResult cpxx2 = informationTool.execute(new InformationTool.Input(input.p2()));
+            ToolResult cpxx1 = informationByIdTool.execute(new InformationByIdTool.Input(input.p1()));
+            ToolResult cpxx2 = informationByIdTool.execute(new InformationByIdTool.Input(input.p2()));
 
             if (input.p1().equals("007540")) {
                 Map data = (Map) cpxx1.getData();

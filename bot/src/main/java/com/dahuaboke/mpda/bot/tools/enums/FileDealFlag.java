@@ -5,7 +5,8 @@ public enum FileDealFlag {
     UNPROCESSED("0","未处理"),
     PROCESSED("1","已处理"),
 
-    PROCESSING("2","处理中");
+    PROCESSING("2","处理中"),
+    PROCESS_FAIL("3","处理失败");
 
     private final String code;
 

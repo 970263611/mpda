@@ -261,6 +261,15 @@ public class BrProduct implements Serializable {
         this.tmoutTimeNum = tmoutTimeNum;
     }
 
+
+    @Override
+    public String toString() {
+        return "BrProduct{" +
+                "fundCode='" + fundCode + '\'' +
+                ", ancmTpBclsCd='" + ancmTpBclsCd + '\'' +
+                '}';
+    }
+
 }
 
 

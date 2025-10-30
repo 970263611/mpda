@@ -64,9 +64,8 @@ public class DocumentInsertService {
 
     }
 
-    public boolean insertVectorStore(List<Document> documents){
+    public void insertVectorStore(List<Document> documents){
         vectorStore.add(documents);
-        return true;
     }
 
 

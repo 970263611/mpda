@@ -29,16 +29,16 @@ public class  BrNetvalue{
     private String stgyD7YearlyProfrat;
 
     @TableField(value = "last_mod_stamp")
-    private String lastModeStamp;
+    private String lastModStamp;
 
-    public BrNetvalue(String fundCode, String netValDate, String unitNetVal, String indbDate, String thouCopFundUnitProfit, String stgyD7YearlyProfrat, String lastModeStamp) {
+    public BrNetvalue(String fundCode, String netValDate, String unitNetVal, String indbDate, String thouCopFundUnitProfit, String stgyD7YearlyProfrat, String lastModStamp) {
         this.fundCode = fundCode;
         this.netValDate = netValDate;
         this.unitNetVal = unitNetVal;
         this.indbDate = indbDate;
         this.thouCopFundUnitProfit = thouCopFundUnitProfit;
         this.stgyD7YearlyProfrat = stgyD7YearlyProfrat;
-        this.lastModeStamp = lastModeStamp;
+        this.lastModStamp = lastModStamp;
     }
 
     public String getFundCode() {
@@ -89,12 +89,12 @@ public class  BrNetvalue{
         this.stgyD7YearlyProfrat = stgyD7YearlyProfrat;
     }
 
-    public String getLastModeStamp() {
-        return lastModeStamp;
+    public String getLastModStamp() {
+        return lastModStamp;
     }
 
-    public void setLastModeStamp(String lastModeStamp) {
-        this.lastModeStamp = lastModeStamp;
+    public void setLastModStamp(String lastModStamp) {
+        this.lastModStamp = lastModStamp;
     }
 
 }

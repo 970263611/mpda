@@ -1,15 +1,17 @@
 package com.dahuaboke.mpda.bot.tools.dto;
 
 
-public class MarketRankDto {
+import com.dahuaboke.mpda.bot.tools.entity.BrMarketProductReport;
+
+public class MarketRankDto extends BrMarketProductReport {
 
     /**
-     * 基金代码
-     **/
-    private String fundCode;
+     * 基金名称
+     */
+    private String fundFnm;
 
     /**
-     * 期末基金资产净值
+     * 期末基金资产净值（基金规模）
      **/
     private String assetNval;
 
@@ -19,42 +21,41 @@ public class MarketRankDto {
     private String fundMgrName;
 
     /**
-     * 季报时间
+     * 基金成立日
      **/
-    private String rptTime;
+    private String contractEffDate;
 
     /**
-     * 近一年收益率
+     * 基金经理
      */
-    private String nyy1Profrat;
+    private String investMgrName;
 
     /**
-     * 近一年收益率排名
+     * 存续天数
      */
-    private int reachStRankSeqNo;
+    private int curRenewDt;
 
     /**
-     * 近一年收益率昨日排名
+     * 单位净值
      */
-    private int chremMgrIntglRankSeqNo;
+    private String unitNetVal;
 
     /**
-     * 近一年收益率排名变动
+     * 当前日期   {2025年5月1日}
      */
-    private int centerCfmCurdayChgTnum;
+    private String curDate;
 
     /**
-     * 近一年最大回撤
+     * 下载文件名   全市场{信用债-指数型}债基排名{2025}{Q1}
      */
-    private String nyy1Wdwrt;
+    private String dldFlnm;
 
-    public String getFundCode() {
-        return fundCode;
-    }
 
-    public void setFundCode(String fundCode) {
-        this.fundCode = fundCode;
-    }
+    /**
+     * 时间范围
+     */
+    private String period;
+
 
     public String getAssetNval() {
         return assetNval;
@@ -72,52 +73,68 @@ public class MarketRankDto {
         this.fundMgrName = fundMgrName;
     }
 
-    public String getRptTime() {
-        return rptTime;
+    public String getFundFnm() {
+        return fundFnm;
     }
 
-    public void setRptTime(String rptTime) {
-        this.rptTime = rptTime;
+    public void setFundFnm(String fundFnm) {
+        this.fundFnm = fundFnm;
     }
 
-    public String getNyy1Profrat() {
-        return nyy1Profrat;
+    public String getContractEffDate() {
+        return contractEffDate;
     }
 
-    public void setNyy1Profrat(String nyy1Profrat) {
-        this.nyy1Profrat = nyy1Profrat;
+    public void setContractEffDate(String contractEffDate) {
+        this.contractEffDate = contractEffDate;
     }
 
-    public int getReachStRankSeqNo() {
-        return reachStRankSeqNo;
+    public String getInvestMgrName() {
+        return investMgrName;
     }
 
-    public void setReachStRankSeqNo(int reachStRankSeqNo) {
-        this.reachStRankSeqNo = reachStRankSeqNo;
+    public void setInvestMgrName(String investMgrName) {
+        this.investMgrName = investMgrName;
     }
 
-    public int getChremMgrIntglRankSeqNo() {
-        return chremMgrIntglRankSeqNo;
+    public int getCurRenewDt() {
+        return curRenewDt;
     }
 
-    public void setChremMgrIntglRankSeqNo(int chremMgrIntglRankSeqNo) {
-        this.chremMgrIntglRankSeqNo = chremMgrIntglRankSeqNo;
+    public void setCurRenewDt(int curRenewDt) {
+        this.curRenewDt = curRenewDt;
     }
 
-    public int getCenterCfmCurdayChgTnum() {
-        return centerCfmCurdayChgTnum;
+    public String getUnitNetVal() {
+        return unitNetVal;
     }
 
-    public void setCenterCfmCurdayChgTnum(int centerCfmCurdayChgTnum) {
-        this.centerCfmCurdayChgTnum = centerCfmCurdayChgTnum;
+    public void setUnitNetVal(String unitNetVal) {
+        this.unitNetVal = unitNetVal;
     }
 
-    public String getNyy1Wdwrt() {
-        return nyy1Wdwrt;
+    public String getCurDate() {
+        return curDate;
     }
 
-    public void setNyy1Wdwrt(String nyy1Wdwrt) {
-        this.nyy1Wdwrt = nyy1Wdwrt;
+    public void setCurDate(String curDate) {
+        this.curDate = curDate;
+    }
+
+    public String getDldFlnm() {
+        return dldFlnm;
+    }
+
+    public void setDldFlnm(String dldFlnm) {
+        this.dldFlnm = dldFlnm;
+    }
+
+    public String getPeriod() {
+        return period;
+    }
+
+    public void setPeriod(String period) {
+        this.period = period;
     }
 
 }

@@ -5,6 +5,7 @@ import com.dahuaboke.mpda.core.agent.graph.Graph;
 import com.dahuaboke.mpda.core.agent.prompt.AgentPrompt;
 import com.dahuaboke.mpda.core.agent.scene.Scene;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 /**
@@ -15,9 +16,11 @@ import org.springframework.stereotype.Component;
 public class ResolutionScene implements Scene {
 
     @Autowired
+    @Qualifier("resolutionGraph")
     private ResolutionGraph resolutionGraph;
 
     @Autowired
+    @Qualifier("resolutionAgentPrompt")
     private ResolutionAgentPrompt resolutionPrompt;
 
     @Override

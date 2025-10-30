@@ -17,7 +17,7 @@ import com.dahuaboke.mpda.bot.tools.entity.BrProductSummary;
 import com.dahuaboke.mpda.bot.tools.enums.BondFundType;
 import com.dahuaboke.mpda.bot.tools.enums.FileDealFlag;
 import com.dahuaboke.mpda.bot.tools.enums.FundInfoType;
-import com.dahuaboke.mpda.bot.tools.enums.IsBondFund;
+import com.dahuaboke.mpda.bot.tools.enums.FundType;
 import com.dahuaboke.mpda.core.exception.MpdaIllegalArgumentException;
 import com.dahuaboke.mpda.core.exception.MpdaRuntimeException;
 import com.dahuaboke.mpda.core.rag.reader.DocumentReader;
@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -75,16 +74,20 @@ public class RagSearchTask {
     @Autowired
     private ContentManageTool contentManageTool;
 
-    private static final Long TIME_OUT = 60 * 60L;
+    private static final int SUM_TOTAL = 2500;
+
+    private static final Long TIME_OUT = 3 * 60 * 60L;
 
     private static final Double MIN_NVAL = 5000000000.0;
+
+    private static final int INSERT_BATCH = 25;
 
     @Scheduled(cron = "0 0 04 * * ?")
     public void ragSearchJob() {
         log.info("开始执行pdf数据处理任务.......");
 
         // 获取未处理文件
-        List<BrProduct> brProducts = dbHandler.markAndSelectUnprocessed(1000);
+        List<BrProduct> brProducts = dbHandler.markAndSelectUnprocessed(3000);
         if (brProducts.isEmpty()) {
             log.info("基金报告表不存在数据返回.......");
             return;
@@ -118,14 +121,7 @@ public class RagSearchTask {
                                 "PDF文件解析处理"
                         );
                         Map<BrProduct, String> failures = result.getFailures();
-                        Map<String, String> collect = failures.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().getFundCode(), e -> {
-                            String value = e.getValue();
-                            if (StringUtils.isNotEmpty(value)) {
-                                return value;
-                            }
-                            return "未知异常";
-                        }));
-                        processingMonitor.writeFailuresToFile(collect, "pdf_parse_processing");
+                        processingMonitor.writeFailuresToFile(failures, "pdf_parse_processing");
                     } catch (Exception e) {
                         log.error("子线程{}处理批次异常", Thread.currentThread().getName(), e);
                     }
@@ -157,14 +153,13 @@ public class RagSearchTask {
             throw new MpdaIllegalArgumentException("文件资源获取为空");
         }
         //2. 解析下载后的文件，存入向量库
-        if (!insertVectorStore(brProduct, fileResource)) {
-            throw new MpdaRuntimeException("插入向量库失败");
-        }
+        insertVectorStore(brProduct, fileResource);
         //3. 提取文件内容到对象,插入pq
         Object obj = insertPqStore(brProduct);
 
         //4. 计算利率债
-        if (IsBondFund.BOND.getCode().equals(brProduct.getProdtClsCode())) {
+        if (FundType.BOND_FUND.getCode().equals(brProduct.getProdtClsCode())
+                || FundType.SHORT_TERM_FINANCIAL_BOND__FUND.getCode().equals(brProduct.getProdtClsCode())) {
             rateBondCal(obj, brProduct);
         }
 
@@ -174,14 +169,14 @@ public class RagSearchTask {
 
         //6. 删除文件
         File file = new File(localFilePath);
-        if(file.exists() && file.isFile()){
+        if (file.exists() && file.isFile()) {
             file.delete();
         }
         return true;
     }
 
     private void failProcess(BrProduct brProduct) {
-        brProduct.setDealFlag(FileDealFlag.UNPROCESSED.getCode());
+        brProduct.setDealFlag(FileDealFlag.PROCESS_FAIL.getCode());
         brProduct.setDealBgnTime(null);
         brProduct.setTmoutTimeNum(null);
         dbHandler.updateProduct(brProduct);
@@ -199,7 +194,7 @@ public class RagSearchTask {
         return resource;
     }
 
-    private boolean insertVectorStore(BrProduct brProduct, Resource resource) {
+    private void insertVectorStore(BrProduct brProduct, Resource resource) {
         String fundProdtFullNm = brProduct.getFundProdtFullNm();
         String fundProdtSname = brProduct.getFundProdtSname();
         String ancmTpBclsCd = brProduct.getAncmTpBclsCd();
@@ -222,13 +217,17 @@ public class RagSearchTask {
             metadata.put("file_name_keywords", List.of(fundCode, fundProdtFullNm, fundProdtSname));
         }).toList();
 
-        if(log.isDebugEnabled()){
+        if (log.isDebugEnabled()) {
             extendDocs.forEach(finalDocs -> {
                 String text = finalDocs.getText();
-                log.debug("内容是{}",text);
+                log.debug("内容是{}", text);
             });
         }
-        return documentInsertService.insertVectorStore(extendDocs);
+        for (int i = 0; i < extendDocs.size(); i += INSERT_BATCH) {
+            int min = Math.min(i + INSERT_BATCH, extendDocs.size());
+            List<Document> batchDocs = extendDocs.subList(i, min);
+            documentInsertService.insertVectorStore(batchDocs);
+        }
     }
 
     private Object insertPqStore(BrProduct brProduct) {
@@ -268,7 +267,7 @@ public class RagSearchTask {
             BrProductSummary brProductSummary = new BrProductSummary();
             brProductSummary.setFundCode(fundCode);
             List<BrProductSummary> brProductSummaries = dbHandler.selectBrProductSummary(brProductSummary);
-            if(CollectionUtils.isNotEmpty(brProductSummaries)){
+            if (CollectionUtils.isNotEmpty(brProductSummaries)) {
                 summary = brProductSummaries.get(0);
             }
         } else {
@@ -276,7 +275,7 @@ public class RagSearchTask {
             BrProductReport brProductReport = new BrProductReport();
             brProductReport.setFundCode(fundCode);
             List<BrProductReport> brProductReports = dbHandler.selectBrProductReport(brProductReport);
-            if(CollectionUtils.isNotEmpty(brProductReports)){
+            if (CollectionUtils.isNotEmpty(brProductReports)) {
                 report = brProductReports.get(0);
             }
         }
@@ -284,12 +283,13 @@ public class RagSearchTask {
             return;
         }
         Double assetNval = FundClassifierUtil.findDouble(report.getAssetNval());
-        log.info("{}该基金期末资产净值是{}", fundCode,assetNval);
+        report.setAssetNval(assetNval.toString());
+        log.info("{}该基金期末资产净值是{}", fundCode, assetNval);
 
         if (assetNval < MIN_NVAL) {
             return;
         }
-        log.info("{}开始发送模型计算利率债",fundCode);
+        log.info("{}开始发送模型计算利率债", fundCode);
         String[] strings = rateBondCalHandler.callModel(report, summary);
         String type = strings[0];
         BondFundType bondFundType = BondFundType.getBondFundType(type.trim());
@@ -301,7 +301,7 @@ public class RagSearchTask {
         //更新季报
         dbHandler.updateProductReport(report);
 
-        log.info("{}计算完成利率债是{},开始插入市场报告表",fundCode,code);
+        log.info("{}计算完成利率债是{},开始插入市场报告表", fundCode, code);
         //插入市场报告表
         BrMarketProductReport brMarketProductReport = new BrMarketProductReport();
         brMarketProductReport.setFundCode(fundCode);

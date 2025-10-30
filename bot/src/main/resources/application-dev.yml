@@ -2,12 +2,33 @@ server:
   port: 18081
 spring:
   datasource:
-    url: jdbc:postgresql://20.12.0.38:5432/prptdb
-    username: schedulerdb
-    #    password: cG9zdGdyZXN0ZXN0Cg==
-    #   password: ENC(uVHRDvJL/EBn+YXdnDKaNETgT5sKrU4F)
-    password: LC@tyzy2025!
-    driver-class-name: org.postgresql.Driver
+    dynamic:
+      primary: master
+      strict: false
+      datasource:
+        master:
+          driver-class-name: org.postgresql.Driver
+          url: jdbc:postgresql://20.12.0.38:5432/prptdb
+          username: schedulerdb
+#          password: ENC(hudLofS2FZEVgBOwqraR7Em9plV0ife9)
+          password: ENC(hudLofS2FZEVgBOwqraR7Em9plV0ife9)
+        db1:
+          driver-class-name: org.postgresql.Driver
+          url: jdbc:postgresql://20.200.34.135:5433/mdbfinver1?connectTimeout=10
+          username: test
+##          password: ENC(9TrmlKVvCukSE9WE+ftNpooU8UZf5+Abp3L9SILj5cA=)
+          password: ENC(9TrmlKVvCukSE9WE+ftNpooU8UZf5+Abp3L9SILj5cA=)
+  cloud:
+    compatibility-verifier:
+      enabled: false
+    nacos:
+      discovery:
+        enabled: true
+        server-addr: 20.200.34.145:8848
+        namespace: 34eeba21-ad0c-42e3-bef1-565de06d6236
+        username: nacos
+        password: ENC(DqT8+RWJapvjxEuj7qyYwgdhj/sCav9GyK6fvFMlBHGu9crY1x47JQ==)
+
 
   ai:
     model:
@@ -31,7 +52,6 @@ spring:
             startSysOrCmptNo: "99370000000"
             sceneId: "0288"
         completionsPath: /v1/chat/completions
-
 
 yc:
   core:
@@ -57,18 +77,10 @@ rerank:
   rerankPath: "/rerank"
   model: Bge-rerank-v2-m3-test
 
-jasypt:
-  encryptor:
-    password: Yld@123
-
 logging:
   level:
     com.psbc.cpecm_java_jdk1.7.0.65_lc_20240909_hefei-langfang: error
     root: info
-
-mybatis-plus:
-  mapper-locations: classpath:/mapper/*.xml
-  type-aliases-package: com.dahuaboke.mpda.bot.tools.entity
 
 contentManage:
   opeSysId: 99370000000
@@ -76,7 +88,7 @@ contentManage:
   location: 1
   #  areaCode: 98--定版环境 01--预演环境 99-生产环境 T2-t2环境
   areaCode: "01"
-  fileSavePath: "#{systemProperties['user.home']}/ai-bot/fileTemp"
+  fileSavePath: "./ai-bot/fileTemp"
   opeType: T01302
   opeUser: 20080733650
   opeOrg: 11005293

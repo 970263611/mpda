@@ -2,20 +2,23 @@ package com.dahuaboke.mpda.bot.scenes.product.recommendation.edge;
 
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.action.EdgeAction;
+import com.dahuaboke.mpda.bot.scenes.ToolCallContentParse;
 import com.dahuaboke.mpda.bot.scenes.product.recommendation.RecommendationAgentPrompt;
 import com.dahuaboke.mpda.core.client.entity.LlmResponse;
 import com.dahuaboke.mpda.core.context.consts.Constants;
+import java.util.Map;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.Map;
 
 @Component
 public class RecommendationDispatcher implements EdgeAction {
 
     @Autowired
     private RecommendationAgentPrompt recommendationPrompt;
+
+    @Autowired
+    private ToolCallContentParse toolCallContentParse;
 
     @Override
     public String apply(OverAllState state) throws Exception {
@@ -26,6 +29,7 @@ public class RecommendationDispatcher implements EdgeAction {
             state.input(Map.of(Constants.PROMPT, recommendationPrompt.description()));
             return "go_tool";
         }
-        return "go_human";
+        return toolCallContentParse.parseContent(recommendationPrompt, chatResponse, state);
     }
+
 }

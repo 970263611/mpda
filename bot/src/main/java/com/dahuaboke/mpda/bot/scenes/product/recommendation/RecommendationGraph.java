@@ -17,13 +17,15 @@ import com.dahuaboke.mpda.core.node.HumanNode;
 import com.dahuaboke.mpda.core.node.LlmNode;
 import com.dahuaboke.mpda.core.node.StreamLlmNode;
 import com.dahuaboke.mpda.core.node.ToolNode;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import static com.alibaba.cloud.ai.graph.action.AsyncEdgeAction.edge_async;
 import static com.alibaba.cloud.ai.graph.action.AsyncNodeAction.node_async;
@@ -34,6 +36,7 @@ import static com.alibaba.cloud.ai.graph.action.AsyncNodeAction.node_async;
  */
 @Component
 public class RecommendationGraph extends AbstractGraph {
+    private static final Logger log = LoggerFactory.getLogger(RecommendationGraph.class);
 
     @Autowired
     private LlmNode llmNode;
@@ -104,19 +107,28 @@ public class RecommendationGraph extends AbstractGraph {
     @Override
     public SceneExtend buildSceneExtend(Object graphExtend, Object toolExtend) {
         //推荐场景,通过工具扩展信息，做额外计算，并添加额外图扩展信息
-        ArrayList<String> fundCodes = new ArrayList<>();
-        if (toolExtend != null) {
-            List<Object> extend = (List<Object>) toolExtend;
-            for (Object resp : extend) {
-                List<Map<String, String>> map = (List<Map<String, String>>) resp;
-                map.forEach(entry -> fundCodes.add(entry.get("fundCode")));
-            }
-        }
-
         PlatformExtend platformExtend = new PlatformExtend();
-        if (fundCodes.size() > 0) {
-            platformExtend.setFundCode(fundCodes);
-            platformExtend.setBuyLink(true);
+        ArrayList<String> fundCodes = new ArrayList<>();
+        try {
+            if (toolExtend != null && toolExtend instanceof List) {
+                List<Object> extend = (List<Object>) toolExtend;
+                for (Object resp : extend) {
+                    List<Map<String, String>> list = (List<Map<String, String>>) resp;
+                    if (list == null || list.isEmpty()) {
+                        platformExtend.setBuyLink(false);
+                        return new SceneExtend(platformExtend, toolExtend);
+                    }
+                    list.forEach(entry -> fundCodes.add(entry.get("fundCode")));
+                }
+            }
+
+            if (fundCodes.size() > 0) {
+                platformExtend.setFundCode(fundCodes);
+                platformExtend.setBuyLink(true);
+            }
+        } catch (Exception e) {
+            log.error("toolExtend---" + toolExtend);
+            return new SceneExtend(platformExtend, toolExtend);
         }
         return new SceneExtend(platformExtend, toolExtend);
     }

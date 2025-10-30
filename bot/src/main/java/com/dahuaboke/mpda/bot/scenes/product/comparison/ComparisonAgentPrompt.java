@@ -19,6 +19,7 @@ public class ComparisonAgentPrompt extends AbstractProductAgentPrompt {
                             1.分析用户的对话内容，必须调用以下工具：
                                 通过两个基金的基金编号，查询两个基金信息，用于对比
                             2.如果不满足工具调用条件，需要引导用户补充。
+                            3.如果基金超过三个,返回:邮小盈仅支持三个以内的产品对比
                         """
                 , "tool", translate() + """
                             根据工具执行结果，返回以下信息的对比结果：

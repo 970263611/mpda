@@ -4,7 +4,7 @@ public class FilterProdInfoReq {
 
     //年化利率
     private String yearRita;
-    //债券基金类型
+    //基金类型
     private String fundClassificationCode;
     //一个月最大回车率
     private String withDrawal;

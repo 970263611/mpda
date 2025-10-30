@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dahuaboke.mpda.bot.tools.dao.BrProductMapper">
+
+    <select id="selectFundDetail" resultType="com.dahuaboke.mpda.bot.tools.dto.ProdInfoDto">
+
+        SELECT
+        *
+        FROM
+        "br_product_report" report
+        INNER JOIN "br_product_summary" summary ON report.fund_code = summary.fund_code where report.fund_code in
+        <foreach collection="fundCodes" item="code" open="(" separator="," close=")">
+        #{code}
+        </foreach>
+    </select>
+
+</mapper>

@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * auth: dahua
@@ -40,7 +41,7 @@ public class ProductToolHandler {
      *
      * @return Map
      */
-    public Map<String, String> getMap() {
+    public Map<String, List<String>> getMap() {
         return robotService.getMap();
     }
 
@@ -94,8 +95,13 @@ public class ProductToolHandler {
     }
 
 
-    public List<MarketRankDto> getMarketRank(String finBondType) {
-        return robotService.getMarketRank(finBondType);
+    public List<MarketRankDto> getMarketRank(String finBondType,String period) {
+        return robotService.getMarketRank(finBondType,period);
+    }
+
+
+    protected List<ProdInfoDto> getFundByType(String fundType) {
+        return robotService.getFundByType(fundType);
     }
 
 }

@@ -1,4 +1,4 @@
-package com.dahuaboke.mpda.bot.scenes.product.information.tools;
+package com.dahuaboke.mpda.bot.scenes.product.information.code.tools;
 
 import com.dahuaboke.mpda.bot.tools.ProductTool;
 import com.dahuaboke.mpda.bot.tools.dto.NetValReq;
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 @Component
-public class InformationTool extends ProductTool<InformationTool.Input> {
+public class InformationByIdTool extends ProductTool<InformationByIdTool.Input> {
 
     @Override
     public String getDescription() {

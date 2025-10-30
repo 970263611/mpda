@@ -96,20 +96,83 @@
             <groupId>com.google.code.gson</groupId>
             <version>2.11.0</version>
         </dependency>
+
+        <!--yc内网所需对接内管-->
         <dependency>
             <groupId>com.psbc</groupId>
             <artifactId>cpecm_java_jdk1.7.0.65_lc_20240909_hefei-langfang</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
+        <!--locback日志需要-->
+        <dependency>
+            <groupId>org.codehaus.janino</groupId>
+            <artifactId>janino</artifactId>
+            <version>3.1.9</version>
+        </dependency>
+
+        <!--yml加解密-->
+        <dependency>
+            <groupId>com.github.ulisesbocchio</groupId>
+            <artifactId>jasypt-spring-boot-starter</artifactId>
+            <version>3.0.3</version>
+        </dependency>
+
+        <!--nacos discovery 适配springboot-->
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+            <version>2023.0.3.3</version>
+            <exclusions>
+                <!--内网有2023.0.3.3,但是内部所需依赖内网没有，不是一个完整的可用依赖。-->
+                <exclusion>
+                    <groupId>com.alibaba.nacos</groupId>
+                    <artifactId>nacos-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework.cloud</groupId>
+                    <artifactId>spring-cloud-commons</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework.security</groupId>
+                    <artifactId>spring-security-crypto</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-bootstrap</artifactId>
-            <version>3.1.6</version>
+            <artifactId>spring-cloud-commons</artifactId>
+            <version>4.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.alibaba.nacos</groupId>
+            <artifactId>nacos-client</artifactId>
+            <version>2.3.2</version>
+            <exclusions>
+                <!--低版本与spring -alibaba-graph 有冲突,排除用新版本-->
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-annotations</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>dynamic-datasource-spring-boot3-starter</artifactId>
+            <version>4.3.0</version>
+        </dependency>
+
     </dependencies>
-    <!-- 打包类型，Spring Boot应用通常为jar -->
-    <packaging>jar</packaging>
 
 
     <build>

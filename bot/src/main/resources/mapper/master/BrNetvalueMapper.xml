@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dahuaboke.mpda.bot.tools.dao.BrNetvalueMapper">
+
+    <select id="selectBrNetvalueLatest" resultType="com.dahuaboke.mpda.bot.tools.dto.BrNetvalueDto">
+        SELECT fund_code,unit_net_val FROM
+        ( SELECT fund_code, unit_net_val, net_val_date ,ROW_NUMBER() OVER ( PARTITION BY fund_code ORDER BY net_val_date DESC ) AS sort_no FROM "br_netvalue"
+        where fund_code IN
+        <foreach collection="fundCodes" item="code" open="(" separator="," close=")">
+            #{code}
+        </foreach>
+        ) AS "br_temp"
+        WHERE sort_no =1
+    </select>
+
+</mapper>

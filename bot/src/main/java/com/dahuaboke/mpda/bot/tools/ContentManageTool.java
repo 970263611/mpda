@@ -10,6 +10,9 @@ import com.dahuaboke.mpda.bot.tools.dto.ContentManageResponse;
 import com.post.impl.lc.CallBackImpl;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -58,6 +61,9 @@ public class ContentManageTool {
 
 
     public ContentManageResponse downloadFilesTool(String inmngPlatfFileIndexNo, String pageCode) {
+        //创建文件夹
+        createDir(fileSavePath);
+
         ContentManageResponse contentManageResponse = new ContentManageResponse();
         if (StringUtils.isNotEmpty(inmngPlatfFileIndexNo) && StringUtils.isNotEmpty(pageCode)) {
             if (inmngPlatfFileIndexNo.contains(",") && pageCode.contains(",")) {
@@ -154,5 +160,19 @@ public class ContentManageTool {
         merger.setDestinationFileName(path);
         merger.mergeDocuments(null);
         return path;
+    }
+
+    /**
+     * 创建文件夹
+     * @param dirPath
+     */
+    public void createDir(String dirPath){
+        Path path = Paths.get(dirPath);
+        try {
+            Files.createDirectories(path);
+        } catch (IOException e) {
+            log.error("createDirError");
+            throw new RuntimeException(e);
+        }
     }
 }

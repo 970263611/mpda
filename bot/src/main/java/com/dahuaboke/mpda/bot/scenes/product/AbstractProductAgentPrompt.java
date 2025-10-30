@@ -143,6 +143,18 @@ public abstract class AbstractProductAgentPrompt implements AgentPrompt {
                     | maxWdwrt | 近一月最大回撤 |
                     | fundstgMaxWdwrt | 近三月最大回撤 |
                     | nyy1Wdwrt | 近一年最大回撤 |
+                    | drtPftrtTval | 今年以来收益率 | 当前年收益率
+                    | rtnRtRank | 今年以来收益率排名 | 当前年收益率排名
+                    | pftrtName | 今年以来收益率(年化) | 当前年收益率(年化)
+                    | busicmOybinpRank | 今年以来收益率排名（年化） | 当前年收益率排名（年化）
+                    | lastYrlyPftrt | 第1季度收益率 |
+                    | custRaiseRateRankNo | 第1季度收益率排名 |
+                    | nmm6CombProfrat | 第2季度收益率 |
+                    | detainRateRankNo | 第2季度收益率排名 |
+                    | nmm3YrlyPftrt | 第3季度收益率 |
+                    | tmPontAsetRaiseTotRanknum | 第3季度收益率排名 |
+                    | nmm1YearlyProfrat | 第4季度收益率 |
+                    | addRepPurcProTotnumRankno | 第4季度收益率排名 |
                    \n
             """;
 

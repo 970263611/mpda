@@ -20,9 +20,9 @@ public class PlatformExtend {
     private List<String> fundCode;
 
     /**
-     * 报告种类
+     * 债券基金类型
      */
-    private String fileType;
+    private String finBondType;
 
     /**
      * 时间范围
@@ -53,12 +53,12 @@ public class PlatformExtend {
         this.fundCode = fundCode;
     }
 
-    public String getFileType() {
-        return fileType;
+    public String getFinBondType() {
+        return finBondType;
     }
 
-    public void setFileType(String fileType) {
-        this.fileType = fileType;
+    public void setFinBondType(String finBondType) {
+        this.finBondType = finBondType;
     }
 
     public String getPeriod() {
@@ -72,12 +72,14 @@ public class PlatformExtend {
     public PlatformExtend() {
     }
 
-    public PlatformExtend(boolean buyLink, boolean downloadLink, List<String> fundCode, String fileType, String period) {
+    public PlatformExtend(boolean buyLink, boolean downloadLink, List<String> fundCode, String finBondType, String period) {
         this.buyLink = buyLink;
         this.downloadLink = downloadLink;
         this.fundCode = fundCode;
-        this.fileType = fileType;
+        this.finBondType = finBondType;
         this.period = period;
+
+
     }
 
 }

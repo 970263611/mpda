@@ -91,7 +91,12 @@ public class ProductSummaryQueryService {
                         .user(userQuery)
                         .call().content();
 
-                String answer = content.split("『RESULT』")[1].split("『END』")[0].trim();
+                String answer = "";
+                String prefix = "『RESULT』";
+                String suffix = "『END』";
+                if(content.contains(prefix) && content.contains(suffix)){
+                    answer = content.split(prefix)[1].split(suffix)[0].trim();
+                }
 
                 mapper.setFieldByComment(fdProductSummary, question, answer);
             } catch (Exception e) {

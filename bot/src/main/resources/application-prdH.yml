@@ -1,13 +1,10 @@
 server:
-  port: 18081
-
+  port: 18080
 spring:
   datasource:
-    url: jdbc:postgresql://20.12.0.38:5432/prptdb
-    username: schedulerdb
-    #    password: cG9zdGdyZXN0ZXN0Cg==
-    #   password: ENC(uVHRDvJL/EBn+YXdnDKaNETgT5sKrU4F)
-    password: LC@tyzy2025!
+    url: jdbc:postgresql://25.2.6.144:5432/prptdb
+    username: ifundrobot
+    password: ENC(cR58FU/mdN/7ILRTL6VN3U74DQNJxAvL)
     driver-class-name: org.postgresql.Driver
 
   ai:
@@ -31,14 +28,14 @@ spring:
             sendSysOrCmptNo: "99370000000"
             startSysOrCmptNo: "99370000000"
             sceneId: "0288"
-        completionsPath: /v1/chat/completion
+        completionsPath: /v1/chat/completions
 
 
 yc:
   core:
     ai:
       resved-input-info: "0288"
-      url: http://20.200.175.85:32011/online-service/rag/v1/
+      url: http://25.6.60.15:8000/online-service/rag/v1/
       send-sys-no: 99370000000
       target-sys-no: 99370000000
       embedding:
@@ -53,23 +50,16 @@ yc:
 
 rerank:
   enabled: false
-  base-url: http://20.200.25.216:8080
-  api-key: b8d5ca9f6f344058ba9d8cad089ac53d97a7a3e6021242638069e67bb6b09881
+  base-url: http://25.22.0.22:8080
+  api-key: a66d12f370574bea8fcd3aa1e190ca5973c8a21130014f6ba5ba2ccd6676f8d9
   rerankPath: "/rerank"
-  model: Bge-rerank-v2-m3-test
+  model: bge-rerank-v2-m3
 
-jasypt:
-  encryptor:
-    password: Yld@123
 
 logging:
   level:
     com.psbc.cpecm_java_jdk1.7.0.65_lc_20240909_hefei-langfang: error
     root: info
-
-mybatis-plus:
-  mapper-locations: classpath:/mapper/*.xml
-  type-aliases-package: com.dahuaboke.mpda.bot.tools.entity
 
 contentManage:
   opeSysId: 99370000000
@@ -77,7 +67,7 @@ contentManage:
   location: 1
   #  areaCode: 98--定版环境 01--预演环境 99-生产环境 T2-t2环境
   areaCode: "99"
-  fileSavePath: "#{systemProperties['user.home']}/ai-bot/fileTemp"
+  fileSavePath: "./ai-bot/fileTemp"
   opeType: T01302
   opeUser: 20080733650
   opeOrg: 11005293

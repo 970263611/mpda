@@ -7,6 +7,7 @@ import com.alibaba.cloud.ai.graph.exception.GraphRunnerException;
 import com.alibaba.cloud.ai.graph.exception.GraphStateException;
 import com.dahuaboke.mpda.bot.scenes.entity.PlatformExtend;
 import com.dahuaboke.mpda.bot.scenes.product.marketRanking.edge.MarketRankingDispatcher;
+import com.dahuaboke.mpda.bot.scenes.product.recommendation.RecommendationGraph;
 import com.dahuaboke.mpda.core.agent.graph.AbstractGraph;
 import com.dahuaboke.mpda.core.agent.scene.entity.SceneExtend;
 import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
@@ -17,12 +18,14 @@ import com.dahuaboke.mpda.core.node.HumanNode;
 import com.dahuaboke.mpda.core.node.LlmNode;
 import com.dahuaboke.mpda.core.node.StreamLlmNode;
 import com.dahuaboke.mpda.core.node.ToolNode;
-import java.util.List;
-import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
+import java.util.List;
+import java.util.Map;
 
 import static com.alibaba.cloud.ai.graph.action.AsyncEdgeAction.edge_async;
 import static com.alibaba.cloud.ai.graph.action.AsyncNodeAction.node_async;
@@ -33,7 +36,7 @@ import static com.alibaba.cloud.ai.graph.action.AsyncNodeAction.node_async;
  */
 @Component
 public class MarketRankingGraph extends AbstractGraph {
-
+    private static final Logger log = LoggerFactory.getLogger(MarketRankingGraph.class);
     @Autowired
     private LlmNode llmNode;
 
@@ -104,9 +107,17 @@ public class MarketRankingGraph extends AbstractGraph {
     public SceneExtend buildSceneExtend(Object graphExtend, Object toolExtend) {
         //市场排名报告场景,通过工具扩展信息，做额外计算，并添加额外图扩展信息
         PlatformExtend platformExtend = new PlatformExtend();
-        //TODO 目前市场排名代码为测试数据，后续代码完善再调整此处解析
-        if (toolExtend != null) {
-            platformExtend.setDownloadLink(true);
+        try {
+            if (toolExtend != null && toolExtend instanceof List) {
+                platformExtend.setDownloadLink(true);
+                List<List<Map<String, Object>>> extend = (List<List<Map<String, Object>>>) toolExtend;
+                Map<String, Object> marketRankDto = extend.get(0).get(0);
+                platformExtend.setFinBondType((String) marketRankDto.get("finBondType"));
+                platformExtend.setPeriod((String) marketRankDto.get("period"));
+            }
+        } catch (Exception e) {
+            log.error("toolExtend---" + toolExtend);
+            return new SceneExtend(platformExtend, toolExtend);
         }
         return new SceneExtend(platformExtend, toolExtend);
     }

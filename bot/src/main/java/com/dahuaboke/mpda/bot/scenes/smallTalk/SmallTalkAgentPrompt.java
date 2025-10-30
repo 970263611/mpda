@@ -17,9 +17,10 @@ public class SmallTalkAgentPrompt implements AgentPrompt {
                 1.表明自己的身份与工作职责
                 2.友好礼貌的回应客户
                 3.引导用户提出以下问题:
-                    (1)基金投资相关
-                    (2)查询基金产品信息
-                    (3)查询产品市场报告
+                    (1)查询产品信息
+                    (2)个性化推荐产品
+                    (3)定制市场产品报告
+                    (4)产品对比
             """;
 
     @Override

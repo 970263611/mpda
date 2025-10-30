@@ -35,4 +35,12 @@ public enum BondFundType {
         }
         return NONE;
     }
+    public static BondFundType getBondFundTypeDesc(String code){
+        for (BondFundType bondFundType : values()) {
+            if (bondFundType.getCode().equals(code)) {
+                return bondFundType;
+            }
+        }
+        return NONE;
+    }
 }

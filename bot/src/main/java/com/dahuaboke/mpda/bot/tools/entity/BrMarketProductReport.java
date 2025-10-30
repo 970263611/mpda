@@ -78,6 +78,26 @@ public class BrMarketProductReport {
     private int supptranBalChgTotalAccnum;
 
     /**
+     * 今年以来收益率
+     */
+    private String drtPftrtTval;
+
+    /**
+     * 今年以来收益率排名
+     */
+    private int rtnRtRank;
+
+    /**
+     * 今年以来收益率(年化)
+     */
+    private String pftrtName;
+
+    /**
+     * 今年以来收益率排名（年化）
+     */
+    private int busicmOybinpRank;
+
+    /**
      * 近一年收益率
      */
     private String nyy1Profrat;
@@ -395,6 +415,38 @@ public class BrMarketProductReport {
 
     public void setNyy1Wdwrt(String nyy1Wdwrt) {
         this.nyy1Wdwrt = nyy1Wdwrt;
+    }
+
+    public String getDrtPftrtTval() {
+        return drtPftrtTval;
+    }
+
+    public void setDrtPftrtTval(String drtPftrtTval) {
+        this.drtPftrtTval = drtPftrtTval;
+    }
+
+    public int getRtnRtRank() {
+        return rtnRtRank;
+    }
+
+    public void setRtnRtRank(int rtnRtRank) {
+        this.rtnRtRank = rtnRtRank;
+    }
+
+    public String getPftrtName() {
+        return pftrtName;
+    }
+
+    public void setPftrtName(String pftrtName) {
+        this.pftrtName = pftrtName;
+    }
+
+    public int getBusicmOybinpRank() {
+        return busicmOybinpRank;
+    }
+
+    public void setBusicmOybinpRank(int busicmOybinpRank) {
+        this.busicmOybinpRank = busicmOybinpRank;
     }
 
 }

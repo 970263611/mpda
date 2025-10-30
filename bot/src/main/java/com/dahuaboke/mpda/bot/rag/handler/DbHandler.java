@@ -32,12 +32,6 @@ public class DbHandler {
     BrMarketProductReportMapper brMarketProductReportMapper;
 
 
-    public List<BrProduct> selectProductByDealFlag(BrProduct brProduct) {
-        LambdaQueryWrapper<BrProduct> queryWrapper = new LambdaQueryWrapper<BrProduct>()
-                .eq(BrProduct::getDealFlag, brProduct.getDealFlag());
-        return brProductMapper.selectList(queryWrapper);
-    }
-
     /**
      * 原子性标记并查询待处理数据
      *
@@ -47,33 +41,22 @@ public class DbHandler {
     public List<BrProduct> markAndSelectUnprocessed(int maxCount) {
         //获取基金代码
         LambdaQueryWrapper<BrProduct> queryWrapper = new LambdaQueryWrapper<BrProduct>()
-                .select(BrProduct::getFundCode)
                 .eq(BrProduct::getDealFlag, FileDealFlag.UNPROCESSED.getCode())
-                .groupBy(BrProduct::getFundCode)
+                .orderByAsc(BrProduct::getFundCode)
                 .last("LIMIT " + maxCount);
         List<BrProduct> brProducts = brProductMapper.selectList(queryWrapper);
         if (CollectionUtils.isEmpty(brProducts)) {
             return List.of();
         }
-        List<String> fundCodes = brProducts.stream().map(BrProduct::getFundCode).toList();
 
-        //通过基金代码查询,这样可以处理同一批基金的多条数据。
-        LambdaQueryWrapper<BrProduct> mainQueryWrapper = new LambdaQueryWrapper<BrProduct>()
-                .eq(BrProduct::getDealFlag, FileDealFlag.UNPROCESSED.getCode())
-                .in(BrProduct::getFundCode, fundCodes);
-
-        List<BrProduct> products = brProductMapper.selectList(mainQueryWrapper);
-        if (CollectionUtils.isEmpty(products)) {
-            return List.of();
-        }
-        products.forEach(brProduct -> {
+        brProducts.forEach(brProduct -> {
             LambdaUpdateWrapper<BrProduct> updateWrapper = new LambdaUpdateWrapper<>();
             updateWrapper.eq(BrProduct::getFundCode, brProduct.getFundCode()).eq(BrProduct::getAncmTpBclsCd, brProduct.getAncmTpBclsCd());
             brProduct.setDealFlag(FileDealFlag.PROCESSING.getCode());
             brProductMapper.update(brProduct, updateWrapper);
         });
 
-        return products;
+        return brProducts;
     }
 
     public int resetTimeout() {
@@ -81,6 +64,18 @@ public class DbHandler {
         updateWrapper.eq(BrProduct::getDealFlag, FileDealFlag.PROCESSING.getCode())
                 .isNotNull(BrProduct::getDealBgnTime);
         updateWrapper.apply("EXTRACT(EPOCH FROM (NOW() - deal_bgn_time)) > tmout_time_num");
+
+        updateWrapper.set(BrProduct::getDealFlag, FileDealFlag.UNPROCESSED.getCode())
+                .set(BrProduct::getDealBgnTime, null)
+                .set(BrProduct::getTmoutTimeNum, null);
+
+        return brProductMapper.update(null, updateWrapper);
+
+    }
+
+    public int updateFailProduct() {
+        LambdaUpdateWrapper<BrProduct> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(BrProduct::getDealFlag, FileDealFlag.PROCESS_FAIL.getCode());
 
         updateWrapper.set(BrProduct::getDealFlag, FileDealFlag.UNPROCESSED.getCode())
                 .set(BrProduct::getDealBgnTime, null)
@@ -168,5 +163,4 @@ public class DbHandler {
             brMarketProductReportMapper.insert(brMarketProductReport);
         }
     }
-
 }

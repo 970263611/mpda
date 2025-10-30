@@ -86,7 +86,7 @@ public class ProcessingMonitor {
         String failureLogPath = filePrefix + "_failures_" + timestamp + ".log";
 
         try (PrintWriter writer = new PrintWriter(new FileWriter(failureLogPath,true))) {
-            failures.forEach((item, reason) -> writer.println(item + " | " + reason));
+            failures.forEach((item, reason) -> writer.println(item.toString() + " | " + reason));
             log.info("失败记录已写入文件: {}", failureLogPath);
         } catch (Exception e) {
             log.error("无法写入失败日志文件", e);

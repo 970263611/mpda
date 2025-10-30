@@ -1,6 +1,7 @@
 package com.dahuaboke.mpda.bot.rag.client;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -121,6 +122,20 @@ public class FundEntity {
 
     public void setScore(BigDecimal score) {
         this.score = score;
+    }
+
+
+    @Override
+    public String toString() {
+        return "FundEntity{" +
+                "id='" + id + '\'' +
+                ", page_number=" + page_number +
+                ", file_name='" + file_name + '\'' +
+                ", file_type='" + file_type + '\'' +
+                ", excerpt_keywords=" + excerpt_keywords +
+                ", file_name_keywords=" + file_name_keywords +
+                ", score=" + score +
+                '}';
     }
 
 }

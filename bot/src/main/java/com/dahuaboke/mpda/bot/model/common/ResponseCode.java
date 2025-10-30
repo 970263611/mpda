@@ -7,7 +7,7 @@ package com.dahuaboke.mpda.bot.model.common;
  */
 public enum ResponseCode {
 
-    SUCCESS("0000000000000000", "成功"),
+    SUCCESS("0000000000000000", "交易成功"),
     PARAM_FORMAT_ERROR("0000000000010001", "参数格式错误"),
     MISSING_PARAM("0000000000010002", "缺少必要参数"),
     INVALID_SESSION("0000000000010003", "会话ID无效或已过期"),

@@ -179,7 +179,10 @@ public class BrProductReport {
      **/
     private String mainReason;
 
-
+    /**
+     * 是否上架
+     */
+    private String poshlvCd;
 
     public String getFundCode() {
         return fundCode;
@@ -411,6 +414,14 @@ public class BrProductReport {
 
     public void setMainReason(String mainReason) {
         this.mainReason = mainReason;
+    }
+
+    public String getPoshlvCd() {
+        return poshlvCd;
+    }
+
+    public void setPoshlvCd(String poshlvCd) {
+        this.poshlvCd = poshlvCd;
     }
 
 }

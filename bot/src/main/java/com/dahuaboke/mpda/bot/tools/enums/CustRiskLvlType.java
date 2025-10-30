@@ -1,10 +1,13 @@
 package com.dahuaboke.mpda.bot.tools.enums;
 
-public enum IsBondFund {
+public enum CustRiskLvlType {
 
-    BOND("0","债基"),
+    LOWRISK("PR1", "低风险"),
+    LOWMEDIUMRISK("PR2", "中低风险"),
+    MEDIUMRISK("PR3", "中风险"),
 
-    NO_BOND("1","非债基");
+    MEDIUMHEIGHTRISK("PR4", "中高风险"),
+    HEIGHTRISK("PR5", "高风险");
 
     private final String code;
 
@@ -18,8 +21,10 @@ public enum IsBondFund {
         return desc;
     }
 
-    IsBondFund(String code, String desc) {
+    CustRiskLvlType(String code, String desc) {
         this.code = code;
         this.desc = desc;
     }
+
+
 }

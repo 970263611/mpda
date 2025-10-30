@@ -3,11 +3,9 @@ package com.dahuaboke.mpda.bot.scenes.product.marketRanking.tools;
 
 import com.dahuaboke.mpda.bot.tools.ProductTool;
 import com.dahuaboke.mpda.bot.tools.dto.MarketRankDto;
-import com.dahuaboke.mpda.bot.tools.entity.BrMarketProductReport;
 import com.dahuaboke.mpda.core.agent.tools.ToolResult;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import java.util.List;
-import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Component;
 
 /**
@@ -34,7 +32,7 @@ public class MarketRankingTool extends ProductTool<MarketRankingTool.Input> {
 
     @Override
     public ToolResult execute(MarketRankingTool.Input input) {
-        List<MarketRankDto> marketRank = productToolHandler.getMarketRank(input.finBondType);
+        List<MarketRankDto> marketRank = productToolHandler.getMarketRank(input.finBondType, input.period);
 
        /* String scpm = """
                    代码	基金	基金规模（亿元）	基金管理人	成立日期	近一年收益（%）	近一年回撤（%）	排名
@@ -52,14 +50,31 @@ public class MarketRankingTool extends ProductTool<MarketRankingTool.Input> {
         return ToolResult.success("查询成功", marketRank);
     }
 
-    public record Input(@JsonPropertyDescription("""
-            请严格按照以下规则匹配用户语义到数字参数(1-6)
-            1：信用债-指数型        -包含"信用债"且明确"指数型" "被动跟踪" 等关键字
-            2：信用债主动-开放式    -包含"信用债"且有"主动管理" "主动型" "开放式" "可申赎"等关键字
-            3：利率债主动-开放式    -包含"利率债"且有"主动管理" "主动型" "开放式" "可申赎"等关键字
-            4：利率债指数1-3年     -包含"利率债" "指数型"且明确年限"1-3年" "一年到三年"
-            5：利率债指数3-5年     -包含"利率债" "指数型"且明确年限"3-5年" "三年到五年"
-            6：利率债指数1-5年     -包含"利率债" "指数型"且明确年限"1-5年" "一年到五年"                     
-             """) String finBondType) {
+    public record Input(
+            @JsonPropertyDescription("""
+                    请严格按照以下规则匹配用户语义到数字参数(1-6)
+                    1：信用债-指数型        -包含"信用债"且明确"指数型" "被动跟踪" 等关键字
+                    2：信用债主动-开放式    -包含"信用债"且有"主动管理" "主动型" "开放式" "可申赎"等关键字
+                    3：利率债主动-开放式    -包含"利率债"且有"主动管理" "主动型" "开放式" "可申赎"等关键字
+                    4：利率债指数1-3年     -包含"利率债" "指数型"且明确年限"1-3年" "一年到三年"
+                    5：利率债指数3-5年     -包含"利率债" "指数型"且明确年限"3-5年" "三年到五年"
+                    6：利率债指数1-5年     -包含"利率债" "指数型"且明确年限"1-5年" "一年到五年"                     
+                     """) String finBondType,
+            @JsonPropertyDescription("""
+                    请严格按照以下规则匹配用户语义到数字参数(0-9)
+                    0：无
+                    1：近1周
+                    2：近1月
+                    3：近3月
+                    4：近一年
+                    5：第一季度
+                    6：第二季度
+                    7：第三季度
+                    8：第四季度
+                    9：当前年                    
+                     """) String period
+    ) {
+
     }
+
 }

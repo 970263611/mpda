@@ -10,26 +10,23 @@ import org.springframework.stereotype.Component;
 
 /**
  * auth: dahua
- * time: 2025/8/22 14:10
+ * time: 2025/10/28 10:12
  */
 @Component
 public class InformationScene implements Scene {
-
-    private final String description = """
-                查询产品具体信息
-                介绍产品
-                了解产品详情
-            """;
 
     @Autowired
     private InformationGraph informationGraph;
 
     @Autowired
-    private InformationAgentPrompt informationPrompt;
+    private InformationAgentPrompt informationAgentPrompt;
 
     @Override
     public String description() {
-        return description;
+        return """
+                    了解/查询/咨询/介绍基金具体/某一/部分信息
+                    了解/查询/咨询/介绍产品具体/某一/部分信息
+                """;
     }
 
     @Override
@@ -39,7 +36,7 @@ public class InformationScene implements Scene {
 
     @Override
     public AgentPrompt prompt() {
-        return informationPrompt;
+        return informationAgentPrompt;
     }
 
     @Override
