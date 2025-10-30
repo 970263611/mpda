@@ -1,6 +1,8 @@
 package com.dahuaboke.mpda.core.config;
 
 import com.dahuaboke.mpda.core.agent.prompt.CommonAgentPrompt;
+import com.dahuaboke.mpda.core.agent.scene.DefaultUnknownWrapper;
+import com.dahuaboke.mpda.core.agent.scene.UnknownWrapper;
 import com.dahuaboke.mpda.core.client.ChatClientManager;
 import com.dahuaboke.mpda.core.client.RerankerClientManager;
 import com.dahuaboke.mpda.core.memory.MemoryManager;
@@ -32,5 +34,11 @@ public class CoreAutoConfiguration {
     @ConditionalOnProperty(name = "rerank.enabled", havingValue = "true")
     public RerankerClientManager rerankerClientManager() {
         return new RerankerClientManager();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public UnknownWrapper unknownWrapper() {
+        return new DefaultUnknownWrapper();
     }
 }

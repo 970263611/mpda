@@ -21,7 +21,7 @@ public class MonitorController {
     @Autowired
     private MonitorManager monitorManager;
 
-    @RequestMapping(value = "/monitor", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @RequestMapping(value = "/monitor", produces = MediaType.TEXT_EVENT_STREAM_VALUE + ";charset=gbk")
     public Flux monitor() {
         return monitorManager.monitor();
     }

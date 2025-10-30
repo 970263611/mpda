@@ -1,10 +1,15 @@
 package com.dahuaboke.mpda.core.context;
 
-import com.dahuaboke.mpda.core.event.*;
+import com.dahuaboke.mpda.core.event.ChangeEvent;
+import com.dahuaboke.mpda.core.event.Event;
+import com.dahuaboke.mpda.core.event.EventPublisher;
+import com.dahuaboke.mpda.core.event.MessageChangeEvent;
+import com.dahuaboke.mpda.core.event.TraceChangeEvent;
 import com.dahuaboke.mpda.core.exception.MpdaIllegalArgumentException;
 import com.dahuaboke.mpda.core.memory.MessageWrapper;
 import com.dahuaboke.mpda.core.trace.TraceMessage;
 import com.dahuaboke.mpda.core.utils.SpringUtil;
+
 
 import static com.dahuaboke.mpda.core.event.ChangeEvent.Type.ADDED;
 import static com.dahuaboke.mpda.core.event.ChangeEvent.Type.REMOVED;
@@ -28,9 +33,12 @@ public class LimitedListWrapper<L> extends LimitedList<L> {
 
     @Override
     public L remove() {
-        L remove = super.remove();
-        publishEvent(remove, REMOVED);
-        return remove;
+        if (size() > 0) {
+            L remove = super.remove();
+            publishEvent(remove, REMOVED);
+            return remove;
+        }
+        return null;
     }
 
     private void publishEvent(L l, ChangeEvent.Type changeEventType) {
@@ -45,4 +53,5 @@ public class LimitedListWrapper<L> extends LimitedList<L> {
         }
         publisher.publish(event);
     }
+
 }

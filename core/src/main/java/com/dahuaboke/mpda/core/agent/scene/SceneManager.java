@@ -36,7 +36,7 @@ public class SceneManager implements BeanPostProcessor {
     private CacheManager cacheManager;
     private SceneWrapper rootWrapper;
     private boolean isInit = false;
-    private UnknowWrapper unknowWrapper;
+    private UnknownWrapper unknownWrapper;
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
@@ -57,8 +57,8 @@ public class SceneManager implements BeanPostProcessor {
         if (bean instanceof CacheManager cacheManager) {
             this.cacheManager = cacheManager;
         }
-        if (bean instanceof UnknowWrapper unknowWrapper) {
-            this.unknowWrapper = unknowWrapper;
+        if (bean instanceof UnknownWrapper unknownWrapper) {
+            this.unknownWrapper = unknownWrapper;
         }
         return bean;
     }
@@ -126,10 +126,6 @@ public class SceneManager implements BeanPostProcessor {
         if (!isInit) {
             lazyInit();
         }
-        String sceneName = context.getSceneName();
-        if (sceneName != null) {
-            return sceneWrappers.get(sceneName);
-        }
         SceneWrapper runtimeWrapper = rootWrapper;
         while (!runtimeWrapper.isEnd()) {
             try {
@@ -161,7 +157,7 @@ public class SceneManager implements BeanPostProcessor {
         }
         retry++;
         if (retry >= 3) {
-            return unknowWrapper;
+            return unknownWrapper;
         }
         return next(context, runtimeWrapper, retry);
     }

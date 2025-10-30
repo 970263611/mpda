@@ -15,6 +15,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.tool.ToolCallback;
@@ -68,7 +69,7 @@ public class ChatClientManager {
 
     private ChatClient.ChatClientRequestSpec buildChatClientRequestSpec(String conversationId, String sceneId, String prompt
             , Object query, List<ToolCallback> tools, List<String> sceneMerge, Boolean isToolQuery) {
-        ChatClient.ChatClientRequestSpec spec = chatClient.prompt(prompt);
+        ChatClient.ChatClientRequestSpec spec = chatClient.prompt();
         List<Message> messages = memoryManager.getMemory(conversationId, sceneId, sceneMerge);
         if (CollectionUtils.isEmpty(messages)) {
             messages = List.of();
@@ -81,6 +82,7 @@ public class ChatClientManager {
         }
         List<Message> finalMessages = new ArrayList<>(messages);
         finalMessages.add(message);
+        finalMessages.add(new UserMessage(prompt));
         spec.messages(finalMessages);
         if (!CollectionUtils.isEmpty(tools)) {
             spec.toolCallbacks(tools);

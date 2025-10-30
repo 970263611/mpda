@@ -14,6 +14,8 @@ import com.dahuaboke.mpda.core.memory.ToolResponseMessageWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.ToolResponseMessage;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -41,11 +43,30 @@ public class ToolNode implements NodeAction {
     @Autowired
     private ObjectMapper objectMapper;
 
+    private static final Logger log = LoggerFactory.getLogger(ToolNode.class);
+
+
     @Override
     public Map<String, Object> apply(OverAllState state) throws Exception {
         ChatResponse chatResponse = chatResponse(state);
-        ToolResponseMessage toolResponseMessage = executeTool(chatResponse);
-        List<ToolResponseMessage.ToolResponse> responses = toolResponseMessage.getResponses();
+        AssistantMessage assistantMessage = chatResponse.getResult().getOutput();
+        List<AssistantMessage.ToolCall> toolCalls = assistantMessage.getToolCalls();
+
+        ToolResponseMessage toolResponseMessage;
+        List<ToolResponseMessage.ToolResponse> responses;
+        try {
+            toolResponseMessage = executeTool(chatResponse);
+            responses = toolResponseMessage.getResponses();
+        } catch (Exception e) {
+            log.error("toolNode process fail,execute tool is fail",e);
+            ToolResult toolResult = ToolResult.error("工具调用失败,工具内部异常,勿再重复调用");
+            responses = new ArrayList<>();
+            for (AssistantMessage.ToolCall toolCall : toolCalls) {
+                responses.add(new ToolResponseMessage.ToolResponse(toolCall.id(), toolCall.name(), objectMapper.writeValueAsString(toolResult)));
+            }
+            toolResponseMessage = new ToolResponseMessage(responses);
+        }
+
         List<Object> extend = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(responses)) {
             responses.forEach(res -> {
@@ -61,7 +82,7 @@ public class ToolNode implements NodeAction {
         ToolResponseMessageWrapper toolResponseMessageWrapper = buildToolResponseMessageWrapper(state, toolResponseMessage);
 
 
-        Map<String,Object> apply = new HashMap<>() {{
+        Map<String, Object> apply = new HashMap<>() {{
             put(Constants.QUERY, toolResponseMessageWrapper);
             put(Constants.IS_TOOL_QUERY, true);
         }};
@@ -95,7 +116,6 @@ public class ToolNode implements NodeAction {
         memoryManager.addMemory(conversationId, sceneId, toolResponseMessageWrapper);
         return toolResponseMessageWrapper;
     }
-
 
 
 }
