@@ -20,4 +20,6 @@ public class Constants {
 
     public static final String EXTEND = "______extend______";
 
+    public static final String STATE = "______state______";
+
 }

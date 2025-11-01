@@ -84,7 +84,7 @@ public class CodeGenerateTool extends AbstractBaseTool<CodeGenerateTool.Input> {
     }
 
     public record Input(
-            @JsonPropertyDescription("文件路径（包含文件名称，根路径使用C:/Users/dahua/Desktop/new/1）") String path
+            @JsonPropertyDescription("文件路径（包含文件名称") String path
             , @JsonPropertyDescription("文件内容") String content) {
     }
 }

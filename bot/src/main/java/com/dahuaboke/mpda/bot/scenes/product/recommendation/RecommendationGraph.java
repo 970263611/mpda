@@ -93,30 +93,28 @@ public class RecommendationGraph extends AbstractGraph {
         attribute.put(Constants.TOOLS, List.of("recommendationTool"));
         recommendationPrompt.changePrompt("guide");
         try {
-            return streamResponse(attribute, "default", null);
+            return streamResponse(attribute, "default");
         } catch (GraphRunnerException e) {
             throw new MpdaRuntimeException(e);
         }
     }
 
     /**
-     * @param graphExtend 包装额外扩展信息，购买链接标识
      * @param toolExtend  包含该场景执行工具函数的，函数名称，参数(通过函数名称判断参数是否是基金代码)
      * @return SceneExtend
      */
     @Override
-    public SceneExtend buildSceneExtend(Object graphExtend, Object toolExtend) {
+    public SceneExtend buildExtend(List<Object> toolExtend) {
         //推荐场景,通过工具扩展信息，做额外计算，并添加额外图扩展信息
         PlatformExtend platformExtend = new PlatformExtend();
         ArrayList<String> fundCodes = new ArrayList<>();
         try {
-            if (toolExtend != null && toolExtend instanceof List) {
-                List<Object> extend = (List<Object>) toolExtend;
-                for (Object resp : extend) {
+            if (toolExtend != null) {
+                for (Object resp : toolExtend) {
                     List<Map<String, String>> list = (List<Map<String, String>>) resp;
                     if (list == null || list.isEmpty()) {
                         platformExtend.setBuyLink(false);
-                        return new SceneExtend(platformExtend, toolExtend);
+                        return new SceneExtend(platformExtend);
                     }
                     list.forEach(entry -> fundCodes.add(entry.get("fundCode")));
                 }
@@ -128,9 +126,9 @@ public class RecommendationGraph extends AbstractGraph {
             }
         } catch (Exception e) {
             log.error("toolExtend---" + toolExtend);
-            return new SceneExtend(platformExtend, toolExtend);
+            return new SceneExtend(platformExtend);
         }
-        return new SceneExtend(platformExtend, toolExtend);
+        return new SceneExtend(platformExtend);
     }
 
 }

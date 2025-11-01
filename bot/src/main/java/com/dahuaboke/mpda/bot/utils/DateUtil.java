@@ -1,4 +1,4 @@
-package com.dahuaboke.mpda.core.utils;
+package com.dahuaboke.mpda.bot.utils;
 
 
 import org.apache.commons.lang3.StringUtils;

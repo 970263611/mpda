@@ -81,6 +81,7 @@ public abstract class AbstractChain implements Chain {
 
     private void prepare(CoreContext context) {
         attribute.remove(Constants.TOOLS);
+        attribute.put(Constants.STATE, null);
         attribute.put(Constants.PROMPT, agentPrompt.description());
         attribute.put(Constants.QUERY, context.getQuery());
         attribute.put(Constants.CONVERSATION_ID, context.getConversationId());

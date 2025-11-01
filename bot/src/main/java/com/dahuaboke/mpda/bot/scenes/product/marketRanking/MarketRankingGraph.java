@@ -7,7 +7,6 @@ import com.alibaba.cloud.ai.graph.exception.GraphRunnerException;
 import com.alibaba.cloud.ai.graph.exception.GraphStateException;
 import com.dahuaboke.mpda.bot.scenes.entity.PlatformExtend;
 import com.dahuaboke.mpda.bot.scenes.product.marketRanking.edge.MarketRankingDispatcher;
-import com.dahuaboke.mpda.bot.scenes.product.recommendation.RecommendationGraph;
 import com.dahuaboke.mpda.core.agent.graph.AbstractGraph;
 import com.dahuaboke.mpda.core.agent.scene.entity.SceneExtend;
 import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
@@ -81,7 +80,7 @@ public class MarketRankingGraph extends AbstractGraph {
         attribute.put(Constants.TOOLS, List.of("marketRankingTool"));
         marketRankingPrompt.changePrompt("guide");
         try {
-            return response(attribute, "default", attribute.get(Constants.SCENE_ID));
+            return response(attribute, "default");
         } catch (GraphRunnerException e) {
             throw new MpdaRuntimeException(e);
         }
@@ -92,34 +91,33 @@ public class MarketRankingGraph extends AbstractGraph {
         attribute.put(Constants.TOOLS, List.of("marketRankingTool"));
         marketRankingPrompt.changePrompt("guide");
         try {
-            return streamResponse(attribute, "default", null);
+            return streamResponse(attribute, "default");
         } catch (GraphRunnerException e) {
             throw new MpdaRuntimeException(e);
         }
     }
 
     /**
-     * @param graphExtend 包装额外扩展信息，比如下载链接标识
      * @param toolExtend  包含该场景执行工具函数的，函数名称，参数(通过函数名称判断参数是否是基金代码)
      * @return SceneExtend
      */
     @Override
-    public SceneExtend buildSceneExtend(Object graphExtend, Object toolExtend) {
+    public SceneExtend buildExtend(List<Object> toolExtend) {
         //市场排名报告场景,通过工具扩展信息，做额外计算，并添加额外图扩展信息
         PlatformExtend platformExtend = new PlatformExtend();
         try {
-            if (toolExtend != null && toolExtend instanceof List) {
+            if (toolExtend != null) {
                 platformExtend.setDownloadLink(true);
-                List<List<Map<String, Object>>> extend = (List<List<Map<String, Object>>>) toolExtend;
-                Map<String, Object> marketRankDto = extend.get(0).get(0);
+                List<Map<String, Object>> o = (List<Map<String, Object>>) toolExtend.get(0);
+                Map<String, Object> marketRankDto = o.get(0);
                 platformExtend.setFinBondType((String) marketRankDto.get("finBondType"));
                 platformExtend.setPeriod((String) marketRankDto.get("period"));
             }
         } catch (Exception e) {
             log.error("toolExtend---" + toolExtend);
-            return new SceneExtend(platformExtend, toolExtend);
+            return new SceneExtend(platformExtend);
         }
-        return new SceneExtend(platformExtend, toolExtend);
+        return new SceneExtend(platformExtend);
     }
 
 }

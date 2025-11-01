@@ -1,5 +1,6 @@
-package com.dahuaboke.mpda.core.agent.scene;
+package com.dahuaboke.mpda.core.agent.scene.unknown;
 
+import com.dahuaboke.mpda.core.agent.scene.SceneWrapper;
 import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
 import com.dahuaboke.mpda.core.context.CoreContext;
 import com.dahuaboke.mpda.core.exception.MpdaException;

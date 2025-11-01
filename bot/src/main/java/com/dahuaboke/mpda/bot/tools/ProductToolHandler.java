@@ -5,9 +5,8 @@ import com.dahuaboke.mpda.bot.tools.dto.FilterProdInfoReq;
 import com.dahuaboke.mpda.bot.tools.dto.MarketRankDto;
 import com.dahuaboke.mpda.bot.tools.dto.NetValReq;
 import com.dahuaboke.mpda.bot.tools.dto.ProdInfoDto;
-import com.dahuaboke.mpda.bot.tools.entity.BrMarketProductReport;
 import com.dahuaboke.mpda.bot.tools.service.RobotService;
-import com.dahuaboke.mpda.core.utils.DateUtil;
+import com.dahuaboke.mpda.bot.utils.DateUtil;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -15,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 /**
  * auth: dahua

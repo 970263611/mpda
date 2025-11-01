@@ -1,6 +1,6 @@
 package com.dahuaboke.mpda.bot.scenes;
 
-import com.dahuaboke.mpda.core.agent.scene.UnknownWrapper;
+import com.dahuaboke.mpda.core.agent.scene.unknown.UnknownWrapper;
 import org.springframework.stereotype.Component;
 
 /**

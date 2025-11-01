@@ -22,6 +22,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -103,22 +104,14 @@ public abstract class AbstractGraph implements Graph {
     }
 
     protected SceneResponse response(Map<String, Object> attribute, String graphKey) throws GraphRunnerException {
-        return response(attribute, graphKey, null);
-    }
-
-    protected SceneResponse response(Map<String, Object> attribute, String graphKey, Object graphExtend) throws GraphRunnerException {
         OverAllState overAllState = getGraph(graphKey).invoke(attribute).get();
         LlmResponse llmResponse = overAllState.value(Constants.RESULT, LlmResponse.class).get();
         String text = llmResponse.chatResponse().getResult().getOutput().getText();
-        Object toolExtend = overAllState.value(Constants.EXTEND).orElse(null);
-        return new SceneResponse(text, buildSceneExtend(graphExtend,toolExtend));
+        List<Object> toolExtend = overAllState.value(Constants.EXTEND, List.class).orElse(null);
+        return new SceneResponse(text, buildExtend(toolExtend));
     }
 
     protected Flux<SceneResponse> streamResponse(Map<String, Object> attribute, String graphKey) throws GraphRunnerException {
-        return streamResponse(attribute, graphKey, null);
-    }
-
-    protected Flux<SceneResponse> streamResponse(Map<String, Object> attribute, String graphKey, Object graphExtend) throws GraphRunnerException {
         AsyncGenerator<NodeOutput> generator = getGraph(graphKey).stream(attribute,
                 RunnableConfig.builder().threadId(cacheManager.getContext().getSceneId()).build());
         Sinks.Many<SceneResponse> sink = Sinks.many().multicast().onBackpressureBuffer();
@@ -128,8 +121,8 @@ public abstract class AbstractGraph implements Graph {
                     sink.tryEmitNext(new SceneResponse(streamingOutput.chunk(), null));
                 } else {
                     OverAllState overAllState = output.state();
-                    Object toolExtend = overAllState.value(Constants.EXTEND).orElse(null);
-                    sink.tryEmitNext(new SceneResponse("", buildSceneExtend(graphExtend,toolExtend)));
+                    List<Object> toolExtend = overAllState.value(Constants.EXTEND, List.class).orElse(null);
+                    sink.tryEmitNext(new SceneResponse("", buildExtend(toolExtend)));
                 }
             } catch (Exception e) {
                 throw new CompletionException(e);
@@ -143,7 +136,7 @@ public abstract class AbstractGraph implements Graph {
                 .doOnError(e -> System.err.println("Error occurred during streaming: " + e));
     }
 
-    public SceneExtend buildSceneExtend(Object graphExtend, Object toolExtend) {
-        return new SceneExtend(graphExtend,toolExtend);
+    public SceneExtend buildExtend(List<Object> toolExtend) {
+        return new SceneExtend(toolExtend);
     };
 }
