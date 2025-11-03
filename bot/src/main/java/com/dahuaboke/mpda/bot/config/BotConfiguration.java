@@ -1,7 +1,7 @@
 package com.dahuaboke.mpda.bot.config;
 
 
-import com.dahuaboke.mpda.core.agent.prompt.CommonAgentPrompt;
+import com.dahuaboke.mpda.core.agent.prompt.SystemAgentPrompt;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -22,10 +22,10 @@ public class BotConfiguration {
             """;
 
     @Autowired
-    private CommonAgentPrompt commonAgentPrompt;
+    private SystemAgentPrompt systemAgentPrompt;
 
     @PostConstruct
     public void init() {
-        commonAgentPrompt.setSystemPrompt(systemPrompt);
+        systemAgentPrompt.setSystemPrompt(systemPrompt);
     }
 }

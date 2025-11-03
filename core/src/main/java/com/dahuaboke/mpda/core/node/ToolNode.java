@@ -75,7 +75,7 @@ public class ToolNode implements NodeAction {
                     ToolResult toolResult = objectMapper.readValue(resData, ToolResult.class);
                     extend.add(toolResult.getData());
                 } catch (JsonProcessingException e) {
-                    throw new MpdaRuntimeException(e); // TODO
+                    extend.add(resData);
                 }
             });
         }

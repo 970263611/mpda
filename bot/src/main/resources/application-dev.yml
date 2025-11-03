@@ -10,13 +10,13 @@ spring:
           driver-class-name: org.postgresql.Driver
           url: jdbc:postgresql://20.12.0.38:5432/prptdb
           username: schedulerdb
-#          password: ENC(hudLofS2FZEVgBOwqraR7Em9plV0ife9)
+          #          password: ENC(hudLofS2FZEVgBOwqraR7Em9plV0ife9)
           password: ENC(hudLofS2FZEVgBOwqraR7Em9plV0ife9)
         db1:
           driver-class-name: org.postgresql.Driver
           url: jdbc:postgresql://20.200.34.135:5433/mdbfinver1?connectTimeout=10
           username: test
-##          password: ENC(9TrmlKVvCukSE9WE+ftNpooU8UZf5+Abp3L9SILj5cA=)
+          ##          password: ENC(9TrmlKVvCukSE9WE+ftNpooU8UZf5+Abp3L9SILj5cA=)
           password: ENC(9TrmlKVvCukSE9WE+ftNpooU8UZf5+Abp3L9SILj5cA=)
   cloud:
     compatibility-verifier:
@@ -69,28 +69,27 @@ yc:
       rerank:
         enabled: true
 
-
-rerank:
-  enabled: false
-  base-url: http://20.200.25.216:8080
-  api-key: b8d5ca9f6f344058ba9d8cad089ac53d97a7a3e6021242638069e67bb6b09881
-  rerankPath: "/rerank"
-  model: Bge-rerank-v2-m3-test
-
 logging:
   level:
     com.psbc.cpecm_java_jdk1.7.0.65_lc_20240909_hefei-langfang: error
     root: info
 
-contentManage:
-  opeSysId: 99370000000
-  byOpeSysId: 99711870000
-  location: 1
-  #  areaCode: 98--定版环境 01--预演环境 99-生产环境 T2-t2环境
-  areaCode: "01"
-  fileSavePath: "./ai-bot/fileTemp"
-  opeType: T01302
-  opeUser: 20080733650
-  opeOrg: 11005293
+mpda:
+  rerank:
+    enabled: false
+    base-url: http://20.200.25.216:8080
+    api-key: b8d5ca9f6f344058ba9d8cad089ac53d97a7a3e6021242638069e67bb6b09881
+    rerankPath: "/rerank"
+    model: Bge-rerank-v2-m3-test
+  contentManage:
+    opeSysId: 99370000000
+    byOpeSysId: 99711870000
+    location: 1
+    #  areaCode: 98--定版环境 01--预演环境 99-生产环境 T2-t2环境
+    areaCode: "01"
+    fileSavePath: "./ai-bot/fileTemp"
+    opeType: T01302
+    opeUser: 20080733650
+    opeOrg: 11005293
 
 

@@ -11,7 +11,7 @@ import java.util.Map;
  * time: 2025/8/21 10:21
  */
 @Component
-public class CommonAgentPrompt implements AgentPrompt {
+public class SystemAgentPrompt implements AgentPrompt {
 
     private String systemPrompt = "";
 

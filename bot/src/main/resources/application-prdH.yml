@@ -48,28 +48,27 @@ yc:
         enabled: true
 
 
-rerank:
-  enabled: false
-  base-url: http://25.22.0.22:8080
-  api-key: a66d12f370574bea8fcd3aa1e190ca5973c8a21130014f6ba5ba2ccd6676f8d9
-  rerankPath: "/rerank"
-  model: bge-rerank-v2-m3
-
-
 logging:
   level:
     com.psbc.cpecm_java_jdk1.7.0.65_lc_20240909_hefei-langfang: error
     root: info
 
-contentManage:
-  opeSysId: 99370000000
-  byOpeSysId: 99711870000
-  location: 1
-  #  areaCode: 98--定版环境 01--预演环境 99-生产环境 T2-t2环境
-  areaCode: "99"
-  fileSavePath: "./ai-bot/fileTemp"
-  opeType: T01302
-  opeUser: 20080733650
-  opeOrg: 11005293
+mpda:
+  rerank:
+    enabled: false
+    base-url: http://25.22.0.22:8080
+    api-key: a66d12f370574bea8fcd3aa1e190ca5973c8a21130014f6ba5ba2ccd6676f8d9
+    rerankPath: "/rerank"
+    model: bge-rerank-v2-m3
+  contentManage:
+    opeSysId: 99370000000
+    byOpeSysId: 99711870000
+    location: 1
+    #  areaCode: 98--定版环境 01--预演环境 99-生产环境 T2-t2环境
+    areaCode: "99"
+    fileSavePath: "./ai-bot/fileTemp"
+    opeType: T01302
+    opeUser: 20080733650
+    opeOrg: 11005293
 
 

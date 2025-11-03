@@ -1,9 +1,13 @@
 package com.dahuaboke.mpda.ai_code.config;
 
 
-import com.dahuaboke.mpda.core.agent.prompt.CommonAgentPrompt;
+import com.dahuaboke.mpda.ai_code.scenes.common.CommonScene;
+import com.dahuaboke.mpda.ai_code.scenes.resolution.ResolutionScene;
+import com.dahuaboke.mpda.core.agent.prompt.SystemAgentPrompt;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -21,10 +25,22 @@ public class AiCodeConfiguration {
             """;
 
     @Autowired
-    private CommonAgentPrompt commonAgentPrompt;
+    private SystemAgentPrompt systemAgentPrompt;
 
     @PostConstruct
     public void init() {
-        commonAgentPrompt.setSystemPrompt(systemPrompt);
+        systemAgentPrompt.setSystemPrompt(systemPrompt);
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "mpda.scene.common.enabled", havingValue = "false", matchIfMissing = true)
+    public ResolutionScene resolutionScene() {
+        return new ResolutionScene();
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "mpda.scene.common.enabled", havingValue = "true")
+    public CommonScene commonScene() {
+        return new CommonScene();
     }
 }

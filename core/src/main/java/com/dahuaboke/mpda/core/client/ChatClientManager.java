@@ -5,7 +5,7 @@ import com.alibaba.cloud.ai.graph.NodeOutput;
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.async.AsyncGenerator;
 import com.alibaba.cloud.ai.graph.streaming.StreamingChatGenerator;
-import com.dahuaboke.mpda.core.agent.prompt.CommonAgentPrompt;
+import com.dahuaboke.mpda.core.agent.prompt.SystemAgentPrompt;
 import com.dahuaboke.mpda.core.client.entity.LlmResponse;
 import com.dahuaboke.mpda.core.client.entity.StreamLlmResponse;
 import com.dahuaboke.mpda.core.memory.MemoryManager;
@@ -36,7 +36,7 @@ public class ChatClientManager {
     private final ChatClient chatClient;
     private final MemoryManager memoryManager;
 
-    public ChatClientManager(ChatModel chatModel, CommonAgentPrompt commonPrompt, MemoryManager memoryManager, ToolCallbackProvider tools) {
+    public ChatClientManager(ChatModel chatModel, SystemAgentPrompt commonPrompt, MemoryManager memoryManager, ToolCallbackProvider tools) {
         this.memoryManager = memoryManager;
         this.chatClient = ChatClient.builder(chatModel)
                 .defaultSystem(commonPrompt.system())

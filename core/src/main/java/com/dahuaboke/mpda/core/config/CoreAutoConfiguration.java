@@ -1,6 +1,6 @@
 package com.dahuaboke.mpda.core.config;
 
-import com.dahuaboke.mpda.core.agent.prompt.CommonAgentPrompt;
+import com.dahuaboke.mpda.core.agent.prompt.SystemAgentPrompt;
 import com.dahuaboke.mpda.core.agent.scene.strategy.FindSceneStrategy;
 import com.dahuaboke.mpda.core.agent.scene.strategy.PlanStrategy;
 import com.dahuaboke.mpda.core.agent.scene.strategy.RouteStrategy;
@@ -30,13 +30,13 @@ public class CoreAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public ChatClientManager chatClientManager(ChatModel chatModel, CommonAgentPrompt commonPrompt, MemoryManager memoryManager, ToolCallbackProvider tools) {
+    public ChatClientManager chatClientManager(ChatModel chatModel, SystemAgentPrompt commonPrompt, MemoryManager memoryManager, ToolCallbackProvider tools) {
         return new ChatClientManager(chatModel, commonPrompt, memoryManager, tools);
     }
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnProperty(name = "rerank.enabled", havingValue = "true")
+    @ConditionalOnProperty(name = "mpda.rerank.enabled", havingValue = "true")
     public RerankerClientManager rerankerClientManager() {
         return new RerankerClientManager();
     }

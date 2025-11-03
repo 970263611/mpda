@@ -29,13 +29,13 @@ import java.util.function.Consumer;
  */
 public class RerankerClientManager {
 
-    @Value("${rerank.base-url}")
+    @Value("${mpda.rerank.base-url}")
     private String baseUrl;
-    @Value("${rerank.api-key}")
+    @Value("${mpda.rerank.api-key}")
     private String apiKey;
-    @Value("${rerank.rerankPath}")
+    @Value("${mpda.rerank.rerankPath}")
     private String rerankPath;
-    @Value("${rerank.model}")
+    @Value("${mpda.rerank.model}")
     private String model;
 
     private RetryTemplate retryTemplate;

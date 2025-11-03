@@ -1,4 +1,4 @@
-package com.dahuaboke.mpda.ai_code.scenes.resolution;
+package com.dahuaboke.mpda.ai_code.scenes.common;
 
 
 import com.dahuaboke.mpda.core.agent.graph.Graph;
@@ -8,29 +8,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * auth: dahua
- * time: 2025/8/21 15:03
+ * time: 2025/11/3 15:15
  */
-public class ResolutionScene implements Scene {
+public class CommonScene implements Scene {
 
     @Autowired
-    private ResolutionGraph resolutionGraph;
+    private CommonGraph commonGraph;
 
     @Autowired
-    private ResolutionAgentPrompt resolutionPrompt;
+    private CommonAgentPrompt commonAgentPrompt;
 
     @Override
     public String description() {
-        return "场景分发";
+        return "通用处理场景";
     }
 
     @Override
     public Graph graph() {
-        return resolutionGraph;
+        return commonGraph;
     }
 
     @Override
     public AgentPrompt prompt() {
-        return resolutionPrompt;
+        return commonAgentPrompt;
     }
 
     @Override
@@ -38,3 +38,4 @@ public class ResolutionScene implements Scene {
         return null;
     }
 }
+
