@@ -2,15 +2,16 @@ package com.dahuaboke.mpda.bot.scenes.resolution;
 
 
 import com.dahuaboke.mpda.core.agent.prompt.AgentPrompt;
+import com.dahuaboke.mpda.core.utils.Map2MdUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.List;
-import java.util.Set;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * auth: dahua
@@ -45,7 +46,7 @@ public class ResolutionAgentPrompt implements AgentPrompt {
             PromptTemplate promptTemplate = new PromptTemplate(prompt);
             Set<Map.Entry<String, String>> set = params.entrySet();
             List<String> keys = set.stream().map(Map.Entry::getKey).toList();
-            promptTemplate.add("scenes", objectMapper.writeValueAsString(params));
+            promptTemplate.add("scenes", Map2MdUtil.convert(params));
             promptTemplate.add("ids", objectMapper.writeValueAsString(String.join("\n", keys)));
             this.description = promptTemplate.create().getContents();
         } catch (JsonProcessingException e) {

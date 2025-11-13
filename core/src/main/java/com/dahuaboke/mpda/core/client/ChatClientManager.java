@@ -22,10 +22,7 @@ import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import reactor.core.publisher.Flux;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * auth: dahua
@@ -45,32 +42,31 @@ public class ChatClientManager {
                 .build();
     }
 
-    public LlmResponse call(String conversationId, String sceneId, String prompt, Object query, List<ToolCallback> tools, List<String> sceneMerge, Boolean isToolQuery) {
-        ChatClient.ChatClientRequestSpec spec = buildChatClientRequestSpec(conversationId, sceneId, prompt, query, tools, sceneMerge, isToolQuery);
+    public LlmResponse call(String conversationId, String sceneId, String prompt, Object query, List<ToolCallback> tools,
+                            List<String> sceneMerge, Boolean isToolQuery, Set<Class<? extends Message>> memoryExclude) {
+        ChatClient.ChatClientRequestSpec spec = buildChatClientRequestSpec(conversationId, sceneId, prompt, query, tools, sceneMerge, isToolQuery, memoryExclude);
         ChatResponse chatResponse = spec.call().chatResponse();
         return new LlmResponse(chatResponse);
     }
 
     public StreamLlmResponse stream(String conversationId, String sceneId, String prompt, Object query, String key
-            , OverAllState state, String nodeName, List<String> sceneMerge, Boolean isToolQuery) {
-        ChatClient.ChatClientRequestSpec spec = buildChatClientRequestSpec(conversationId, sceneId, prompt, query, null, sceneMerge, isToolQuery);
+            , OverAllState state, String nodeName, List<String> sceneMerge, Boolean isToolQuery, Set<Class<? extends Message>> memoryExclude) {
+        ChatClient.ChatClientRequestSpec spec = buildChatClientRequestSpec(conversationId, sceneId, prompt, query, null, sceneMerge, isToolQuery, memoryExclude);
         Flux<ChatResponse> chatResponseFlux = spec.stream().chatResponse();
-
 
         AsyncGenerator<? extends NodeOutput> output = StreamingChatGenerator.builder()
                 .startingNode(nodeName)
                 .startingState(state)
-                .mapResult(response -> Map.of(key
-                        , Objects.requireNonNull(response.getResult().getOutput().getText())))
+                .mapResult(response -> Map.of(key, Objects.requireNonNull(response.getResult().getOutput().getText())))
                 .build(chatResponseFlux);
 
         return new StreamLlmResponse(output);
     }
 
     private ChatClient.ChatClientRequestSpec buildChatClientRequestSpec(String conversationId, String sceneId, String prompt
-            , Object query, List<ToolCallback> tools, List<String> sceneMerge, Boolean isToolQuery) {
+            , Object query, List<ToolCallback> tools, List<String> sceneMerge, Boolean isToolQuery, Set<Class<? extends Message>> memoryExclude) {
         ChatClient.ChatClientRequestSpec spec = chatClient.prompt();
-        List<Message> messages = memoryManager.getMemory(conversationId, sceneId, sceneMerge);
+        List<Message> messages = memoryManager.getMemory(conversationId, sceneId, sceneMerge, memoryExclude);
         if (CollectionUtils.isEmpty(messages)) {
             messages = List.of();
         }

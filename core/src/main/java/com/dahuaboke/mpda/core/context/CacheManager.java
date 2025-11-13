@@ -4,6 +4,7 @@ import com.dahuaboke.mpda.core.agent.chain.DefaultChain;
 import com.dahuaboke.mpda.core.agent.scene.Scene;
 import com.dahuaboke.mpda.core.agent.scene.SceneWrapper;
 import com.dahuaboke.mpda.core.exception.MpdaIllegalConfigException;
+import com.dahuaboke.mpda.core.memory.MemoryExclude;
 import com.dahuaboke.mpda.core.trace.TraceMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.beans.BeansException;
@@ -117,10 +118,19 @@ public class CacheManager implements BeanPostProcessor {
     }
 
     private SceneWrapper buildWrapper(Scene scene) {
+        MemoryExclude memoryExclude = scene.getClass().getAnnotation(MemoryExclude.class);
+        Set<Class<? extends Message>> memoryExcludeSet = new HashSet<>();
+        if (memoryExclude != null) {
+            Class<? extends Message>[] classes = memoryExclude.value();
+            if (classes != null) {
+                memoryExcludeSet.addAll(Arrays.asList(classes));
+            }
+        }
         DefaultChain chain = DefaultChain.builder()
                 .graph(scene.graph())
                 .prompt(scene.prompt())
                 .cacheManager(this)
+                .memoryExclude(memoryExcludeSet)
                 .build();
         SceneWrapper wrapper = SceneWrapper.builder()
                 .chain(chain)

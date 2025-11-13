@@ -22,4 +22,6 @@ public class Constants {
 
     public static final String STATE = "______state______";
 
+    public static final String MEMORY_EXCLUDE = "______memoryExclude______";
+
 }

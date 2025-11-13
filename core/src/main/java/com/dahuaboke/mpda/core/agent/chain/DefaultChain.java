@@ -6,7 +6,10 @@ import com.dahuaboke.mpda.core.agent.prompt.AgentPrompt;
 import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
 import com.dahuaboke.mpda.core.context.CacheManager;
 import com.dahuaboke.mpda.core.exception.MpdaRuntimeException;
+import org.springframework.ai.chat.messages.Message;
 import reactor.core.publisher.Flux;
+
+import java.util.Set;
 
 /**
  * auth: dahua
@@ -14,8 +17,8 @@ import reactor.core.publisher.Flux;
  */
 public class DefaultChain extends AbstractChain {
 
-    private DefaultChain(Graph graph, AgentPrompt agentPrompt, CacheManager cacheManager) {
-        super(graph, agentPrompt, cacheManager);
+    private DefaultChain(Graph graph, AgentPrompt agentPrompt, CacheManager cacheManager, Set<Class<? extends Message>> memoryExclude) {
+        super(graph, agentPrompt, cacheManager, memoryExclude);
     }
 
     public static Builder builder() {
@@ -37,6 +40,7 @@ public class DefaultChain extends AbstractChain {
         private Graph graph;
         private AgentPrompt agentPrompt;
         private CacheManager cacheManager;
+        private Set<Class<? extends Message>> memoryExclude;
 
         private Builder() {
         }
@@ -56,8 +60,13 @@ public class DefaultChain extends AbstractChain {
             return this;
         }
 
+        public Builder memoryExclude(Set<Class<? extends Message>> memoryExclude) {
+            this.memoryExclude = memoryExclude;
+            return this;
+        }
+
         public DefaultChain build() {
-            return new DefaultChain(graph, agentPrompt, cacheManager);
+            return new DefaultChain(graph, agentPrompt, cacheManager, memoryExclude);
         }
     }
 }

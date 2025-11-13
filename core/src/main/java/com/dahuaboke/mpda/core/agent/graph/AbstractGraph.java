@@ -9,6 +9,7 @@ import com.alibaba.cloud.ai.graph.state.strategy.ReplaceStrategy;
 import com.alibaba.cloud.ai.graph.streaming.StreamingOutput;
 import com.dahuaboke.mpda.core.agent.scene.entity.SceneExtend;
 import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
+import com.dahuaboke.mpda.core.client.entity.EmbeddingResponse;
 import com.dahuaboke.mpda.core.client.entity.LlmResponse;
 import com.dahuaboke.mpda.core.context.CacheManager;
 import com.dahuaboke.mpda.core.context.consts.Constants;
@@ -105,8 +106,15 @@ public abstract class AbstractGraph implements Graph {
 
     protected SceneResponse response(Map<String, Object> attribute, String graphKey) throws GraphRunnerException {
         OverAllState overAllState = getGraph(graphKey).invoke(attribute).get();
-        LlmResponse llmResponse = overAllState.value(Constants.RESULT, LlmResponse.class).get();
-        String text = llmResponse.chatResponse().getResult().getOutput().getText();
+        Object result = overAllState.value(Constants.RESULT).get();
+        String text = null;
+        if (result != null) {
+            if (result instanceof LlmResponse llmResponse) {
+                text = llmResponse.chatResponse().getResult().getOutput().getText();
+            } else if (result instanceof EmbeddingResponse embeddingResponse) {
+                text = embeddingResponse.obj().toString();
+            }
+        }
         List<Object> toolExtend = overAllState.value(Constants.EXTEND, List.class).orElse(null);
         return new SceneResponse(text, buildExtend(toolExtend));
     }
@@ -138,5 +146,7 @@ public abstract class AbstractGraph implements Graph {
 
     public SceneExtend buildExtend(List<Object> toolExtend) {
         return new SceneExtend(toolExtend);
-    };
+    }
+
+    ;
 }

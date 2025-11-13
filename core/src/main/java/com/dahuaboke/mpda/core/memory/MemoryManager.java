@@ -14,6 +14,7 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 /**
  * auth: dahua
@@ -79,7 +80,7 @@ public class MemoryManager implements SmartLifecycle {
         return List.of();
     }
 
-    public List<Message> getMemory(String conversationId, String sceneId, List<String> sceneMerge) {
+    public List<Message> getMemory(String conversationId, String sceneId, List<String> sceneMerge, Set<Class<? extends Message>> memoryExclude) {
         Map<String, Map<String, LimitedListWrapper<Message>>> memories = cacheManager.getMemories();
         if (memories.containsKey(conversationId)) {
             List<Message> messages = memories.get(conversationId).get(sceneId);
@@ -95,14 +96,23 @@ public class MemoryManager implements SmartLifecycle {
                     }
                 });
             }
-            return finalMessages.stream().sorted((m1, m2) -> {
-                if (m1 instanceof MessageWrapper w1 && m2 instanceof MessageWrapper w2) {
-                    return Long.valueOf(w1.getTime() - w2.getTime()).intValue();
-                }
-                return 0;
-            }).toList();
+            return getMessageStream(memoryExclude, finalMessages).limit(maxMemory).toList();
         }
         return List.of();
+    }
+
+    private static Stream<Message> getMessageStream(Set<Class<? extends Message>> memoryExclude, List<Message> finalMessages) {
+        Stream<Message> stream = finalMessages.stream().sorted((m1, m2) -> {
+            if (m1 instanceof MessageWrapper w1 && m2 instanceof MessageWrapper w2) {
+                return Long.valueOf(w1.getTime() - w2.getTime()).intValue();
+            }
+            return 0;
+        });
+        if (!memoryExclude.isEmpty()) {
+            stream = stream.filter(
+                    m3 -> !memoryExclude.stream().anyMatch(me -> me.getClass().isAssignableFrom(m3.getClass())));
+        }
+        return stream;
     }
 
     public void removeMemory(String conversationId) {

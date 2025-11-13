@@ -13,17 +13,17 @@ import com.dahuaboke.mpda.core.context.consts.Constants;
 import com.dahuaboke.mpda.core.exception.MpdaGraphException;
 import com.dahuaboke.mpda.core.exception.MpdaRuntimeException;
 import com.dahuaboke.mpda.core.memory.MemoryMerge;
-import com.dahuaboke.mpda.core.node.HumanNode;
-import com.dahuaboke.mpda.core.node.LlmNode;
-import com.dahuaboke.mpda.core.node.StreamLlmNode;
-import com.dahuaboke.mpda.core.node.ToolNode;
-import java.util.List;
+import com.dahuaboke.mpda.core.node.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
+import java.util.List;
 import java.util.Map;
-
 
 import static com.alibaba.cloud.ai.graph.action.AsyncEdgeAction.edge_async;
 import static com.alibaba.cloud.ai.graph.action.AsyncNodeAction.node_async;
@@ -53,10 +53,23 @@ public class InformationByNameGraph extends AbstractGraph {
     @Autowired
     private InformationByNameAgentPrompt informationPrompt;
 
+    @Autowired
+    private RagNode ragNode;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @Override
     public Map<Object, StateGraph> buildGraph(KeyStrategyFactory keyStrategyFactory) throws MpdaGraphException {
         try {
-            StateGraph stateGraph = new StateGraph(keyStrategyFactory)
+            StateGraph beforeGraph = new StateGraph(keyStrategyFactory)
+                    .addNode("llm", node_async(llmNode))
+                    .addNode("rag", node_async(ragNode))
+
+                    .addEdge(StateGraph.START, "llm")
+                    .addEdge("llm", "rag")
+                    .addEdge("rag", StateGraph.END);
+            StateGraph afterGraph = new StateGraph(keyStrategyFactory)
                     .addNode("llm", node_async(llmNode))
                     .addNode("streamLlm", node_async(streamLlmNode))
                     .addNode("human", node_async(humanNode))
@@ -68,7 +81,7 @@ public class InformationByNameGraph extends AbstractGraph {
                     .addEdge("tool", "streamLlm")
                     .addEdge("human", StateGraph.END)
                     .addEdge("streamLlm", StateGraph.END);
-            return Map.of("default", stateGraph);
+            return Map.of("before", beforeGraph, "after", afterGraph);
         } catch (GraphStateException e) {
             throw new MpdaGraphException(e);
         }
@@ -77,20 +90,30 @@ public class InformationByNameGraph extends AbstractGraph {
     @Override
     @MemoryMerge(MarketRankingScene.class)
     public SceneResponse execute(Map<String, Object> attribute) throws MpdaRuntimeException {
-        informationPrompt.changePrompt("guide");
-        attribute.put(Constants.TOOLS, List.of("informationByIdTool"));
-        attribute.put(Constants.PROMPT, informationPrompt.description());
         try {
-            return response(attribute, "default");
+            attribute.put(Constants.PROMPT, informationPrompt.changePrompt("before"));
+            String output = response(attribute, "before").output();
+            Map<String, String> map = objectMapper.readValue(
+                    output,
+                    new TypeReference<>() {
+                    }
+            );
+            informationPrompt.buildGuide(map);
+            attribute.put(Constants.TOOLS, List.of("informationByIdTool"));
+            attribute.put(Constants.PROMPT, informationPrompt.description());
+            return response(attribute, "after");
         } catch (GraphRunnerException e) {
             throw new MpdaRuntimeException(e);
+        } catch (JsonMappingException e) {
+            throw new RuntimeException(e);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
     }
 
     @Override
     @MemoryMerge(MarketRankingScene.class)
     public Flux<SceneResponse> executeAsync(Map<String, Object> attribute) throws MpdaRuntimeException {
-        System.out.println("进来查询产品名称场景。。。。");
         informationPrompt.changePrompt("guide");
         attribute.put(Constants.TOOLS, List.of("informationByIdTool"));
         attribute.put(Constants.PROMPT, informationPrompt.description());

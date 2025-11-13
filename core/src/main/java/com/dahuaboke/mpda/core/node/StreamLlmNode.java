@@ -5,11 +5,13 @@ import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.action.NodeAction;
 import com.dahuaboke.mpda.core.client.ChatClientManager;
 import com.dahuaboke.mpda.core.context.consts.Constants;
+import org.springframework.ai.chat.messages.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * auth: dahua
@@ -30,7 +32,8 @@ public class StreamLlmNode implements NodeAction {
         String key = Constants.RESULT;
         List<String> sceneMerge = state.value(Constants.SCENE_MERGE, List.class).orElse(List.of());
         Boolean isToolQuery = state.value(Constants.IS_TOOL_QUERY, Boolean.class).orElse(false);
-        return Map.of(key, chatClientManager.stream(conversationId, sceneId, prompt, query, key, state, "streamLlmNode", sceneMerge, isToolQuery)
+        Set<Class<? extends Message>> memoryExclude = state.value(Constants.MEMORY_EXCLUDE, Set.class).get();
+        return Map.of(key, chatClientManager.stream(conversationId, sceneId, prompt, query, key, state, "streamLlmNode", sceneMerge, isToolQuery, memoryExclude)
                 , Constants.IS_TOOL_QUERY, false);
     }
 }

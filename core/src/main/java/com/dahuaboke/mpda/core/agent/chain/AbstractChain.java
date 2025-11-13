@@ -11,10 +11,12 @@ import com.dahuaboke.mpda.core.exception.MpdaGraphException;
 import com.dahuaboke.mpda.core.exception.MpdaRuntimeException;
 import com.dahuaboke.mpda.core.memory.AssistantMessageWrapper;
 import com.dahuaboke.mpda.core.memory.UserMessageWrapper;
+import org.springframework.ai.chat.messages.Message;
 import reactor.core.publisher.Flux;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * auth: dahua
@@ -27,7 +29,7 @@ public abstract class AbstractChain implements Chain {
     protected final CacheManager cacheManager;
     protected Map<String, Object> attribute;
 
-    public AbstractChain(Graph graph, AgentPrompt agentPrompt, CacheManager cacheManager) {
+    public AbstractChain(Graph graph, AgentPrompt agentPrompt, CacheManager cacheManager, Set<Class<? extends Message>> memoryExclude) {
         this.graph = graph;
         this.agentPrompt = agentPrompt;
         this.cacheManager = cacheManager;
@@ -38,6 +40,8 @@ public abstract class AbstractChain implements Chain {
             put(Constants.TOOLS, null);
             put(Constants.IS_TOOL_QUERY, null);
             put(Constants.EXTEND, null);
+            put(Constants.STATE, null);
+            put(Constants.MEMORY_EXCLUDE, memoryExclude);
         }};
     }
 

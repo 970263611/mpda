@@ -6,10 +6,12 @@ import com.alibaba.cloud.ai.graph.action.NodeAction;
 import com.dahuaboke.mpda.core.agent.tools.ToolManager;
 import com.dahuaboke.mpda.core.client.ChatClientManager;
 import com.dahuaboke.mpda.core.context.consts.Constants;
+import org.springframework.ai.chat.messages.Message;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * auth: dahua
@@ -35,8 +37,9 @@ public class LlmNode implements NodeAction {
         String sceneId = state.value(Constants.SCENE_ID, String.class).get();
         List<String> sceneMerge = state.value(Constants.SCENE_MERGE, List.class).orElse(List.of());
         Boolean isToolQuery = state.value(Constants.IS_TOOL_QUERY, Boolean.class).orElse(false);
+        Set<Class<? extends Message>> memoryExclude = state.value(Constants.MEMORY_EXCLUDE, Set.class).get();
         return Map.of(Constants.RESULT, chatClientManager.call(conversationId, sceneId, prompt, query, toolNames.stream().map(toolName ->
                 toolManager.getToolByName(toolName)
-        ).toList(), sceneMerge, isToolQuery), Constants.IS_TOOL_QUERY, false);
+        ).toList(), sceneMerge, isToolQuery, memoryExclude), Constants.IS_TOOL_QUERY, false);
     }
 }

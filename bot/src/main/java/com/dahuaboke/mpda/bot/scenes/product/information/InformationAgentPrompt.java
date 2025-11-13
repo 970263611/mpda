@@ -2,6 +2,7 @@ package com.dahuaboke.mpda.bot.scenes.product.information;
 
 
 import com.dahuaboke.mpda.core.agent.prompt.AgentPrompt;
+import com.dahuaboke.mpda.core.utils.Map2MdUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
@@ -45,7 +46,7 @@ public class InformationAgentPrompt implements AgentPrompt {
             PromptTemplate promptTemplate = new PromptTemplate(prompt);
             Set<Map.Entry<String, String>> set = params.entrySet();
             List<String> keys = set.stream().map(Map.Entry::getKey).toList();
-            promptTemplate.add("scenes", objectMapper.writeValueAsString(params));
+            promptTemplate.add("scenes", Map2MdUtil.convert(params));
             promptTemplate.add("ids", objectMapper.writeValueAsString(String.join("\n", keys)));
             this.description = promptTemplate.create().getContents();
         } catch (JsonProcessingException e) {
