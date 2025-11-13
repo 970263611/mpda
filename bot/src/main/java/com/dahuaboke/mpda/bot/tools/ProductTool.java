@@ -3,6 +3,7 @@ package com.dahuaboke.mpda.bot.tools;
 
 import com.dahuaboke.mpda.bot.tools.dto.NetValReq;
 import com.dahuaboke.mpda.bot.tools.dto.ProdInfoDto;
+import com.dahuaboke.mpda.bot.tools.dto.RecommendProductDto;
 import com.dahuaboke.mpda.core.agent.tools.AbstractBaseTool;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,8 +36,8 @@ public abstract class ProductTool<I> extends AbstractBaseTool<I> {
     }
 
 
-    protected List<ProdInfoDto> getFundByType(String fundType) {
-        return productToolHandler.getFundByType(fundType);
+    protected List<RecommendProductDto> getFundInfoByType(String fundType) {
+        return productToolHandler.getFundInfoByType(fundType);
     }
 
 

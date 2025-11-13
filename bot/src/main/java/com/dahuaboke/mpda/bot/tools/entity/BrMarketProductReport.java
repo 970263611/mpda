@@ -449,4 +449,43 @@ public class BrMarketProductReport {
         this.busicmOybinpRank = busicmOybinpRank;
     }
 
+    @Override
+    public String toString() {
+        return "BrMarketProductReport{" +
+                "fundCode='" + fundCode + '\'' +
+                ", finBondType='" + finBondType + '\'' +
+                ", nwk1CombProfrat='" + nwk1CombProfrat + '\'' +
+                ", indsRankSeqNo=" + indsRankSeqNo +
+                ", txamtRankNo=" + txamtRankNo +
+                ", curdayBalChgTotalAccnum=" + curdayBalChgTotalAccnum +
+                ", nmm1CombProfrat='" + nmm1CombProfrat + '\'' +
+                ", lblmRank=" + lblmRank +
+                ", busicmLmRank=" + busicmLmRank +
+                ", curdayBalChgAccnum=" + curdayBalChgAccnum +
+                ", nmm3CombProfrat='" + nmm3CombProfrat + '\'' +
+                ", rankScopeLowLmtVal=" + rankScopeLowLmtVal +
+                ", intglRankSeqNo=" + intglRankSeqNo +
+                ", supptranBalChgTotalAccnum=" + supptranBalChgTotalAccnum +
+                ", drtPftrtTval='" + drtPftrtTval + '\'' +
+                ", rtnRtRank=" + rtnRtRank +
+                ", pftrtName='" + pftrtName + '\'' +
+                ", busicmOybinpRank=" + busicmOybinpRank +
+                ", nyy1Profrat='" + nyy1Profrat + '\'' +
+                ", reachStRankSeqNo=" + reachStRankSeqNo +
+                ", chremMgrIntglRankSeqNo=" + chremMgrIntglRankSeqNo +
+                ", centerCfmCurdayChgTnum=" + centerCfmCurdayChgTnum +
+                ", lastYrlyPftrt='" + lastYrlyPftrt + '\'' +
+                ", custRaiseRateRankNo=" + custRaiseRateRankNo +
+                ", nmm6CombProfrat='" + nmm6CombProfrat + '\'' +
+                ", detainRateRankNo=" + detainRateRankNo +
+                ", nmm3YrlyPftrt='" + nmm3YrlyPftrt + '\'' +
+                ", tmPontAsetRaiseTotRanknum=" + tmPontAsetRaiseTotRanknum +
+                ", nmm1YearlyProfrat='" + nmm1YearlyProfrat + '\'' +
+                ", addRepPurcProTotnumRankno=" + addRepPurcProTotnumRankno +
+                ", styoMaxWdwDesc='" + styoMaxWdwDesc + '\'' +
+                ", maxWdwrt='" + maxWdwrt + '\'' +
+                ", fundstgMaxWdwrt='" + fundstgMaxWdwrt + '\'' +
+                ", nyy1Wdwrt='" + nyy1Wdwrt + '\'' +
+                '}';
+    }
 }

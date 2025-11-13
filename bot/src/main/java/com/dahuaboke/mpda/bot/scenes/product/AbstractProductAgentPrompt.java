@@ -135,18 +135,18 @@ public abstract class AbstractProductAgentPrompt implements AgentPrompt {
                     | rankScopeLowLmtVal | 近三月收益率排名 |
                     | intglRankSeqNo | 近三月收益率昨日排名 |
                     | supptranBalChgTotalAccnum | 近三月收益率排名变动 |
-                    | nyy1Profrat | 近1年年化收益率 | 近1年收益率、 近1年年化收益 |
-                    | reachStRankSeqNo | 近一年收益率排名 |
-                    | chremMgrIntglRankSeqNo | 近一年收益率昨日排名 |
-                    | centerCfmCurdayChgTnum | 近一年收益率排名变动 |
+                    | nyy1Profrat | 近一年收益率 | 近一年[滚动12个月]收益率 |
+                    | reachStRankSeqNo | 近一年收益率排名 | 近一年[滚动12个月]收益率 |
+                    | chremMgrIntglRankSeqNo | 近一年收益率昨日排名 | 近一年[滚动12个月]收益率昨日排名 |
+                    | centerCfmCurdayChgTnum | 近一年收益率排名变动 | 近一年[滚动12个月]收益率排名变动 |
                     | styoMaxWdwDesc | 近一周最大回撤 |
                     | maxWdwrt | 近一月最大回撤 |
                     | fundstgMaxWdwrt | 近三月最大回撤 |
                     | nyy1Wdwrt | 近一年最大回撤 |
-                    | drtPftrtTval | 今年以来收益率 | 当前年收益率
-                    | rtnRtRank | 今年以来收益率排名 | 当前年收益率排名
-                    | pftrtName | 今年以来收益率(年化) | 当前年收益率(年化)
-                    | busicmOybinpRank | 今年以来收益率排名（年化） | 当前年收益率排名（年化）
+                    | drtPftrtTval | 今年以来收益率 | 当前年收益率、今年收益率
+                    | rtnRtRank | 今年以来收益率排名 | 当前年收益率排名、今年收益率排名
+                    | pftrtName | 今年以来收益率(年化) | 当前年收益率(年化)、今年收益率(年化)
+                    | busicmOybinpRank | 今年以来收益率排名（年化） | 当前年收益率排名（年化）、今年收益率排名（年化）
                     | lastYrlyPftrt | 第1季度收益率 |
                     | custRaiseRateRankNo | 第1季度收益率排名 |
                     | nmm6CombProfrat | 第2季度收益率 |

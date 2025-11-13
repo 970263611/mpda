@@ -1,8 +1,8 @@
 package com.dahuaboke.mpda.bot.rag.job;
 
-import com.dahuaboke.mpda.bot.rag.handler.DbHandler;
 import com.dahuaboke.mpda.bot.scheduler.RagSearchTask;
 import com.dahuaboke.mpda.bot.tools.entity.BrProduct;
+import com.dahuaboke.mpda.bot.tools.service.BrProductService;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,7 +18,7 @@ public class RagSearchJobTest {
     RagSearchTask ragSearchJob;
 
     @Autowired
-    DbHandler dbHandler;
+    BrProductService brProductService;
     @Test
     public void test(){
         ragSearchJob.ragSearchJob();
@@ -26,12 +26,12 @@ public class RagSearchJobTest {
 
     @Test
     public void testTime(){
-        dbHandler.resetTimeout();
+        brProductService.resetTimeout();
     }
 
     @Test
     public void testMarkAndSelectUnprocessed(){
-        List<BrProduct> brProducts = dbHandler.markAndSelectUnprocessed(200);
+        List<BrProduct> brProducts = brProductService.markAndSelectUnprocessed(200);
         System.out.println(brProducts);
     }
 

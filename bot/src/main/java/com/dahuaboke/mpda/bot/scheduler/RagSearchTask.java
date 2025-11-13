@@ -1,13 +1,13 @@
 package com.dahuaboke.mpda.bot.scheduler;
 
 import com.dahuaboke.mpda.bot.rag.ProcessingMonitor;
-import com.dahuaboke.mpda.bot.rag.handler.DbHandler;
 import com.dahuaboke.mpda.bot.rag.handler.RateBondCalHandler;
 import com.dahuaboke.mpda.bot.rag.service.DocumentDeleteService;
 import com.dahuaboke.mpda.bot.rag.service.DocumentInsertService;
 import com.dahuaboke.mpda.bot.rag.service.ProductReportQueryService;
 import com.dahuaboke.mpda.bot.rag.service.ProductSummaryQueryService;
 import com.dahuaboke.mpda.bot.rag.utils.FundClassifierUtil;
+import com.dahuaboke.mpda.bot.rag.utils.FundDocUtil;
 import com.dahuaboke.mpda.bot.tools.ContentManageTool;
 import com.dahuaboke.mpda.bot.tools.dto.ContentManageResponse;
 import com.dahuaboke.mpda.bot.tools.entity.BrMarketProductReport;
@@ -18,6 +18,9 @@ import com.dahuaboke.mpda.bot.tools.enums.BondFundType;
 import com.dahuaboke.mpda.bot.tools.enums.FileDealFlag;
 import com.dahuaboke.mpda.bot.tools.enums.FundInfoType;
 import com.dahuaboke.mpda.bot.tools.enums.FundType;
+import com.dahuaboke.mpda.bot.tools.service.BrProductReportService;
+import com.dahuaboke.mpda.bot.tools.service.BrProductService;
+import com.dahuaboke.mpda.bot.tools.service.BrProductSummaryService;
 import com.dahuaboke.mpda.core.exception.MpdaIllegalArgumentException;
 import com.dahuaboke.mpda.core.exception.MpdaRuntimeException;
 import com.dahuaboke.mpda.core.rag.reader.DocumentReader;
@@ -48,9 +51,6 @@ public class RagSearchTask {
     private static final Logger log = LoggerFactory.getLogger(RagSearchTask.class);
 
     @Autowired
-    DbHandler dbHandler;
-
-    @Autowired
     DocumentDeleteService documentDeleteService;
 
     @Autowired
@@ -74,6 +74,15 @@ public class RagSearchTask {
     @Autowired
     private ContentManageTool contentManageTool;
 
+    @Autowired
+    private BrProductService brProductService;
+
+    @Autowired
+    private BrProductReportService brProductReportService;
+
+    @Autowired
+    BrProductSummaryService brProductSummaryService;
+
     private static final int SUM_TOTAL = 2500;
 
     private static final Long TIME_OUT = 3 * 60 * 60L;
@@ -87,7 +96,7 @@ public class RagSearchTask {
         log.info("开始执行pdf数据处理任务.......");
 
         // 获取未处理文件
-        List<BrProduct> brProducts = dbHandler.markAndSelectUnprocessed(3000);
+        List<BrProduct> brProducts = brProductService.markAndSelectUnprocessed(1500);
         if (brProducts.isEmpty()) {
             log.info("基金报告表不存在数据返回.......");
             return;
@@ -107,7 +116,7 @@ public class RagSearchTask {
 
         try {
             // 分批
-            List<List<BrProduct>> batches = splitIntoBatches(brProducts, 10);
+            List<List<BrProduct>> batches = FundDocUtil.splitIntoBatches(brProducts, 10);
 
             // 线程池调度
             for (List<BrProduct> batch : batches) {
@@ -140,7 +149,7 @@ public class RagSearchTask {
         LocalDateTime now = LocalDateTime.now();
         brProduct.setDealBgnTime(now);
         brProduct.setTmoutTimeNum(TIME_OUT);
-        dbHandler.updateProduct(brProduct);
+        brProductService.updateProduct(brProduct);
 
         //1. 从内管下载文件到本地
         ContentManageResponse contentManageResponse = contentManageTool.downloadFilesTool(brProduct.getInmngPlatfFileIndexNo(), brProduct.getPageCode());
@@ -154,20 +163,15 @@ public class RagSearchTask {
         }
         //2. 解析下载后的文件，存入向量库
         insertVectorStore(brProduct, fileResource);
+
         //3. 提取文件内容到对象,插入pq
-        Object obj = insertPqStore(brProduct);
+        insertPqStore(brProduct);
 
-        //4. 计算利率债
-        if (FundType.BOND_FUND.getCode().equals(brProduct.getProdtClsCode())
-                || FundType.SHORT_TERM_FINANCIAL_BOND__FUND.getCode().equals(brProduct.getProdtClsCode())) {
-            rateBondCal(obj, brProduct);
-        }
-
-        //5. 设置成已处理完成
+        //4. 设置成已处理完成
         brProduct.setDealFlag(FileDealFlag.PROCESSED.getCode());
-        dbHandler.updateProduct(brProduct);
+        brProductService.updateProduct(brProduct);
 
-        //6. 删除文件
+        //5. 删除文件
         File file = new File(localFilePath);
         if (file.exists() && file.isFile()) {
             file.delete();
@@ -179,7 +183,7 @@ public class RagSearchTask {
         brProduct.setDealFlag(FileDealFlag.PROCESS_FAIL.getCode());
         brProduct.setDealBgnTime(null);
         brProduct.setTmoutTimeNum(null);
-        dbHandler.updateProduct(brProduct);
+        brProductService.updateProduct(brProduct);
     }
 
 
@@ -230,103 +234,23 @@ public class RagSearchTask {
         }
     }
 
-    private Object insertPqStore(BrProduct brProduct) {
+    private void insertPqStore(BrProduct brProduct) {
         String fundProdtFullNm = brProduct.getFundProdtFullNm();
         String fundProdtSname = brProduct.getFundProdtSname();
         String ancmTpBclsCd = brProduct.getAncmTpBclsCd();
         String fundCode = brProduct.getFundCode();
-        Object obj;
-        //3. 通过文件类型提取到不同的表中
         if (FundInfoType.REPORT.getCode().equals(ancmTpBclsCd)) {
             BrProductReport brProductReport = productReportQueryService.queryFundProduct(brProduct);
             brProductReport.setFundCode(fundCode);
             brProductReport.setFundFnm(fundProdtFullNm);
             brProductReport.setProdtSname(fundProdtSname);
-            dbHandler.insertProductReport(brProductReport);
-            obj = brProductReport;
+            brProductReportService.insertProductReport(brProductReport);
         } else {
             BrProductSummary brProductSummary = productSummaryQueryService.queryFundProduct(brProduct);
             brProductSummary.setFundCode(fundCode);
             brProductSummary.setFundFnm(fundProdtFullNm);
-            dbHandler.insertProductSummary(brProductSummary);
-            obj = brProductSummary;
+            brProductSummaryService.insertProductSummary(brProductSummary);
         }
-        return obj;
-    }
-
-
-    private void rateBondCal(Object obj, BrProduct brProduct) {
-        String fundCode = brProduct.getFundCode();
-
-        log.info("{}开始计算利率债", fundCode);
-        BrProductReport report = null;
-        BrProductSummary summary = null;
-
-        if (obj instanceof BrProductReport) {
-            report = (BrProductReport) obj;
-            BrProductSummary brProductSummary = new BrProductSummary();
-            brProductSummary.setFundCode(fundCode);
-            List<BrProductSummary> brProductSummaries = dbHandler.selectBrProductSummary(brProductSummary);
-            if (CollectionUtils.isNotEmpty(brProductSummaries)) {
-                summary = brProductSummaries.get(0);
-            }
-        } else {
-            summary = (BrProductSummary) obj;
-            BrProductReport brProductReport = new BrProductReport();
-            brProductReport.setFundCode(fundCode);
-            List<BrProductReport> brProductReports = dbHandler.selectBrProductReport(brProductReport);
-            if (CollectionUtils.isNotEmpty(brProductReports)) {
-                report = brProductReports.get(0);
-            }
-        }
-        if (report == null || summary == null) {
-            return;
-        }
-        Double assetNval = FundClassifierUtil.findDouble(report.getAssetNval());
-        report.setAssetNval(assetNval.toString());
-        log.info("{}该基金期末资产净值是{}", fundCode, assetNval);
-
-        if (assetNval < MIN_NVAL) {
-            return;
-        }
-        log.info("{}开始发送模型计算利率债", fundCode);
-        String[] strings = rateBondCalHandler.callModel(report, summary);
-        String type = strings[0];
-        BondFundType bondFundType = BondFundType.getBondFundType(type.trim());
-        String code = bondFundType.getCode();
-        String reason = strings[1];
-
-        report.setClsReasonCode(code);
-        report.setMainReason(reason);
-        //更新季报
-        dbHandler.updateProductReport(report);
-
-        log.info("{}计算完成利率债是{},开始插入市场报告表", fundCode, code);
-        //插入市场报告表
-        BrMarketProductReport brMarketProductReport = new BrMarketProductReport();
-        brMarketProductReport.setFundCode(fundCode);
-        brMarketProductReport.setFinBondType(code);
-        dbHandler.insertMarketProductReport(brMarketProductReport);
-    }
-
-
-    private List<List<BrProduct>> splitIntoBatches(List<BrProduct> brProducts, int bachSize) {
-        List<List<BrProduct>> batches = new ArrayList<>();
-        List<BrProduct> currentBatch = new ArrayList<>();
-        int i = 0;
-        for (BrProduct brProduct : brProducts) {
-            if (i >= bachSize) {
-                batches.add(currentBatch);
-                currentBatch = new ArrayList<>();
-                i = 0;
-            }
-            currentBatch.add(brProduct);
-            i++;
-        }
-        if (!currentBatch.isEmpty()) {
-            batches.add(currentBatch);
-        }
-        return batches;
     }
 
 }

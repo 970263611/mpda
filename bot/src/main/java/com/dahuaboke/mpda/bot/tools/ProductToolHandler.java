@@ -1,19 +1,20 @@
 package com.dahuaboke.mpda.bot.tools;
 
 
-import com.dahuaboke.mpda.bot.tools.dto.FilterProdInfoReq;
 import com.dahuaboke.mpda.bot.tools.dto.MarketRankDto;
 import com.dahuaboke.mpda.bot.tools.dto.NetValReq;
 import com.dahuaboke.mpda.bot.tools.dto.ProdInfoDto;
+import com.dahuaboke.mpda.bot.tools.dto.RecommendProductDto;
 import com.dahuaboke.mpda.bot.tools.service.RobotService;
 import com.dahuaboke.mpda.bot.utils.DateUtil;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * auth: dahua
@@ -43,15 +44,6 @@ public class ProductToolHandler {
         return robotService.getMap();
     }
 
-    /**
-     * 根据输入条件筛选产品
-     *
-     * @param filterProdInfoReq
-     * @return
-     */
-    public List<ProdInfoDto> filterProdInfo(FilterProdInfoReq filterProdInfoReq) {
-        return robotService.filterProdInfo(filterProdInfoReq);
-    }
 
     /**
      * 最大回撤
@@ -92,14 +84,23 @@ public class ProductToolHandler {
         return tempAns + "%";
     }
 
+    /**
+     * 货基七日年化
+     *
+     * @param netValReq
+     * @return
+     */
+    public String sevenDayYearlyProfrat(NetValReq netValReq) {
+        return robotService.sevenDayYearlyProfrat(netValReq);
+    }
 
-    public List<MarketRankDto> getMarketRank(String finBondType,String period) {
-        return robotService.getMarketRank(finBondType,period);
+    public List<MarketRankDto> getMarketRank(String finBondType, String period) {
+        return robotService.getMarketRank(finBondType, period);
     }
 
 
-    protected List<ProdInfoDto> getFundByType(String fundType) {
-        return robotService.getFundByType(fundType);
+    public List<RecommendProductDto> getFundInfoByType(String fundType) {
+        return robotService.getFundInfoByType(fundType);
     }
 
 }

@@ -7,22 +7,22 @@ spring:
       strict: false
       datasource:
         master:
-          url: jdbc:postgresql://22.205.135.96:5432/prptdb
+          driver-class-name: org.postgresql.Driver
+          url: jdbc:postgresql://20.240.233.100:5432/prptdb
           username: ifundrobot
           password: ENC(cR58FU/mdN/7ILRTL6VN3U74DQNJxAvL)
-          driver-class-name: org.postgresql.Driver
         db1:
           driver-class-name: org.postgresql.Driver
-          url: jdbc:postgresql://22.224.170.154:5432/admdb?connectTimeout=10
-          username: finsys
-          password: ENC(FLOkut+Zk78VQbBIl7vqGlF1OFN7vDxq)
+          url: jdbc:postgresql://20.240.93.191:5434/mdbfinsys1?connectTimeout=1
+          username: mdbfinsys1
+          password: ENC(0Q7n0bg0GEvb9r2f5p37jpVROk7nY7U7)
           druid:
             # 初始化时建立物理连接的个数
-            initial-size: 1
+            initial-size: 2
             # 连接池的最小空闲数量
-            min-idle: 1
+            min-idle: 2
             # 连接池最大连接数量
-            max-active: 3
+            max-active: 5
             # 获取连接时最大等待时间，单位毫秒
             max-wait: 60000
             # 申请连接的时候检测，如果空闲时间大于timeBetweenEvictionRunsMillis，执行validationQuery检测连接是否有效。
@@ -37,12 +37,35 @@ spring:
             test-on-borrow: false
             # 归还连接时会执行validationQuery检测连接是否有效,开启会降低性能,默认为true
             test-on-return: false
+#            stat-view-servlet:
+#              # 是否启用StatViewServlet默认值true
+#              enabled: true
+#              # 访问路径为/druid时，跳转到StatViewServlet
+#              url-pattern: /druid/*
+#              # 是否能够重置数据
+#              reset-enable: false
+#              # 需要账号密码才能访问控制台，默认为root
+#              login-username: druid
+#              login-password: druid
+
+  cloud:
+    compatibility-verifier:
+      enabled: false
+    nacos:
+      discovery:
+        enabled: true
+        server-addr: 20.240.233.100:8848
+        namespace: ifund
+        username: nacos
+        password: ENC(bKnl8COGRTaVuo/y42kBZhVNvldGpkF2cP/cjjVGyPOi23YPbpzqRA==)
+
+
   ai:
     model:
       embedding: yc
     openai:
-      base-url: http://25.22.0.22:8080
-      api-key: 7bd51b7672d542b5b897fd380da5ba4ad032e845c58a4652b4cb556db9e0f4c1
+      base-url: http://20.200.25.216:8080
+      api-key: b8d5ca9f6f344058ba9d8cad089ac53d97a7a3e6021242638069e67bb6b09881
       embedding:
         embeddingsPath: "/embeddings"
         enabled: true
@@ -51,34 +74,22 @@ spring:
           model: Bge-m3-test
       chat:
         options:
-          model: QWen2.5-72B
+          model: Qwen25-72B-1-test
           internal-tool-execution-enabled: false
           httpHeaders:
-            Authorization: "Bearer 7bd51b7672d542b5b897fd380da5ba4ad032e845c58a4652b4cb556db9e0f4c1"
+            Authorization: "Bearer b8d5ca9f6f344058ba9d8cad089ac53d97a7a3e6021242638069e67bb6b09881"
             sendSysOrCmptNo: "99370000000"
             startSysOrCmptNo: "99370000000"
             sceneId: "0288"
         completionsPath: /v1/chat/completions
-  cloud:
-    compatibility-verifier:
-      enabled: false
-    nacos:
-      discovery:
-        register-enabled: true
-        enabled: true
-        server-addr: 22.224.172.7:8848,22.224.172.8:8848,22.224.172.9:8848
-        namespace: 435eb963-8657-4cea-8363-1e9f8bb66d70
-        username: nacos
-        password: ENC(bKnl8COGRTaVuo/y42kBZhVNvldGpkF2cP/cjjVGyPOi23YPbpzqRA==)
-        group: DEFAULT_GROUP
 
 yc:
   core:
     ai:
       resved-input-info: "0288"
-      url: http://25.6.60.15:8000/online-service/rag/v1/
+      url: http://20.200.175.85:32011/online-service/rag/v1/
       send-sys-no: 99370000000
-      target-sys-no: 99370000000
+      target-sys-no: 99900150000
       embedding:
         enabled: true
       vector:
@@ -91,12 +102,10 @@ yc:
 
 rerank:
   enabled: false
-  base-url: http://25.22.0.22:8080
-  api-key: a66d12f370574bea8fcd3aa1e190ca5973c8a21130014f6ba5ba2ccd6676f8d9
+  base-url: http://20.200.25.216:8080
+  api-key: b8d5ca9f6f344058ba9d8cad089ac53d97a7a3e6021242638069e67bb6b09881
   rerankPath: "/rerank"
-  model: bge-rerank-v2-m3
-
-
+  model: Bge-rerank-v2-m3-test
 
 logging:
   level:
@@ -108,8 +117,8 @@ contentManage:
   byOpeSysId: 99711870000
   location: 1
   #  areaCode: 98--定版环境 01--预演环境 99-生产环境 T2-t2环境
-  areaCode: "99"
-  fileSavePath: "/apptybat/ai-bot/fileTemp"
+  areaCode: "01"
+  fileSavePath: "./ai-bot/fileTemp"
   opeType: T01302
   opeUser: 20080733650
   opeOrg: 11005293

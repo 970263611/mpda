@@ -35,28 +35,28 @@ public class ContentManageTool {
 
     private static final Logger log = LoggerFactory.getLogger(ContentManageTool.class);
 
-    @Value("${mpda.contentManage.opeSysId}")
+    @Value("${contentManage.opeSysId}")
     private String opeSysId;
 
-    @Value("${mpda.contentManage.byOpeSysId}")
+    @Value("${contentManage.byOpeSysId}")
     private String byOpeSysId;
 
-    @Value("${mpda.contentManage.location}")
+    @Value("${contentManage.location}")
     private String location;
 
-    @Value("${mpda.contentManage.areaCode}")
+    @Value("${contentManage.areaCode}")
     private String areaCode;
 
-    @Value("${mpda.contentManage.fileSavePath}")
+    @Value("${contentManage.fileSavePath}")
     private String fileSavePath;
 
-    @Value("${mpda.contentManage.opeType}")
+    @Value("${contentManage.opeType}")
     private String opeType;
 
-    @Value("${mpda.contentManage.opeUser}")
+    @Value("${contentManage.opeUser}")
     private String opeUser;
 
-    @Value("${mpda.contentManage.opeOrg}")
+    @Value("${contentManage.opeOrg}")
     private String opeOrg;
 
 

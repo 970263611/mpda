@@ -21,7 +21,7 @@ public class InformationByIdAgentPrompt extends AbstractProductAgentPrompt {
                             2.需要分析工具所需参数，必须传入需要的参数
                             3.如果不满足工具调用条件，需要引导用户补充。
                         """
-                , "tool", translate() + """
+                , "tool", "根据工具执行后的结果,需要进行字段翻译,字段关系映射如下:" + translate() + """
                             根据中英文对照翻译返回正确的字段中文结果。
                             对于字段本身内容不要修改，原样返回。
                             仅回答用户最后一个问题，不要重复回答记忆中的问题。

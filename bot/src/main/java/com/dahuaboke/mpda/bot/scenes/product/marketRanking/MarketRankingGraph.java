@@ -7,6 +7,7 @@ import com.alibaba.cloud.ai.graph.exception.GraphRunnerException;
 import com.alibaba.cloud.ai.graph.exception.GraphStateException;
 import com.dahuaboke.mpda.bot.scenes.entity.PlatformExtend;
 import com.dahuaboke.mpda.bot.scenes.product.marketRanking.edge.MarketRankingDispatcher;
+import com.dahuaboke.mpda.bot.tools.enums.BondFundType;
 import com.dahuaboke.mpda.core.agent.graph.AbstractGraph;
 import com.dahuaboke.mpda.core.agent.scene.entity.SceneExtend;
 import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
@@ -79,6 +80,7 @@ public class MarketRankingGraph extends AbstractGraph {
     public SceneResponse execute(Map<String, Object> attribute) throws MpdaRuntimeException {
         attribute.put(Constants.TOOLS, List.of("marketRankingTool"));
         marketRankingPrompt.changePrompt("guide");
+        attribute.put(Constants.PROMPT, marketRankingPrompt.description());
         try {
             return response(attribute, "default");
         } catch (GraphRunnerException e) {
@@ -90,6 +92,7 @@ public class MarketRankingGraph extends AbstractGraph {
     public Flux<SceneResponse> executeAsync(Map<String, Object> attribute) throws MpdaRuntimeException {
         attribute.put(Constants.TOOLS, List.of("marketRankingTool"));
         marketRankingPrompt.changePrompt("guide");
+        attribute.put(Constants.PROMPT, marketRankingPrompt.description());
         try {
             return streamResponse(attribute, "default");
         } catch (GraphRunnerException e) {
@@ -98,7 +101,7 @@ public class MarketRankingGraph extends AbstractGraph {
     }
 
     /**
-     * @param toolExtend  包含该场景执行工具函数的，函数名称，参数(通过函数名称判断参数是否是基金代码)
+     * @param toolExtend 包含该场景执行工具函数的，函数名称，参数(通过函数名称判断参数是否是基金代码)
      * @return SceneExtend
      */
     @Override
@@ -107,11 +110,16 @@ public class MarketRankingGraph extends AbstractGraph {
         PlatformExtend platformExtend = new PlatformExtend();
         try {
             if (toolExtend != null) {
-                platformExtend.setDownloadLink(true);
                 List<Map<String, Object>> o = (List<Map<String, Object>>) toolExtend.get(0);
-                Map<String, Object> marketRankDto = o.get(0);
-                platformExtend.setFinBondType((String) marketRankDto.get("finBondType"));
-                platformExtend.setPeriod((String) marketRankDto.get("period"));
+                if (o != null && !o.isEmpty()) {
+                    platformExtend.setDownloadLink(true);
+                    Map<String, Object> marketRankDto = o.get(0);
+                    String finBondType = (String) marketRankDto.get("finBondType");
+                    platformExtend.setFinBondType(BondFundType.getBondFundType(finBondType).getCode());
+                    platformExtend.setPeriod((String) marketRankDto.get("period"));
+                } else {
+                    platformExtend.setDownloadLink(false);
+                }
             }
         } catch (Exception e) {
             log.error("toolExtend---" + toolExtend);

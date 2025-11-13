@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.springframework.core.io.Resource;
+
 
 /**
  * @Desc: 基金pdf文件工具类
@@ -68,11 +68,11 @@ public class FundDocUtil {
         return batches;
     }
 
-    public static List<List<Resource>> splitIntoBatches(List<Resource> resources, int bachSize) {
-        List<List<Resource>> batches = new ArrayList<>();
-        List<Resource> currentBatch = new ArrayList<>();
+    public static <T> List<List<T>> splitIntoBatches(List<T> resources, int bachSize) {
+        List<List<T>> batches = new ArrayList<>();
+        List<T> currentBatch = new ArrayList<>();
         int i = 0;
-        for (Resource resource : resources) {
+        for (T resource : resources) {
             if (i >= bachSize) {
                 batches.add(currentBatch);
                 currentBatch = new ArrayList<>();
@@ -99,4 +99,5 @@ public class FundDocUtil {
         }
 
     }
+
 }

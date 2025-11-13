@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dahuaboke.mpda.bot.tools.dao.FdIntbankKindparaMapper">
+    <resultMap id="BaseResultMap" type="com.dahuaboke.mpda.bot.tools.entity.FdIntbankKindpara">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="enroll_inst_no" jdbcType="VARCHAR" property="enrollInstNo"/>
+        <id column="fund_prodt_no" jdbcType="VARCHAR" property="fundProdtNo"/>
+        <result column="belong_inst_no" jdbcType="VARCHAR" property="belongInstNo"/>
+        <result column="fund_status_code" jdbcType="VARCHAR" property="fundStatusCode"/>
+        <result column="prodt_name" jdbcType="VARCHAR" property="prodtName"/>
+        <result column="rais_bgn_date" jdbcType="VARCHAR" property="raisBgnDate"/>
+        <result column="collect_end_dt" jdbcType="VARCHAR" property="collectEndDt"/>
+        <result column="collect_daynum" jdbcType="NUMERIC" property="collectDaynum"/>
+        <result column="ctfee_mode_cd" jdbcType="VARCHAR" property="ctfeeModeCd"/>
+        <result column="fund_type" jdbcType="VARCHAR" property="fundType"/>
+        <result column="fund_lvl2_cls_cd" jdbcType="VARCHAR" property="fundLvl2ClsCd"/>
+        <result column="chrem_prodt_risk_lvl_code" jdbcType="VARCHAR" property="chremProdtRiskLvlCode"/>
+        <result column="defau_divid_mode" jdbcType="VARCHAR" property="defauDividMode"/>
+        <result column="inst_lowest_subscri_lmt_amt" jdbcType="NUMERIC" property="instLowestSubscriLmtAmt"/>
+        <result column="instaddto_lowest_subscri_lmamt" jdbcType="NUMERIC" property="instaddtoLowestSubscriLmamt"/>
+        <result column="inst_highest_subscri_lmt_amt" jdbcType="NUMERIC" property="instHighestSubscriLmtAmt"/>
+        <result column="inst_lowest_aplypchs_lmt_amt" jdbcType="NUMERIC" property="instLowestAplypchsLmtAmt"/>
+        <result column="instaddto_lowe_aplypchs_lmamt" jdbcType="NUMERIC" property="instaddtoLoweAplypchsLmamt"/>
+        <result column="inst_per_highest_aplyp_lmt_amt" jdbcType="NUMERIC" property="instPerHighestAplypLmtAmt"/>
+        <result column="inst_highest_aplypchs_lmt_amt" jdbcType="NUMERIC" property="instHighestAplypchsLmtAmt"/>
+        <result column="inst_lowest_redem_lmt_amt" jdbcType="NUMERIC" property="instLowestRedemLmtAmt"/>
+        <result column="inst_per_highest_redem_lmt_amt" jdbcType="NUMERIC" property="instPerHighestRedemLmtAmt"/>
+        <result column="inst_highest_redem_lmt_amt" jdbcType="NUMERIC" property="instHighestRedemLmtAmt"/>
+        <result column="inst_lowest_hold_have_lmt_amt" jdbcType="NUMERIC" property="instLowestHoldHaveLmtAmt"/>
+        <result column="fund_tranfm_low_lmt_amt" jdbcType="NUMERIC" property="fundTranfmLowLmtAmt"/>
+        <result column="fix_quota_aplypchs_up_lmt_amt" jdbcType="NUMERIC" property="fixQuotaAplypchsUpLmtAmt"/>
+        <result column="fix_quota_aplypchs_low_lmt_amt" jdbcType="NUMERIC" property="fixQuotaAplypchsLowLmtAmt"/>
+        <result column="en_py_name" jdbcType="VARCHAR" property="enPyName"/>
+        <result column="en_py_sname" jdbcType="VARCHAR" property="enPySname"/>
+        <result column="prodt_aname" jdbcType="VARCHAR" property="prodtAname"/>
+        <result column="fund_trustee_bank_name" jdbcType="VARCHAR" property="fundTrusteeBankName"/>
+        <result column="chrem_flag" jdbcType="VARCHAR" property="chremFlag"/>
+        <result column="contract_type" jdbcType="VARCHAR" property="contractType"/>
+        <result column="busi_contract_name" jdbcType="VARCHAR" property="busiContractName"/>
+        <result column="e_conf_par_code" jdbcType="VARCHAR" property="eConfParCode"/>
+        <result column="lof_fund_flag" jdbcType="VARCHAR" property="lofFundFlag"/>
+        <result column="partc_yr_hold_hv_fund_flag" jdbcType="VARCHAR" property="partcYrHoldHvFundFlag"/>
+        <result column="byquit_flag" jdbcType="VARCHAR" property="byquitFlag"/>
+        <result column="rel_pty_manage_prodt_flag" jdbcType="VARCHAR" property="relPtyManageProdtFlag"/>
+        <result column="sets_chmprdt_flag" jdbcType="VARCHAR" property="setsChmprdtFlag"/>
+        <result column="structur_prodt_flag" jdbcType="VARCHAR" property="structurProdtFlag"/>
+        <result column="open_fix_quota_busi_flag" jdbcType="VARCHAR" property="openFixQuotaBusiFlag"/>
+        <result column="ctrl_limit_flag" jdbcType="VARCHAR" property="ctrlLimitFlag"/>
+        <result column="reveal_prodt_doc_outl_flag" jdbcType="VARCHAR" property="revealProdtDocOutlFlag"/>
+        <result column="spcacc_chmprdt_flag" jdbcType="VARCHAR" property="spcaccChmprdtFlag"/>
+        <result column="psbc_trustee_flag" jdbcType="VARCHAR" property="psbcTrusteeFlag"/>
+        <result column="hk_mut_reco_fund_flag" jdbcType="VARCHAR" property="hkMutRecoFundFlag"/>
+        <result column="divid_mode_code" jdbcType="VARCHAR" property="dividModeCode"/>
+        <result column="permit_tranfm_flag" jdbcType="VARCHAR" property="permitTranfmFlag"/>
+        <result column="recomend_exp_para_code" jdbcType="VARCHAR" property="recomendExpParaCode"/>
+        <result column="aged_fund_cd" jdbcType="VARCHAR" property="agedFundCd"/>
+        <result column="aged_target_fund_flag" jdbcType="VARCHAR" property="agedTargetFundFlag"/>
+        <result column="aged_fund_close_year_num" jdbcType="NUMERIC" property="agedFundCloseYearNum"/>
+        <result column="optimiz_fund_flag" jdbcType="VARCHAR" property="optimizFundFlag"/>
+        <result column="hot_sale_fund_flag" jdbcType="VARCHAR" property="hotSaleFundFlag"/>
+        <result column="show_risk_revea_bk_flag" jdbcType="VARCHAR" property="showRiskReveaBkFlag"/>
+        <result column="tran_trustee_mode" jdbcType="VARCHAR" property="tranTrusteeMode"/>
+        <result column="tran_trustee_status" jdbcType="VARCHAR" property="tranTrusteeStatus"/>
+        <result column="tot_limt" jdbcType="NUMERIC" property="totLimt"/>
+        <result column="enable_date" jdbcType="VARCHAR" property="enableDate"/>
+        <result column="cfm_term_val" jdbcType="NUMERIC" property="cfmTermVal"/>
+        <result column="last_mod_stamp" jdbcType="VARCHAR" property="lastModStamp"/>
+        <result column="put_shel_time" jdbcType="VARCHAR" property="putShelTime"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        enroll_inst_no
+        as enrollInstNo,
+        fund_prodt_no as fundProdtNo,
+        belong_inst_no as belongInstNo,
+        fund_status_code as fundStatusCode,
+        prodt_name as prodtName,
+        rais_bgn_date as raisBgnDate,
+        collect_end_dt as collectEndDt,
+        collect_daynum as collectDaynum,
+        ctfee_mode_cd as ctfeeModeCd,
+        fund_type as fundType,
+        fund_lvl2_cls_cd as fundLvl2ClsCd,
+        chrem_prodt_risk_lvl_code as chremProdtRiskLvlCode,
+        defau_divid_mode as defauDividMode,
+        inst_lowest_subscri_lmt_amt as instLowestSubscriLmtAmt,
+        instaddto_lowest_subscri_lmamt as instaddtoLowestSubscriLmamt,
+        inst_highest_subscri_lmt_amt as instHighestSubscriLmtAmt,
+        inst_lowest_aplypchs_lmt_amt as instLowestAplypchsLmtAmt,
+        instaddto_lowe_aplypchs_lmamt as instaddtoLoweAplypchsLmamt,
+        inst_per_highest_aplyp_lmt_amt as instPerHighestAplypLmtAmt,
+        inst_highest_aplypchs_lmt_amt as instHighestAplypchsLmtAmt,
+        inst_lowest_redem_lmt_amt as instLowestRedemLmtAmt,
+        inst_per_highest_redem_lmt_amt as instPerHighestRedemLmtAmt,
+        inst_highest_redem_lmt_amt as instHighestRedemLmtAmt,
+        inst_lowest_hold_have_lmt_amt as instLowestHoldHaveLmtAmt,
+        fund_tranfm_low_lmt_amt as fund_tranfmLowLmtAmt,
+        fix_quota_aplypchs_up_lmt_amt as fixQuotaAplypchsUpLmtAmt,
+        fix_quota_aplypchs_low_lmt_amt as fixQuotaAplypchsLowLmtAmt,
+        en_py_name as enPyAame,
+        en_py_sname as enPySname,
+        prodt_aname as prodtAname,
+        fund_trustee_bank_name as fundTrusteeBankName,
+        chrem_flag as chremFlag,
+        contract_type as contractType,
+        busi_contract_name as busiContractName,
+        e_conf_par_code as eConfParCode,
+        lof_fund_flag as lofFundFlag,
+        partc_yr_hold_hv_fund_flag as partcYrHoldHvFundFlag,
+        byquit_flag as byquitFlag,
+        rel_pty_manage_prodt_flag as relPtyManageProdtFlag,
+        sets_chmprdt_flag as setsChmprdtFlag,
+        structur_prodt_flag as structurProdtFlag,
+        open_fix_quota_busi_flag as openFixQuotaBusiFlag,
+        ctrl_limit_flag as ctrlLimitFlag,
+        reveal_prodt_doc_outl_flag as revealProdtDocOutlFlag,
+        spcacc_chmprdt_flag as spcaccChmprdtFlag,
+        psbc_trustee_flag as psbcTrusteeFlag,
+        hk_mut_reco_fund_flag as hkMutRecoFundFlag,
+        divid_mode_code as dividModeCode,
+        permit_tranfm_flag as permitTranfmFlag,
+        recomend_exp_para_code as recomendExpParaCode,
+        aged_fund_cd as agedFundCd,
+        aged_target_fund_flag as agedTargetFundFlag,
+        aged_fund_close_year_num as agedFundCloseYearNum,
+        optimiz_fund_flag as optimizFundFlag,
+        hot_sale_fund_flag as hotSaleFundFlag,
+        show_risk_revea_bk_flag as showRiskReveaBkFlag,
+        tran_trustee_mode as tranTrusteeMode,
+        tran_trustee_status as tranTrusteeStatus,
+        tot_limt as totLimt,
+        enable_date as enableDate,
+        cfm_term_val as cfmTermVal,
+        last_mod_stamp as lastModStamp,
+        put_shel_time as putShelTime
+    </sql>
+    <sql id="Base_Column_List_Repeat_Key">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        fund_type,fund_prodt_no,enroll_inst_no
+    </sql>
+    <select id="selectFundCodes" resultType="java.lang.String">
+        select fund_prodt_no from fd_intbank_kindpara
+        where byquit_flag = '0' and #{today} >= enable_date order by fund_prodt_no limit #{count} offset #{start};
+    </select>
+
+
+</mapper>

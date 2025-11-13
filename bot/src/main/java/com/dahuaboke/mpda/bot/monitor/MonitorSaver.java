@@ -26,8 +26,7 @@ public class MonitorSaver implements Listener {
 
     @Override
     public void onEvent(Event event) {
-        //TODO 十一月版本 还需实现定时任务清理表
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
         try {
             MonitorEventEntity monitorEventEntity = null;
             if (event instanceof MessageChangeEvent messageChangeEvent) {

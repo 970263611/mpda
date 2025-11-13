@@ -28,4 +28,13 @@ public enum FundType {
         this.code = code;
         this.desc = desc;
     }
+
+    public static FundType getFundTypeDesc(String code){
+        for (FundType fundType : values()) {
+            if (fundType.getCode().equals(code)) {
+                return fundType;
+            }
+        }
+        return BOND_FUND;
+    }
 }

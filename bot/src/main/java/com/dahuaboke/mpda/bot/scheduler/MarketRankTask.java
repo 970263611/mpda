@@ -1,11 +1,12 @@
 package com.dahuaboke.mpda.bot.scheduler;
 
-import com.dahuaboke.mpda.bot.rag.handler.DbHandler;
 import com.dahuaboke.mpda.bot.tools.ProductToolHandler;
 import com.dahuaboke.mpda.bot.tools.dto.NetValReq;
 import com.dahuaboke.mpda.bot.tools.entity.BrMarketProductReport;
+import com.dahuaboke.mpda.bot.tools.service.BrMarketProductReportService;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -22,17 +23,17 @@ public class MarketRankTask {
     private static final Logger log = LoggerFactory.getLogger(MarketRankTask.class);
 
     @Autowired
-    DbHandler dbHandler;
+    BrMarketProductReportService brMarketProductReportService;
 
     @Autowired
     ProductToolHandler productToolHandler;
 
-    @Scheduled(cron = "0 0 16 * * ?")
+    @Scheduled(cron = "0 0 8 * * ?")
     public void marketRankJob() {
         log.info("开始执行市场产品报告任务...........");
 
         //1. 扫描市场报告表
-        List<BrMarketProductReport> brMarketProductReports = dbHandler.selectAllMarketProductReport();
+        List<BrMarketProductReport> brMarketProductReports = brMarketProductReportService.selectAllMarketProductReport();
         if (brMarketProductReports.isEmpty()) {
             log.info("市场产品报告表不存在数据,执行结束...........");
             return;
@@ -47,7 +48,7 @@ public class MarketRankTask {
         rankChange(brMarketProductReports);
 
         //4. 更新排名
-        brMarketProductReports.forEach(report -> dbHandler.insertMarketProductReport(report));
+        brMarketProductReports.forEach(report -> brMarketProductReportService.insertMarketProductReport(report));
 
         log.info("执行市场产品报告任务结束...........");
     }
@@ -75,6 +76,13 @@ public class MarketRankTask {
             String weakRate = productToolHandler.yearRita(new NetValReq(fundCode, weak.format(yyyyMMdd), now.format(yyyyMMdd)));
             String mouth1Rate = productToolHandler.yearRita(new NetValReq(fundCode, mouth1.format(yyyyMMdd), now.format(yyyyMMdd)));
             String mouth3Rate = productToolHandler.yearRita(new NetValReq(fundCode, mouth3.format(yyyyMMdd), now.format(yyyyMMdd)));
+            String yearToDateRate = productToolHandler.yearRita(new NetValReq(fundCode, quarter1Start.format(yyyyMMdd), now.format(yyyyMMdd)));
+            //今年以来(年化)
+            double rate = parseRate(yearToDateRate);
+            long days = ChronoUnit.DAYS.between(quarter1Start, now);
+            double annualizedRate = Math.pow(1 + rate /100 ,365.0 /days) -1;
+            String annualizedRateStr = String.format("%.2f%%",annualizedRate * 100);
+
             String yearRate = productToolHandler.yearRita(new NetValReq(fundCode, year.format(yyyyMMdd), now.format(yyyyMMdd)));
 
             String quarter1Rate = productToolHandler.yearRita(new NetValReq(fundCode, quarter1Start.format(yyyyMMdd), quarter1End.format(yyyyMMdd)));
@@ -91,6 +99,8 @@ public class MarketRankTask {
             brMarketProductReport.setNwk1CombProfrat(weakRate);
             brMarketProductReport.setNmm1CombProfrat(mouth1Rate);
             brMarketProductReport.setNmm3CombProfrat(mouth3Rate);
+            brMarketProductReport.setDrtPftrtTval(yearToDateRate);
+            brMarketProductReport.setPftrtName(annualizedRateStr);
             brMarketProductReport.setNyy1Profrat(yearRate);
             brMarketProductReport.setLastYrlyPftrt(quarter1Rate);
             brMarketProductReport.setNmm6CombProfrat(quarter2Rate);
@@ -100,7 +110,7 @@ public class MarketRankTask {
             brMarketProductReport.setMaxWdwrt(mouth1WithDrawal);
             brMarketProductReport.setFundstgMaxWdwrt(mouth3WithDrawal);
             brMarketProductReport.setNyy1Wdwrt(yearWithDrawal);
-            dbHandler.insertMarketProductReport(brMarketProductReport);
+            brMarketProductReportService.insertMarketProductReport(brMarketProductReport);
 
         });
     }
@@ -128,6 +138,8 @@ public class MarketRankTask {
             sortAndRank(funds, BrMarketProductReport::getNwk1CombProfrat, BrMarketProductReport::setIndsRankSeqNo);
             sortAndRank(funds, BrMarketProductReport::getNmm1CombProfrat, BrMarketProductReport::setLblmRank);
             sortAndRank(funds, BrMarketProductReport::getNmm3CombProfrat, BrMarketProductReport::setRankScopeLowLmtVal);
+            sortAndRank(funds, BrMarketProductReport::getDrtPftrtTval, BrMarketProductReport::setRtnRtRank);
+            sortAndRank(funds, BrMarketProductReport::getPftrtName, BrMarketProductReport::setBusicmOybinpRank);
             sortAndRank(funds, BrMarketProductReport::getNyy1Profrat, BrMarketProductReport::setReachStRankSeqNo);
 
             sortAndRank(funds, BrMarketProductReport::getLastYrlyPftrt, BrMarketProductReport::setCustRaiseRateRankNo);

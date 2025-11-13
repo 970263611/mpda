@@ -39,9 +39,6 @@ public class ToolCallContentParse {
             AssistantMessage output = chatResponse.getResult().getOutput();
             String toolData = matcher.group(1).trim();
             log.info("ChatResponse content is tool, toolData is {}", toolData);
-            if (toolData.contains("]")) {
-                toolData = toolData.replaceAll("]", "}");
-            }
             List tools;
             List media;
             try {
@@ -65,7 +62,7 @@ public class ToolCallContentParse {
                 log.error("ToolCall json process fail", e);
                 ChatResponse newChatResponse = new ChatResponse(
                         List.of(new Generation(new AssistantMessage(
-                                "很抱歉,邮小盈暂时还不能回答您的问题，我们正在努力开发中~您可以继续问我: 查询产品信息;产品对比(目前只支持两个产品对比哟);个性化推荐产品;定时市场产品报告;", output.getMetadata()))));
+                                "很抱歉,邮小盈可能出了点问题，等我缓缓~您可以继续问我: 查询产品信息;产品对比(目前只支持两个产品对比哟);个性化推荐产品;定时市场产品报告;", output.getMetadata()))));
                 state.input(Map.of(Constants.RESULT, new LlmResponse(newChatResponse), Constants.PROMPT, prompt.description()));
                 return "go_human";
             }

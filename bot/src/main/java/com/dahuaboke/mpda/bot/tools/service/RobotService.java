@@ -6,6 +6,8 @@ import com.dahuaboke.mpda.bot.tools.dao.*;
 import com.dahuaboke.mpda.bot.tools.dto.*;
 import com.dahuaboke.mpda.bot.tools.entity.*;
 import com.dahuaboke.mpda.bot.tools.enums.BondFundType;
+import com.dahuaboke.mpda.bot.tools.enums.FundType;
+import com.dahuaboke.mpda.bot.tools.enums.ShelfStatus;
 import com.dahuaboke.mpda.bot.tools.enums.TimeType;
 import com.dahuaboke.mpda.bot.utils.DateUtil;
 import org.slf4j.Logger;
@@ -23,15 +25,15 @@ import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static java.time.temporal.IsoFields.QUARTER_OF_YEAR;
+
 public class RobotService {
+
     private static final Logger log = LoggerFactory.getLogger(RobotService.class);
 
     @Autowired
@@ -56,6 +58,8 @@ public class RobotService {
             "(\\d{4})(年|[-/])" +
                     "(\\d{1,2})(月|[-/])" +
                     "(\\d{1,2})(日|[-/]?)", Pattern.DOTALL);
+
+    private static final int CRITICAL_WORKDAY_NUM = 15; // 季度初第15个工作日
 
     public ProdInfoDto getInfo(String code) {
         ProdInfoDto prodInfoDto = new ProdInfoDto();
@@ -129,75 +133,6 @@ public class RobotService {
         return String.valueOf(divide);
     }
 
-
-    public List<ProdInfoDto> filterProdInfo(FilterProdInfoReq filterProdInfoReq) {
-        List<ProdInfoDto> list = new ArrayList<>();
-
-        LambdaQueryWrapper<BrProductReport> queryWrapper = new LambdaQueryWrapper<BrProductReport>()
-                .eq(BrProductReport::getClsReasonCode, filterProdInfoReq.getFundClassificationCode());
-        List<BrProductReport> brProductReports = brProductReportMapper.selectList(queryWrapper);
-
-
-        for (BrProductReport brProductReport : brProductReports) {
-            String fundCode = brProductReport.getFundCode();
-
-            if (StringUtils.isEmpty(filterProdInfoReq.getWithDrawal()) && StringUtils.isEmpty(filterProdInfoReq.getYearRita())) {
-                ProdInfoDto info = getInfo(fundCode);
-                list.add(info);
-                continue;
-            }
-
-            NetValReq netValReq = new NetValReq();
-            netValReq.setBegDate(DateUtil.getBusinessToday());
-            netValReq.setEndDate(DateUtil.getDayBy(DateUtil.getBusinessToday(), 0, 0, -30));
-            netValReq.setProdtCode(fundCode);
-
-            String withDrawal = getWithDrawal(netValReq);
-            String yearRita = yearRita(netValReq);
-
-            if (!StringUtils.isEmpty(filterProdInfoReq.getWithDrawal()) && !StringUtils.isEmpty(filterProdInfoReq.getYearRita())) {
-                if (filterProdInfoReq.getWithDrawal().contains("%"))
-                    filterProdInfoReq.setWithDrawal(filterProdInfoReq.getWithDrawal().replace("%", ""));
-                if (filterProdInfoReq.getYearRita().contains("%"))
-                    filterProdInfoReq.setYearRita(filterProdInfoReq.getYearRita().replace("%", ""));
-                BigDecimal bigDecimal1 = new BigDecimal(filterProdInfoReq.getWithDrawal()).divide(BigDecimal.valueOf(100), new MathContext(5, RoundingMode.HALF_UP));
-                BigDecimal bigDecimal2 = new BigDecimal(filterProdInfoReq.getYearRita()).divide(BigDecimal.valueOf(100), new MathContext(5, RoundingMode.HALF_UP));
-                BigDecimal bigDecimal3 = new BigDecimal(withDrawal);
-                BigDecimal bigDecimal4 = new BigDecimal(yearRita);
-                //1<3返回负数
-                if (bigDecimal1.compareTo(bigDecimal3) > 0 && bigDecimal2.compareTo(bigDecimal4) < 0) {
-                    ProdInfoDto info = getInfo(fundCode);
-                    list.add(info);
-                }
-                continue;
-            }
-            if (!StringUtils.isEmpty(filterProdInfoReq.getWithDrawal())) {
-                if (filterProdInfoReq.getWithDrawal().contains("%"))
-                    filterProdInfoReq.setWithDrawal(filterProdInfoReq.getWithDrawal().replace("%", ""));
-                BigDecimal bigDecimal1 = new BigDecimal(filterProdInfoReq.getWithDrawal()).divide(BigDecimal.valueOf(100), new MathContext(5, RoundingMode.HALF_UP));
-                BigDecimal bigDecimal3 = new BigDecimal(withDrawal);
-                if (bigDecimal1.compareTo(bigDecimal3) > 0) {
-                    ProdInfoDto info = getInfo(fundCode);
-                    list.add(info);
-
-                }
-                continue;
-            }
-            if (!StringUtils.isEmpty(filterProdInfoReq.getYearRita())) {
-                if (filterProdInfoReq.getYearRita().contains("%"))
-                    filterProdInfoReq.setYearRita(filterProdInfoReq.getYearRita().replace("%", ""));
-                BigDecimal bigDecimal2 = new BigDecimal(filterProdInfoReq.getYearRita()).divide(BigDecimal.valueOf(100), new MathContext(5, RoundingMode.HALF_UP));
-                BigDecimal bigDecimal4 = new BigDecimal(yearRita);
-                if (bigDecimal2.compareTo(bigDecimal4) < 0) {
-                    ProdInfoDto info = getInfo(fundCode);
-                    list.add(info);
-                }
-            }
-        }
-        return list;
-    }
-
-
     public Map<String, List<String>> getMap() {
         Map<String, List<String>> map = new HashMap<>();
         List<BrProductReport> brProductReports = brProductReportMapper.selectList(new LambdaQueryWrapper<BrProductReport>());
@@ -211,22 +146,13 @@ public class RobotService {
         LambdaQueryWrapper<BrMarketProductReport> queryWrapper = new LambdaQueryWrapper<BrMarketProductReport>();
         queryWrapper.last("LIMIT " + 10);
         List<MarketRankDto> rankDtos = selectMarketReportByTimeAndFundType(finBondType, period, queryWrapper);
-//        List<BrMarketProductReport> brMarketProductReports = brMarketProductReportMapper.selectList(queryWrapper);
-//        ArrayList<MarketRankDto> rankDtos = new ArrayList<>();
-//        brMarketProductReports.forEach(report -> {
-//            MarketRankDto marketRankDto = new MarketRankDto();
-//            String fundCode = report.getFundCode();
-//            ProdInfoDto info = getInfo(fundCode);
-//            BeanUtils.copyProperties(info, marketRankDto);
-//            BeanUtils.copyProperties(report, marketRankDto);
-//            marketRankDto.setPeriod(period);
-//            rankDtos.add(marketRankDto);
-//        });
         return rankDtos;
     }
 
     /**
      * 通过债基类型和时间查询市场报告
+     * ESBxi下载入口
+     *
      * @param finBondType
      * @param period
      * @return
@@ -238,6 +164,7 @@ public class RobotService {
 
     /**
      * 通过债基类型和时间查询市场报告
+     *
      * @param finBondType
      * @param period
      * @param queryWrapper
@@ -261,20 +188,22 @@ public class RobotService {
             queryWrapper.orderByAsc(BrMarketProductReport::getTmPontAsetRaiseTotRanknum);
         } else if (TimeType.CURRENT_YEAR_Q4.getCode().equals(period)) {
             queryWrapper.orderByAsc(BrMarketProductReport::getAddRepPurcProTotnumRankno);
-        }else if (TimeType.CURRENT_YEAR.getCode().equals(period)) {
+        } else if (TimeType.CURRENT_YEAR.getCode().equals(period)) {
             queryWrapper.orderByAsc(BrMarketProductReport::getRtnRtRank);
-        }else if (TimeType.NONE.getCode().equals(period)) {
+        } else if (TimeType.NONE.getCode().equals(period) || "".equals(period)) {
             queryWrapper.orderByAsc(BrMarketProductReport::getRtnRtRank);
         }
         List<BrMarketProductReport> brMarketProductReports = brMarketProductReportMapper.selectList(queryWrapper);
         ArrayList<MarketRankDto> rankDtos = new ArrayList<>();
+        if (brMarketProductReports.size() == 0) {
+            return rankDtos;
+        }
         brMarketProductReports.forEach(report -> {
             MarketRankDto marketRankDto = new MarketRankDto();
             String fundCode = report.getFundCode();
             ProdInfoDto info = getInfo(fundCode);
             BeanUtils.copyProperties(info, marketRankDto);
             BeanUtils.copyProperties(report, marketRankDto);
-
             rankDtos.add(marketRankDto);
         });
 
@@ -292,7 +221,7 @@ public class RobotService {
             //当前日期
             rankDto.setCurDate(now.format(dateTimeFormatter));
             //TODO下载文件名
-            rankDto.setDldFlnm("全市场" + BondFundType.getBondFundTypeDesc(finBondType).getDesc() + "排名" + Year.now().getValue());
+            rankDto.setDldFlnm("全市场" + BondFundType.getBondFundTypeDesc(finBondType).getDesc() + "排名" + dealDldFlnm(LocalDate.now()));
             //基金成立日
             rankDto.setContractEffDate(dealContractEffDate(rankDto.getContractEffDate()));
             //存续天数
@@ -302,8 +231,20 @@ public class RobotService {
             rankDto.setPeriod(period);
             //单位净值
             rankDto.setUnitNetVal(brNetvaluesMap.get(rankDto.getFundCode()));
+            //基金规模
+            rankDto.setAssetNval(dealAssetNval(rankDto.getAssetNval()));
         });
         return rankDtos;
+    }
+
+    public String dealAssetNval(String assetNval) {
+        double number = Double.parseDouble(assetNval);
+        if (number == 0) {
+            return "0";
+        } else {
+            double inBillions = number / 100_000_000;
+            return String.format("%.2f", inBillions) + "亿";
+        }
     }
 
     /**
@@ -354,27 +295,144 @@ public class RobotService {
 
     /**
      * 处理下载文件名
+     * 在季度初15个工作日内命名的季度为上上季度，15个工作日后命名为上季度。比如，10.1-10.28（15个工作日）报告名称为《全市场利率债主动-开放式排名2025Q2》，10.29之后，命名为《全市场利率债主动-开放式排名2025Q3》
+     * 工作日的计算，可以通过读取理财系统的节假日表，读取业务类型=基金的，基金是证券间日历
+     *
      * @return
      */
     @DS("db1")
-    public String dealDldFlnm() {
+    public String dealDldFlnm(LocalDate localDate) {
         LambdaQueryWrapper<FdHoliday> queryWrapper = new LambdaQueryWrapper<FdHoliday>();
-        String year = Year.now().getValue()+"";
+        String year = Year.now().getValue() + "";
         queryWrapper.like(FdHoliday::getThedate, year);
-        queryWrapper.eq(FdHoliday::getFundworkday,"1");
+        queryWrapper.eq(FdHoliday::getFundworkday, "1");
         List<FdHoliday> fdHolidays = fdHolidayMapper.selectList(queryWrapper);
-        return null;
+        String DldFlnm = generateReportName(fdHolidays, localDate);
+        return DldFlnm;
     }
 
-    public List<ProdInfoDto> getFundByType(String fundType) {
+
+    /**
+     * 计算从起始日期开始的第N个工作日
+     *
+     * @param startDate 起始日期
+     * @param n         第N个工作日（正整数）
+     * @return 目标工作日
+     */
+    public LocalDate getNthWorkday(List<FdHoliday> fdHolidays, LocalDate startDate, int n) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        LocalDate currentDate = startDate;
+        //String today = startDate.format(formatter);
+        Set<LocalDate> fdHolidaysSet = fdHolidays.stream()
+                .map(FdHoliday::getThedate)
+                .filter(thedate -> thedate != null && !thedate.isEmpty())
+                .map(thedate -> LocalDate.parse(thedate, formatter))
+                .collect(Collectors.toSet());
+        if (n <= 0) {
+            throw new IllegalArgumentException("工作日数必须为正整数");
+        }
+
+        int workdayCount = 0;
+        while (true) {
+            // 判断是否为工作日：非周末且不在节假日列表
+            if (!fdHolidaysSet.contains(currentDate)) {
+                workdayCount++;
+                if (workdayCount == n) {
+                    return currentDate;
+                }
+            }
+            currentDate = currentDate.plusDays(1);
+        }
+    }
+
+    /**
+     * 生成指定日期的报告名称
+     *
+     * @param fdHolidays 节假日
+     * @param today      指定日期
+     * @return 报告名称（格式：《年份Q季度》）
+     */
+    public String generateReportName(List<FdHoliday> fdHolidays, LocalDate today) {
+        // 1. 获取当前日期所在季度的季度初日期
+        LocalDate quarterStart = getQuarterStartDate(today);
+        // 2. 计算季度初第15个工作日（临界点）
+        LocalDate criticalDate = getNthWorkday(fdHolidays, quarterStart, CRITICAL_WORKDAY_NUM);
+        // 3. 确定季度标识
+        String quarterCode = getTargetQuarterCode(today, criticalDate, quarterStart);
+        return quarterCode;
+    }
+
+    /**
+     * 获取指定日期所在季度的季度初日期
+     *
+     * @param date 指定日期
+     * @return 季度初日期（如Q1为1月1日，Q2为4月1日等）
+     */
+    private LocalDate getQuarterStartDate(LocalDate date) {
+        int year = date.getYear();
+        int quarter = date.get(QUARTER_OF_YEAR);
+        int startMonth = (quarter - 1) * 3 + 1; // Q1=1, Q2=4, Q3=7, Q4=10
+        return LocalDate.of(year, startMonth, 1);
+    }
+
+    /**
+     * 确定报告名称的季度标识
+     * 逻辑：
+     * - 15个工作日内：使用「当前季度的上上个季度」（如2025Q1 → 2024Q3）
+     * - 15个工作日后：使用「当前季度的上一个季度」（如2025Q1 → 2024Q4）
+     */
+    private String getTargetQuarterCode(LocalDate today, LocalDate criticalDate, LocalDate quarterStart) {
+        int currentYear = quarterStart.getYear();
+        int currentQuarter = quarterStart.get(QUARTER_OF_YEAR);
+
+        if (today.isBefore(criticalDate) || today.isEqual(criticalDate)) {
+            // 15个工作日内：当前季度的上上个季度
+            int targetQuarter = currentQuarter - 2;
+            int targetYear = currentYear;
+            if (targetQuarter <= 0) {
+                // 跨年处理（如Q1-2=-1 → 上一年Q3；Q2-2=0 → 上一年Q4）
+                targetYear = currentYear - 1;
+                targetQuarter += 4;
+            }
+            return String.format("%dQ%d", targetYear, targetQuarter);
+        } else {
+            // 15个工作日后：当前季度的上一个季度
+            if (currentQuarter == 1) {
+                return String.format("%dQ%d", currentYear - 1, 4);
+            } else {
+                return String.format("%dQ%d", currentYear, currentQuarter - 1);
+            }
+        }
+    }
+
+    public List<RecommendProductDto> getFundInfoByType(String fundType) {
         LambdaQueryWrapper<BrProduct> queryWrapper = new LambdaQueryWrapper<BrProduct>()
                 .select(BrProduct::getFundCode)
-                .eq(BrProduct::getProdtClsCode, fundType);
+                .eq(BrProduct::getProdtClsCode, fundType)
+                .eq(BrProduct::getValidFlag, ShelfStatus.ON_SHELF.getCode());
         List<String> fundCodes = brProductMapper.selectObjs(queryWrapper).stream().map(Object::toString).toList();
-        if(CollectionUtils.isEmpty(fundCodes)){
+        if (CollectionUtils.isEmpty(fundCodes)) {
             return List.of();
         }
-        // 两表联查
-        return brProductMapper.selectFundDetail(fundCodes);
+        List<RecommendProductDto> recommendProductDtos = brProductMapper.selectFundDetail(fundCodes);
+        if (CollectionUtils.isEmpty(recommendProductDtos)) {
+            return List.of();
+        }
+        return recommendProductDtos.stream().peek(recommendProductDto -> recommendProductDto.setProdtClsCode(FundType.getFundTypeDesc(fundType).getDesc())).toList();
     }
+
+    public String sevenDayYearlyProfrat(NetValReq netValReq) {
+        LambdaQueryWrapper<BrNetvalue> queryWrapper = new LambdaQueryWrapper<BrNetvalue>()
+                .eq(BrNetvalue::getFundCode, netValReq.getProdtCode())
+                .orderByDesc(BrNetvalue::getNetValDate)
+                .last("LIMIT 1");
+
+        List<BrNetvalue> netValues = brNetvalueMapper.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(netValues)) {
+            return "0";
+        }
+        return netValues.get(0).getStgyD7YearlyProfrat();
+    }
+
+
 }

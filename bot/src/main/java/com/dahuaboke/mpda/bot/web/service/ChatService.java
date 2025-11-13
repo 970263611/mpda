@@ -1,8 +1,6 @@
 package com.dahuaboke.mpda.bot.web.service;
 
-import com.dahuaboke.mpda.bot.model.common.CommonResponse;
-import com.dahuaboke.mpda.bot.model.common.ResponseCode;
-import com.dahuaboke.mpda.bot.model.response.ChatBotResponse;
+import com.dahuaboke.mpda.bot.constants.enums.ResponseCode;
 import com.dahuaboke.mpda.bot.scenes.entity.PlatformExtend;
 import com.dahuaboke.mpda.bot.web.WebResponse;
 import com.dahuaboke.mpda.core.agent.scene.SceneManager;
@@ -48,11 +46,12 @@ public class ChatService {
         }
         Flux<SceneResponse> sceneResponseFlux = sceneManager.applyAsync(context);
         return sceneResponseFlux.map(sceneResponse -> {
-            PlatformExtend platformExtend;
-            if (sceneResponse.extend() == null || sceneResponse.extend().graphExtend() == null) {
-                platformExtend = new PlatformExtend();
-            } else {
-                platformExtend = (PlatformExtend) sceneResponse.extend().graphExtend();
+            PlatformExtend platformExtend = new PlatformExtend();
+            if (sceneResponse.extend() != null && sceneResponse.extend().extend() != null) {
+                Object extend = sceneResponse.extend().extend();
+                if (extend instanceof PlatformExtend) {
+                    platformExtend = (PlatformExtend) extend;
+                }
             }
             return new WebResponse(ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMsg(), sceneResponse.output(), platformExtend);
         });

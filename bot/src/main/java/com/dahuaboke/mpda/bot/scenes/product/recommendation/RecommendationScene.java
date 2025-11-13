@@ -15,8 +15,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class RecommendationScene implements Scene {
 
-    private final String description = "为用户推荐产品";
-
     @Autowired
     private RecommendationGraph recommendationGraph;
 
@@ -25,7 +23,10 @@ public class RecommendationScene implements Scene {
 
     @Override
     public String description() {
-        return description;
+        return """
+                    根据基金类型/年化利率/最大回撤指标 为用户推荐产品
+                    根据基金类型/年化利率/最大回撤指标 为用户配置产品
+                """;
     }
 
     @Override
@@ -42,4 +43,5 @@ public class RecommendationScene implements Scene {
     public Class<? extends Scene> parent() {
         return ResolutionScene.class;
     }
+
 }

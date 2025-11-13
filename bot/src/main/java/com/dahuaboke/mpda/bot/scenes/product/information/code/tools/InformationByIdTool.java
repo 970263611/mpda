@@ -5,6 +5,7 @@ import com.dahuaboke.mpda.bot.tools.dto.NetValReq;
 import com.dahuaboke.mpda.bot.tools.dto.ProdInfoDto;
 import com.dahuaboke.mpda.core.agent.tools.ToolResult;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 
@@ -36,6 +37,9 @@ public class InformationByIdTool extends ProductTool<InformationByIdTool.Input> 
         try {
             String productNo = input.productNo();
             ProdInfoDto prodInfoDto = productToolHandler.selectProdInfo(new NetValReq(productNo));
+            if(StringUtils.isEmpty(prodInfoDto.getFundCode())){
+                return ToolResult.success("查询成功", "未查询到任何消息,请确认产品编号.");
+            }
             Map converted = objectMapper.convertValue(prodInfoDto, Map.class);
             if (converted != null) {
                 converted.put("maxWithDrawal", getMaxWithDrawal(productNo));

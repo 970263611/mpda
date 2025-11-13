@@ -16,9 +16,9 @@ import org.springframework.stereotype.Component;
 public class InformationByNameScene implements Scene {
 
     private final String description = """
-                通过产品名称或产品编码查询产品具体信息
-                通过产品名称或产品编码介绍产品
-                通过产品名称或产品编码了解产品详情
+                通过产品名称查询产品具体信息
+                通过产品名称介绍产品
+                通过产品名称了解产品详情
             """;
 
     @Autowired

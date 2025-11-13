@@ -3,10 +3,15 @@ package com.dahuaboke.mpda.bot.scenes.product.marketRanking.tools;
 
 import com.dahuaboke.mpda.bot.tools.ProductTool;
 import com.dahuaboke.mpda.bot.tools.dto.MarketRankDto;
+import com.dahuaboke.mpda.bot.tools.enums.TimeType;
 import com.dahuaboke.mpda.core.agent.tools.ToolResult;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import java.util.List;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * auth: dahua
@@ -17,12 +22,12 @@ public class MarketRankingTool extends ProductTool<MarketRankingTool.Input> {
 
     @Override
     public String getDescription() {
-        return "查询产品市场排名";
+        return "查询产品市场排名/定制市场分析报告";
     }
 
     @Override
     public String getParameters() {
-        return getJsonSchema(getInputType(), "productNo");
+        return getJsonSchema(getInputType(), "finBondType");
     }
 
     @Override
@@ -32,49 +37,166 @@ public class MarketRankingTool extends ProductTool<MarketRankingTool.Input> {
 
     @Override
     public ToolResult execute(MarketRankingTool.Input input) {
-        List<MarketRankDto> marketRank = productToolHandler.getMarketRank(input.finBondType, input.period);
+        String period = input.period + "";
+        String finBondType = input.finBondType + "";
+        if ("0".equals(finBondType)) {
+            finBondType = "1";
+        }
+        List<MarketRankDto> marketRankList = productToolHandler.getMarketRank(finBondType, period);
+        List<Map<String, Object>> result = new ArrayList<>();
+        if (marketRankList == null || marketRankList.isEmpty()) {
+            return ToolResult.error("未查询到满足条件的数据，请换条件进行查询呢~");
+        }
+        if (TimeType.LAST_WEEK.getCode().equals(period)) {
+            for (MarketRankDto m : marketRankList) {
+                Map<String, Object> fieldMap = buildCommonFieldMap(m);
+                fieldMap.put("nwk1CombProfrat", m.getNwk1CombProfrat());
+                fieldMap.put("indsRankSeqNo", m.getIndsRankSeqNo());
+                fieldMap.put("txamtRankNo", m.getTxamtRankNo());
+                fieldMap.put("curdayBalChgTotalAccnum", m.getCurdayBalChgTotalAccnum());
+                fieldMap.put("styoMaxWdwDesc", m.getStyoMaxWdwDesc());
+                result.add(fieldMap);
+            }
+        } else if (TimeType.LAST_MONTH.getCode().equals(period)) {
+            for (MarketRankDto m : marketRankList) {
+                Map<String, Object> fieldMap = buildCommonFieldMap(m);
+                fieldMap.put("nmm1CombProfrat", m.getNmm1CombProfrat());
+                fieldMap.put("lblmRank", m.getLblmRank());
+                fieldMap.put("busicmLmRank", m.getBusicmLmRank());
+                fieldMap.put("curdayBalChgAccnum", m.getCurdayBalChgAccnum());
+                fieldMap.put("maxWdwrt", m.getMaxWdwrt());
+                result.add(fieldMap);
+            }
+        } else if (TimeType.LAST_3_MONTH.getCode().equals(period)) {
+            for (MarketRankDto m : marketRankList) {
+                Map<String, Object> fieldMap = buildCommonFieldMap(m);
+                fieldMap.put("nmm3CombProfrat", m.getNmm3CombProfrat());
+                fieldMap.put("rankScopeLowLmtVal", m.getRankScopeLowLmtVal());
+                fieldMap.put("intglRankSeqNo", m.getIntglRankSeqNo());
+                fieldMap.put("supptranBalChgTotalAccnum", m.getSupptranBalChgTotalAccnum());
+                fieldMap.put("fundstgMaxWdwrt", m.getFundstgMaxWdwrt());
+                result.add(fieldMap);
+            }
+        } else if (TimeType.LAST_YEAR.getCode().equals(period)) {
+            for (MarketRankDto m : marketRankList) {
+                Map<String, Object> fieldMap = buildCommonFieldMap(m);
+                fieldMap.put("nyy1Profrat", m.getNyy1Profrat());
+                fieldMap.put("reachStRankSeqNo", m.getReachStRankSeqNo());
+                fieldMap.put("chremMgrIntglRankSeqNo", m.getChremMgrIntglRankSeqNo());
+                fieldMap.put("centerCfmCurdayChgTnum", m.getCenterCfmCurdayChgTnum());
+                fieldMap.put("nyy1Wdwrt", m.getNyy1Wdwrt());
+                result.add(fieldMap);
+            }
+        } else if (TimeType.CURRENT_YEAR_Q1.getCode().equals(period)) {
+            for (MarketRankDto m : marketRankList) {
+                Map<String, Object> fieldMap = buildCommonFieldMap(m);
+                fieldMap.put("lastYrlyPftrt", m.getLastYrlyPftrt());
+                fieldMap.put("custRaiseRateRankNo", m.getCustRaiseRateRankNo());
+                result.add(fieldMap);
+            }
+        } else if (TimeType.CURRENT_YEAR_Q2.getCode().equals(period)) {
+            for (MarketRankDto m : marketRankList) {
+                Map<String, Object> fieldMap = buildCommonFieldMap(m);
+                fieldMap.put("nmm6CombProfrat", m.getNmm6CombProfrat());
+                fieldMap.put("detainRateRankNo", m.getDetainRateRankNo());
+                result.add(fieldMap);
+            }
+        } else if (TimeType.CURRENT_YEAR_Q3.getCode().equals(period)) {
+            for (MarketRankDto m : marketRankList) {
+                Map<String, Object> fieldMap = buildCommonFieldMap(m);
+                fieldMap.put("nmm3YrlyPftrt", m.getNmm3YrlyPftrt());
+                fieldMap.put("tmPontAsetRaiseTotRanknum", m.getTmPontAsetRaiseTotRanknum());
+                result.add(fieldMap);
+            }
+        } else if (TimeType.CURRENT_YEAR_Q4.getCode().equals(period)) {
+            for (MarketRankDto m : marketRankList) {
+                Map<String, Object> fieldMap = buildCommonFieldMap(m);
+                fieldMap.put("nmm1YearlyProfrat", m.getNmm1YearlyProfrat());
+                fieldMap.put("addRepPurcProTotnumRankno", m.getAddRepPurcProTotnumRankno());
+                result.add(fieldMap);
+            }
+        } else if (TimeType.CURRENT_YEAR.getCode().equals(period)) {
+            for (MarketRankDto m : marketRankList) {
+                Map<String, Object> fieldMap = buildCommonFieldMap(m);
+                fieldMap.put("drtPftrtTval", m.getDrtPftrtTval());
+                fieldMap.put("rtnRtRank", m.getRtnRtRank());
+                fieldMap.put("pftrtName", m.getPftrtName());
+                fieldMap.put("busicmOybinpRank", m.getBusicmOybinpRank());
+                result.add(fieldMap);
+            }
+        } else if (TimeType.NONE.getCode().equals(period) || "".equals(period)) {
+            for (MarketRankDto m : marketRankList) {
+                Map<String, Object> fieldMap = buildCommonFieldMap(m);
+                fieldMap.put("drtPftrtTval", m.getDrtPftrtTval());
+                fieldMap.put("rtnRtRank", m.getRtnRtRank());
+                fieldMap.put("pftrtName", m.getPftrtName());
+                fieldMap.put("busicmOybinpRank", m.getBusicmOybinpRank());
 
-       /* String scpm = """
-                   代码	基金	基金规模（亿元）	基金管理人	成立日期	近一年收益（%）	近一年回撤（%）	排名
-                   007540.OF	华泰保兴安悦A	78.67736205	华泰保兴基金管理有限公司	2019/7/11	8.12 	-3.93 	1
-                   016189.OF	国联恒通纯债A	174.5863974	国联基金管理有限公司	2022/8/8	4.45 	-0.43 	2
-                   000606.OF	天弘优选A	247.5474547	天弘基金管理有限公司	2017/9/26	4.28 	-0.87 	3
-                   006758.OF	农银汇理金禄	182.9556104	农银汇理基金管理有限公司	2018/12/21	3.61 	-0.89 	4
-                   007492.OF	上银政策性金融债A	117.1284931	上银基金管理有限公司	2019/12/19	3.57 	-2.35 	5
-                   016432.OF	财通资管睿兴A	58.45553693	财通证券资产管理有限公司	2023/4/14	3.33 	-2.17 	6
-                   011968.OF	农银汇理金盛	129.4213678	农银汇理基金管理有限公司	2021/6/29	3.29 	-0.99 	7
-                   010477.OF	景顺长城景泰益利A	172.8490783	景顺长城基金管理有限公司	2021/1/18	3.27 	-1.17 	8
-                   016537.OF	上银慧鑫利	53.44300614	上银基金管理有限公司	2021/1/18	3.09 	-2.29 	9
-                   003407.OF    景顺长城景泰丰利A   59.67640125 景顺长城基金管理有限公司    2017/1/13   3.02    -1.88   10
-                """;*/
-        return ToolResult.success("查询成功", marketRank);
+                fieldMap.put("lastYrlyPftrt", m.getLastYrlyPftrt());
+                fieldMap.put("custRaiseRateRankNo", m.getCustRaiseRateRankNo());
+                fieldMap.put("nmm6CombProfrat", m.getNmm6CombProfrat());
+                fieldMap.put("detainRateRankNo", m.getDetainRateRankNo());
+                fieldMap.put("nmm3YrlyPftrt", m.getNmm3YrlyPftrt());
+                fieldMap.put("tmPontAsetRaiseTotRanknum", m.getTmPontAsetRaiseTotRanknum());
+                fieldMap.put("nmm1YearlyProfrat", m.getNmm1YearlyProfrat());
+                fieldMap.put("addRepPurcProTotnumRankno", m.getAddRepPurcProTotnumRankno());
+                result.add(fieldMap);
+            }
+        }
+        //TODO delete
+/*        System.out.println("----" + result.size());
+        for (int i = 0; i < result.size(); i++) {
+            Map<String, Object> stringObjectMap = result.get(i);
+            for (Map.Entry<String, Object> entry : stringObjectMap.entrySet()) {
+                System.out.print(entry.getKey() + ":" + entry.getValue() + ",");
+            }
+            System.out.println();
+        }*/
+        return ToolResult.success("查询成功", result);
     }
 
     public record Input(
             @JsonPropertyDescription("""
-                    请严格按照以下规则匹配用户语义到数字参数(1-6)
+                    债基类型（必填）
+                    请严格按照以下规则匹配用户语义到数字参数(1-6) 
                     1：信用债-指数型        -包含"信用债"且明确"指数型" "被动跟踪" 等关键字
                     2：信用债主动-开放式    -包含"信用债"且有"主动管理" "主动型" "开放式" "可申赎"等关键字
                     3：利率债主动-开放式    -包含"利率债"且有"主动管理" "主动型" "开放式" "可申赎"等关键字
                     4：利率债指数1-3年     -包含"利率债" "指数型"且明确年限"1-3年" "一年到三年"
                     5：利率债指数3-5年     -包含"利率债" "指数型"且明确年限"3-5年" "三年到五年"
                     6：利率债指数1-5年     -包含"利率债" "指数型"且明确年限"1-5年" "一年到五年"                     
-                     """) String finBondType,
+                     """) int finBondType,
             @JsonPropertyDescription("""
+                    可用时间范围（非必填）
                     请严格按照以下规则匹配用户语义到数字参数(0-9)
                     0：无
                     1：近1周
                     2：近1月
                     3：近3月
-                    4：近一年
+                    4：近一年/（滚动12个月）
                     5：第一季度
                     6：第二季度
                     7：第三季度
                     8：第四季度
-                    9：当前年                    
-                     """) String period
+                    9：当前年                   
+                     """) int period
     ) {
 
+    }
+
+    private Map<String, Object> buildCommonFieldMap(MarketRankDto m) {
+        Map<String, Object> fielCommonMap = new HashMap<>();
+        fielCommonMap.put("fundFnm", m.getFundFnm());
+        fielCommonMap.put("assetNval", m.getAssetNval());
+        fielCommonMap.put("fundMgrName", m.getFundMgrName());
+        fielCommonMap.put("contractEffDate", m.getContractEffDate());
+        fielCommonMap.put("investMgrName", m.getInvestMgrName());
+        fielCommonMap.put("curRenewDt", m.getCurRenewDt());
+        fielCommonMap.put("unitNetVal", m.getUnitNetVal());
+        fielCommonMap.put("period", m.getPeriod());
+        fielCommonMap.put("fundCode", m.getFundCode());
+        fielCommonMap.put("finBondType", m.getFinBondType());
+        return fielCommonMap;
     }
 
 }

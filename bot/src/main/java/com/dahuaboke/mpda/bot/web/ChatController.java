@@ -1,6 +1,6 @@
 package com.dahuaboke.mpda.bot.web;
 
-import com.dahuaboke.mpda.bot.model.common.ResponseCode;
+import com.dahuaboke.mpda.bot.constants.enums.ResponseCode;
 import com.dahuaboke.mpda.bot.scenes.entity.PlatformRep;
 import com.dahuaboke.mpda.bot.tools.dto.MarketRankDto;
 import com.dahuaboke.mpda.bot.tools.dto.MarketRankReq;

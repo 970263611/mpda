@@ -137,4 +137,21 @@ public class MarketRankDto extends BrMarketProductReport {
         this.period = period;
     }
 
+    @Override
+    public String toString() {
+        String s = super.toString();
+        String s1 = "MarketRankDto{" +
+                "fundFnm='" + fundFnm + '\'' +
+                ", assetNval='" + assetNval + '\'' +
+                ", fundMgrName='" + fundMgrName + '\'' +
+                ", contractEffDate='" + contractEffDate + '\'' +
+                ", investMgrName='" + investMgrName + '\'' +
+                ", curRenewDt=" + curRenewDt +
+                ", unitNetVal='" + unitNetVal + '\'' +
+                ", curDate='" + curDate + '\'' +
+                ", dldFlnm='" + dldFlnm + '\'' +
+                ", period='" + period + '\'' +
+                '}';
+        return s1 + s;
+    }
 }

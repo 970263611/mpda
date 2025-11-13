@@ -10,19 +10,50 @@ spring:
           driver-class-name: org.postgresql.Driver
           url: jdbc:postgresql://20.12.0.38:5432/prptdb
           username: schedulerdb
-          #          password: ENC(hudLofS2FZEVgBOwqraR7Em9plV0ife9)
           password: ENC(hudLofS2FZEVgBOwqraR7Em9plV0ife9)
         db1:
           driver-class-name: org.postgresql.Driver
           url: jdbc:postgresql://20.200.34.135:5433/mdbfinver1?connectTimeout=10
           username: test
-          ##          password: ENC(9TrmlKVvCukSE9WE+ftNpooU8UZf5+Abp3L9SILj5cA=)
           password: ENC(9TrmlKVvCukSE9WE+ftNpooU8UZf5+Abp3L9SILj5cA=)
+          druid:
+            # 初始化时建立物理连接的个数
+            initial-size: 1
+            # 连接池的最小空闲数量
+            min-idle: 1
+            # 连接池最大连接数量
+            max-active: 3
+            # 获取连接时最大等待时间，单位毫秒
+            max-wait: 60000
+            # 申请连接的时候检测，如果空闲时间大于timeBetweenEvictionRunsMillis，执行validationQuery检测连接是否有效。
+            test-while-idle: true
+            # 既作为检测的间隔时间又作为testWhileIdel执行的依据
+            time-between-eviction-runs-millis: 60000
+            # 销毁线程时检测当前连接的最后活动时间和当前时间差大于该值时，关闭当前连接(配置连接在池中的最小生存时间)
+            min-evictable-idle-time-millis: 30000
+            # 用来检测数据库连接是否有效的sql 必须是一个查询语句(oracle中为 select 1 from dual)
+            validation-query: select 1
+            # 申请连接时会执行validationQuery检测连接是否有效,开启会降低性能,默认为true
+            test-on-borrow: false
+            # 归还连接时会执行validationQuery检测连接是否有效,开启会降低性能,默认为true
+            test-on-return: false
+#            stat-view-servlet:
+#              # 是否启用StatViewServlet默认值true
+#              enabled: true
+#              # 访问路径为/druid时，跳转到StatViewServlet
+#              url-pattern: /druid/*
+#              # 是否能够重置数据
+#              reset-enable: false
+#              # 需要账号密码才能访问控制台，默认为root
+#              login-username: druid
+#              login-password: druid
+
   cloud:
     compatibility-verifier:
       enabled: false
     nacos:
       discovery:
+        register-enabled: true
         enabled: true
         server-addr: 20.200.34.145:8848
         namespace: 34eeba21-ad0c-42e3-bef1-565de06d6236
@@ -44,7 +75,7 @@ spring:
           model: Bge-m3-test
       chat:
         options:
-          model: Qwen25-32B-1-test
+          model: Qwen25-72B-1-test
           internal-tool-execution-enabled: false
           httpHeaders:
             Authorization: "Bearer b8d5ca9f6f344058ba9d8cad089ac53d97a7a3e6021242638069e67bb6b09881"
@@ -69,27 +100,28 @@ yc:
       rerank:
         enabled: true
 
+
+rerank:
+  enabled: false
+  base-url: http://20.200.25.216:8080
+  api-key: b8d5ca9f6f344058ba9d8cad089ac53d97a7a3e6021242638069e67bb6b09881
+  rerankPath: "/rerank"
+  model: Bge-rerank-v2-m3-test
+
 logging:
   level:
     com.psbc.cpecm_java_jdk1.7.0.65_lc_20240909_hefei-langfang: error
     root: info
 
-mpda:
-  rerank:
-    enabled: false
-    base-url: http://20.200.25.216:8080
-    api-key: b8d5ca9f6f344058ba9d8cad089ac53d97a7a3e6021242638069e67bb6b09881
-    rerankPath: "/rerank"
-    model: Bge-rerank-v2-m3-test
-  contentManage:
-    opeSysId: 99370000000
-    byOpeSysId: 99711870000
-    location: 1
-    #  areaCode: 98--定版环境 01--预演环境 99-生产环境 T2-t2环境
-    areaCode: "01"
-    fileSavePath: "./ai-bot/fileTemp"
-    opeType: T01302
-    opeUser: 20080733650
-    opeOrg: 11005293
+contentManage:
+  opeSysId: 99370000000
+  byOpeSysId: 99711870000
+  location: 1
+  #  areaCode: 98--定版环境 01--预演环境 99-生产环境 T2-t2环境
+  areaCode: "01"
+  fileSavePath: "./ai-bot/fileTemp"
+  opeType: T01302
+  opeUser: 20080733650
+  opeOrg: 11005293
 
 

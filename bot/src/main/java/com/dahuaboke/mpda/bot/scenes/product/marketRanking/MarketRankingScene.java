@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class MarketRankingScene implements Scene {
 
-    private final String description = "查询产品市场排名";
+    private final String description = "查询产品市场排名/定制市场分析报告";
 
     @Autowired
     private MarketRankingGraph marketRankingGraph;

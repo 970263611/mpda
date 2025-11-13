@@ -1,9 +1,9 @@
 package com.dahuaboke.mpda.bot.rag.job;
 
 
-import com.dahuaboke.mpda.bot.rag.handler.DbHandler;
 import com.dahuaboke.mpda.bot.scheduler.MarketRankTask;
 import com.dahuaboke.mpda.bot.tools.entity.BrMarketProductReport;
+import com.dahuaboke.mpda.bot.tools.service.BrMarketProductReportService;
 import java.util.Random;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,7 +18,7 @@ public class MarketRankTaskTest {
     @Autowired
     MarketRankTask marketRankTask;
     @Autowired
-    DbHandler dbHandler;
+    BrMarketProductReportService brMarketProductReportService;
 
     @Test
     public void testInsertMarket(){
@@ -26,7 +26,7 @@ public class MarketRankTaskTest {
             BrMarketProductReport brMarketProductReport = new BrMarketProductReport();
             brMarketProductReport.setFundCode(202308 + i + "");
             brMarketProductReport.setFinBondType((new Random().nextInt(6 ) + 1) + "");
-            dbHandler.insertMarketProductReport(brMarketProductReport);
+            brMarketProductReportService.insertMarketProductReport(brMarketProductReport);
         }
     }
 

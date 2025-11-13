@@ -81,6 +81,7 @@ public class RecommendationGraph extends AbstractGraph {
     public SceneResponse execute(Map<String, Object> attribute) throws MpdaRuntimeException {
         attribute.put(Constants.TOOLS, List.of("recommendationTool"));
         recommendationPrompt.changePrompt("guide");
+        attribute.put(Constants.PROMPT, recommendationPrompt.description());
         try {
             return response(attribute, "default");
         } catch (GraphRunnerException e) {
@@ -92,6 +93,7 @@ public class RecommendationGraph extends AbstractGraph {
     public Flux<SceneResponse> executeAsync(Map<String, Object> attribute) throws MpdaRuntimeException {
         attribute.put(Constants.TOOLS, List.of("recommendationTool"));
         recommendationPrompt.changePrompt("guide");
+        attribute.put(Constants.PROMPT, recommendationPrompt.description());
         try {
             return streamResponse(attribute, "default");
         } catch (GraphRunnerException e) {

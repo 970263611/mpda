@@ -1,4 +1,4 @@
-package com.dahuaboke.mpda.bot.model.common;
+package com.dahuaboke.mpda.bot.constants.enums;
 
 /**
  * @Desc: 对外接口返回枚举

@@ -82,7 +82,7 @@ public class BrProduct implements Serializable {
     private String dealFlag;
 
     /**
-     * 是否有效
+     * 0-未上架 1-已上架
      */
     private String validFlag;
 

@@ -21,7 +21,7 @@ public class ComparisonAgentPrompt extends AbstractProductAgentPrompt {
                             2.如果不满足工具调用条件，需要引导用户补充。
                             3.如果基金超过三个,返回:邮小盈仅支持三个以内的产品对比
                         """
-                , "tool", translate() + """
+                , "tool", "根据工具执行后的结果,需要进行字段翻译,字段关系映射如下:" + translate() + """
                             根据工具执行结果，返回以下信息的对比结果：
                                 基金名称
                                 基金代码

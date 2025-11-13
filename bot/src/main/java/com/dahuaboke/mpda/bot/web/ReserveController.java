@@ -2,34 +2,41 @@ package com.dahuaboke.mpda.bot.web;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.dahuaboke.mpda.bot.constants.FundConstant;
-import com.dahuaboke.mpda.bot.model.common.ResponseCode;
-import com.dahuaboke.mpda.bot.rag.handler.DbHandler;
 import com.dahuaboke.mpda.bot.rag.service.ProductReportQueryService;
-import com.dahuaboke.mpda.bot.scenes.entity.PlatformRep;
+import com.dahuaboke.mpda.bot.scheduler.CalculatedRateBondTask;
 import com.dahuaboke.mpda.bot.scheduler.MarketRankTask;
 import com.dahuaboke.mpda.bot.scheduler.MonitorTask;
 import com.dahuaboke.mpda.bot.scheduler.RagSearchTask;
 import com.dahuaboke.mpda.bot.scheduler.ResetTimeOutTask;
+import com.dahuaboke.mpda.bot.scheduler.UpdateProductValidFlagTask;
 import com.dahuaboke.mpda.bot.tools.ContentManageTool;
 import com.dahuaboke.mpda.bot.tools.dao.BrProductMapper;
 import com.dahuaboke.mpda.bot.tools.dto.ContentManageResponse;
 import com.dahuaboke.mpda.bot.tools.dto.MarketRankDto;
-import com.dahuaboke.mpda.bot.tools.dto.MarketRankReq;
 import com.dahuaboke.mpda.bot.tools.entity.BrProduct;
 import com.dahuaboke.mpda.bot.tools.entity.BrProductReport;
+import com.dahuaboke.mpda.bot.tools.service.BrProductService;
 import com.dahuaboke.mpda.bot.tools.service.RobotService;
 import com.dahuaboke.mpda.client.entity.resp.C014005Resp;
 import com.dahuaboke.mpda.client.entity.resp.C014011Resp;
 import com.dahuaboke.mpda.client.handle.RerankModelRequestHandle;
 import com.dahuaboke.mpda.client.handle.VectorStoreRequestHandle;
+import com.dahuaboke.mpda.core.client.ChatClientManager;
 import com.dahuaboke.mpda.core.exception.MpdaRuntimeException;
-import io.micrometer.common.util.StringUtils;
+import com.dahuaboke.mpda.core.utils.SpringUtil;
+import com.google.gson.Gson;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.http.HttpHeaders;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.DefaultChatClient;
 import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.openai.OpenAiChatModel;
+import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.lang.reflect.Field;
+import java.time.LocalDate;
 import java.util.*;
 
 @CrossOrigin
@@ -47,6 +54,9 @@ public class ReserveController {
 
     @Autowired
     private ResetTimeOutTask resetTimeOutTask;
+
+    @Autowired
+    private CalculatedRateBondTask calculatedRateBondTask;
 
     @Autowired
     private VectorStoreRequestHandle requestHandle;
@@ -67,30 +77,67 @@ public class ReserveController {
     ChatModel chatModel;
 
     @Autowired
-    DbHandler dbHandler;
+    ChatClient chatClient;
 
     @Autowired
     RobotService robotService;
 
-    /**
-     * 内管文件下载
-     *
-     * @param inmngPlatfFileIndexNo
-     * @param pageCode
-     * @return
-     */
-    @GetMapping("/contentManage/downloadFiles/{inmngPlatfFileIndexNo}/{pageCode}")
-    public ContentManageResponse downloadFiles(@PathVariable("inmngPlatfFileIndexNo") String inmngPlatfFileIndexNo, @PathVariable("pageCode") String pageCode) {
-        return contentManageTool.downloadFilesTool(inmngPlatfFileIndexNo, pageCode);
+    @Autowired
+    BrProductService brProductService;
+
+    @Autowired
+    private UpdateProductValidFlagTask updateProductValidFlagTask;
+
+
+    /* ============================================定时任务=========================================================== */
+    @GetMapping("task/marketRankTask")
+    public void marketRankTask() {
+        marketRankTask.marketRankJob();
     }
 
+    @GetMapping("task/ragSearchTask")
+    public void ragSearchTask() {
+        ragSearchTask.ragSearchJob();
+    }
+
+    @GetMapping("task/resetTimeOutTask")
+    public void resetTimeOutTask() {
+        resetTimeOutTask.ragSearchJob();
+    }
+
+    @GetMapping("task/monitorTask")
+    public void MonitorTask() {
+        monitorTask.MonitorDeleteTaskJob();
+    }
+
+    @GetMapping("task/productRecommend")
+    public void productRecommend() {
+        updateProductValidFlagTask.productRecommend();
+    }
+
+    @PostMapping("task/calRateBondTask")
+    public void calRateBond(@RequestBody List<String> fundCodes) {
+        if (CollectionUtils.isEmpty(fundCodes)) {
+            calculatedRateBondTask.calculatedRateBondJob();
+        } else {
+            calculatedRateBondTask.calculatedRateBondJob(fundCodes);
+        }
+    }
+
+    /* ============================================模型接口=========================================================== */
     @GetMapping("model/chat")
     public String chat() {
-        Prompt text = new Prompt("李白是哪一年的");
-        String content = chatModel.call(text).getResult().getOutput().getText();
-        return content;
+        ChatClient.CallResponseSpec call = chatClient.prompt("李白是哪一年的").call();
+        return call.content();
     }
 
+    @GetMapping("model/model")
+    public String model() {
+        return chatModel.call("李白是哪一年的");
+    }
+
+
+    /* ============================================新核心接口=========================================================== */
     @GetMapping("model/sendC014005")
     public List sendC014005() {
         HashMap<String, Object> conditionMap = new HashMap<>();
@@ -120,49 +167,11 @@ public class ReserveController {
                 .toList();
     }
 
-
-    @GetMapping("model/queryReport")
-    public BrProductReport queryReport() {
-        BrProduct brProduct = new BrProduct();
-        brProduct.setFundCode("008256");
-        brProduct.setFundProdtFullNm("南方中债1-5年国开行债券指数A");
-        BrProductReport report = productReportQueryService.queryFundProduct(brProduct);
-        return report;
+    /* ============================================内管接口=========================================================== */
+    @GetMapping("/contentManage/downloadFiles/{inmngPlatfFileIndexNo}/{pageCode}")
+    public ContentManageResponse downloadFiles(@PathVariable("inmngPlatfFileIndexNo") String inmngPlatfFileIndexNo, @PathVariable("pageCode") String pageCode) {
+        return contentManageTool.downloadFilesTool(inmngPlatfFileIndexNo, pageCode);
     }
-
-    @GetMapping("task/marketRankTask")
-    public void marketRankTask() {
-        marketRankTask.marketRankJob();
-    }
-
-    @GetMapping("task/ragSearchTask")
-    public void ragSearchTask() {
-        ragSearchTask.ragSearchJob();
-    }
-
-    @GetMapping("task/resetTimeOutTask")
-    public void resetTimeOutTask() {
-        resetTimeOutTask.ragSearchJob();
-    }
-
-    @GetMapping("sql/updateDealFlag")
-    public int updateDealFlag() {
-        return dbHandler.updateFailProduct();
-    }
-    @PostMapping("fund/processDataList")
-    public void processDataList(@RequestBody List<String> fundCodes) {
-        ArrayList<BrProduct> brProducts = new ArrayList<>();
-        for (String fundCode : fundCodes) {
-            LambdaQueryWrapper<BrProduct> queryWrapper = new LambdaQueryWrapper<BrProduct>()
-                    .eq(BrProduct::getFundCode, fundCode);
-            List<BrProduct> products = brProductMapper.selectList(queryWrapper);
-            if (CollectionUtils.isNotEmpty(products)) {
-                brProducts.addAll(products);
-            }
-        }
-        ragSearchTask.processDataList(brProducts);
-    }
-
 
     @PostMapping("file/downLoadFile")
     public void downLoadFile(@RequestBody List<String> fundCodes) {
@@ -179,27 +188,115 @@ public class ReserveController {
         }
     }
 
-    /**
-     * 监控数据清理
-     */
-    @GetMapping("task/MonitorTask")
-    public void MonitorTask() {
-        monitorTask.MonitorDeleteTaskJob();
-    }
-
-
-    /**
-     * 创建文件夹
-     * @param dirPath
-     */
     @PostMapping("createDir")
-    public void createDir(@RequestBody String dirPath){
+    public void createDir(@RequestBody String dirPath) {
         contentManageTool.createDir(dirPath);
     }
 
-    @GetMapping("dealDldFlnm")
-    public void creadealDldFlnmteDir(){
-        String s = robotService.dealDldFlnm();
+    /* ============================================平台=========================================================== */
+
+    /**
+     * 通过债基类型和时间查询市场报告
+     * ESB下载入口
+     *
+     * @param finBondType
+     * @param period
+     */
+    @GetMapping("/selectMarketReportByTimeAndFundType/{finBondType}/{period}")
+    public String selectMarketReportByTimeAndFundType(@PathVariable("finBondType") String finBondType, @PathVariable("period") String period) {
+        List<MarketRankDto> marketRankDtos = robotService.selectMarketReportByTimeAndFundType(finBondType, period);
+        Gson gson = new Gson();
+        return gson.toJson(marketRankDtos);
+    }
+
+    /* ============================================sql更新=========================================================== */
+    @GetMapping("sql/updateDealFlag")
+    public int updateProcessingProduct(@RequestParam("dealFlag") String dealFlag) {
+        return brProductService.updateProcessingProduct(dealFlag);
+    }
+
+
+    /* ============================================业务代码逻辑处理===================================================== */
+    @PostMapping("fund/processDataList")
+    public void processDataList(@RequestBody List<String> fundCodes) {
+        ArrayList<BrProduct> brProducts = new ArrayList<>();
+        for (String fundCode : fundCodes) {
+            LambdaQueryWrapper<BrProduct> queryWrapper = new LambdaQueryWrapper<BrProduct>()
+                    .eq(BrProduct::getFundCode, fundCode);
+            List<BrProduct> products = brProductMapper.selectList(queryWrapper);
+            if (CollectionUtils.isNotEmpty(products)) {
+                brProducts.addAll(products);
+            }
+        }
+        ragSearchTask.processDataList(brProducts);
+    }
+
+    @GetMapping("model/queryReport")
+    public BrProductReport queryReport() {
+        BrProduct brProduct = new BrProduct();
+        brProduct.setFundCode("008256");
+        brProduct.setFundProdtFullNm("南方中债1-5年国开行债券指数A");
+        BrProductReport report = productReportQueryService.queryFundProduct(brProduct);
+        return report;
+    }
+
+    /**
+     * 计算
+     *
+     * @param localDate 2020-10-10
+     * @return
+     */
+    @GetMapping("dealDldFlnm/{localDate}")
+    public String creadealDldFlnmteDir(@PathVariable("localDate") String localDate) {
+        LocalDate parse = LocalDate.parse(localDate);
+        return robotService.dealDldFlnm(parse);
+    }
+
+
+    /* ============================================其余处理=========================================================== */
+    @GetMapping("updateModel")
+    public void updateModel(@RequestParam("modelName") String modelName, @RequestParam("key") String key) {
+        ChatClientManager chatClientManager = SpringUtil.getBean(ChatClientManager.class);
+        DefaultChatClient chatClient = (DefaultChatClient) SpringUtil.getBean(ChatClient.class);
+        OpenAiChatModel model = (OpenAiChatModel) SpringUtil.getBean(ChatModel.class);
+        OpenAiChatOptions defaultOptions = (OpenAiChatOptions) model.getDefaultOptions();
+        defaultOptions.setModel(modelName);
+        Map<String, String> httpHeaders = defaultOptions.getHttpHeaders();
+        httpHeaders.put(HttpHeaders.AUTHORIZATION, key);
+
+        reflect(model, defaultOptions);
+        reflect(chatClient, defaultOptions);
+        reflect(chatClientManager.getChatClient(), defaultOptions);
+    }
+
+    private void reflect(ChatModel chatModel, OpenAiChatOptions defaultOptions) {
+        try {
+            Class<?> modelClass = chatModel.getClass();
+            Field requestField = modelClass.getDeclaredField("defaultOptions");
+            requestField.setAccessible(true);
+            requestField.set(chatModel, defaultOptions);
+        } catch (Exception e) {
+            throw new MpdaRuntimeException(e);
+        }
+    }
+
+    private void reflect(ChatClient chatClient, OpenAiChatOptions defaultOptions) {
+        try {
+            Class<?> chatClientClass = chatClient.getClass();
+            Field requestField = chatClientClass.getDeclaredField("defaultChatClientRequest");
+            requestField.setAccessible(true);
+
+            DefaultChatClient.DefaultChatClientRequestSpec requestSpec = (DefaultChatClient.DefaultChatClientRequestSpec) requestField.get(chatClient);
+            Class<?> requestSpecClass = requestSpec.getClass();
+            Field options = requestSpecClass.getDeclaredField("chatOptions");
+            options.setAccessible(true);
+            OpenAiChatOptions newOptions = (OpenAiChatOptions) options.get(requestSpec);
+            newOptions.setHttpHeaders(defaultOptions.getHttpHeaders());
+            newOptions.setModel(defaultOptions.getModel());
+            options.set(requestSpec, newOptions);
+        } catch (Exception e) {
+            throw new MpdaRuntimeException(e);
+        }
     }
 
 }
