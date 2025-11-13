@@ -33,6 +33,10 @@ public class ChatClientManager {
     private final ChatClient chatClient;
     private final MemoryManager memoryManager;
 
+    public ChatClient getChatClient() {
+        return chatClient;
+    }
+
     public ChatClientManager(ChatModel chatModel, SystemAgentPrompt commonPrompt, MemoryManager memoryManager, ToolCallbackProvider tools) {
         this.memoryManager = memoryManager;
         this.chatClient = ChatClient.builder(chatModel)
