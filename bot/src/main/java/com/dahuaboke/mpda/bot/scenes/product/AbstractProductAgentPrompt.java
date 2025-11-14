@@ -153,8 +153,9 @@ public abstract class AbstractProductAgentPrompt implements AgentPrompt {
                    \n
             """;
 
-    public void changePrompt(String key) {
+    public String changePrompt(String key) {
         this.description = promptMap.get(key);
+        return this.description;
     }
 
     @Override
