@@ -38,18 +38,6 @@ public class ComparisonTool extends ProductTool<ComparisonTool.Input> {
             ToolResult cpxx1 = informationByIdTool.execute(new InformationByIdTool.Input(input.p1()));
             ToolResult cpxx2 = informationByIdTool.execute(new InformationByIdTool.Input(input.p2()));
 
-            if (input.p1().equals("007540")) {
-                Map data = (Map) cpxx1.getData();
-                data.put("yearRita1Year", "8.12");
-                data.put("maxNetval1Year", "-3.93");
-            }
-
-            if (input.p2().equals("011968")) {
-                Map data = (Map) cpxx2.getData();
-                data.put("yearRita1Year", "3.29");
-                data.put("maxNetval1Year", "-0.99");
-            }
-
             return ToolResult.success("查询成功", Map.of("first", cpxx1.getData(), "second", cpxx2.getData()));
         } catch (Exception e) {
             return ToolResult.error("查询失败");
@@ -58,5 +46,7 @@ public class ComparisonTool extends ProductTool<ComparisonTool.Input> {
 
     public record Input(@JsonPropertyDescription("第一个产品编号") String p1
             , @JsonPropertyDescription("第二个产品编号") String p2) {
+
     }
+
 }

@@ -97,7 +97,7 @@ public class MarketRankingAgentPrompt extends AbstractProductAgentPrompt {
                             4.调用工具时需明确区分"近一年"（滚动12个月）和"今年"（自然年）的时间范围，避免混淆
                             5.如果不满足工具调用条件，需要引导用户补充。
                         """,
-                "tool", "根据工具执行后的结果,需要进行字段翻译,字段关系映射如下:" + translate() + toolPrompt
+                "tool", "根据工具执行后的结果,需要进行字段翻译,字段关系映射如下:" + translate("marketRankingTranslatePrompt") + toolPrompt
         );
         this.description = promptMap.get("guide");
     }

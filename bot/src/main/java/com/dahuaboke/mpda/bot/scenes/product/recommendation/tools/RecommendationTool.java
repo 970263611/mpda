@@ -59,8 +59,9 @@ public class RecommendationTool extends ProductTool<RecommendationTool.Input> {
         try {
             List<IndexTimePair> params = input.indexTimePairs;
             if (CollectionUtils.isEmpty(params)) {
-                return ToolResult.error("基金类型不能为空");
+                return ToolResult.error("查询失败","基金类型不能是空");
             }
+
             log.info("recommendationTool 参数为 {}", input.indexTimePairs);
 
             ArrayList<RecommendProductDto> resultList = new ArrayList<>();
@@ -76,11 +77,12 @@ public class RecommendationTool extends ProductTool<RecommendationTool.Input> {
                 List<RecommendProductDto> prodInfoDtos = filterFundInfo(Integer.toString(fundType), fundInfoList, queryParam);
                 resultList.addAll(prodInfoDtos);
             }
-            return ToolResult.success("查询成功", resultList);
+            return ToolResult.success("查询成功", Map.of("count",resultList.size(),"result",resultList));
         } catch (RestClientException e) {
             return ToolResult.error("查询失败");
         }
     }
+
 
     private List<RecommendProductDto> filterFundInfo(String fundType, List<RecommendProductDto> fundInfoList, List<IndexTimePair> queryParam) {
         List<RecommendProductDto> filterInfoList = new ArrayList<>(fundInfoList);
@@ -114,9 +116,9 @@ public class RecommendationTool extends ProductTool<RecommendationTool.Input> {
         }
 
         if(type == QueryType.DRAW.code){
-            return filterInfoList.stream().sorted(Comparator.comparingDouble(RecommendProductDto::getMaxWithDraw)).limit(Math.min(COUNT, 5)).toList();
+            return filterInfoList.stream().sorted(Comparator.comparingDouble(RecommendProductDto::getMaxWithDraw)).limit(Math.min(COUNT, totalCount)).toList();
         }
-        return filterInfoList.stream().sorted(Comparator.comparingDouble(RecommendProductDto::getRate).reversed()).limit(Math.min(COUNT, 5)).toList();
+        return filterInfoList.stream().sorted(Comparator.comparingDouble(RecommendProductDto::getRate).reversed()).limit(Math.min(COUNT, totalCount)).toList();
     }
 
 

@@ -7,6 +7,7 @@ import com.alibaba.cloud.ai.graph.exception.GraphRunnerException;
 import com.alibaba.cloud.ai.graph.exception.GraphStateException;
 import com.dahuaboke.mpda.bot.scenes.entity.PlatformExtend;
 import com.dahuaboke.mpda.bot.scenes.product.recommendation.edge.RecommendationDispatcher;
+import com.dahuaboke.mpda.bot.tools.dto.RecommendProductDto;
 import com.dahuaboke.mpda.core.agent.graph.AbstractGraph;
 import com.dahuaboke.mpda.core.agent.scene.entity.SceneExtend;
 import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
@@ -17,6 +18,9 @@ import com.dahuaboke.mpda.core.node.HumanNode;
 import com.dahuaboke.mpda.core.node.LlmNode;
 import com.dahuaboke.mpda.core.node.StreamLlmNode;
 import com.dahuaboke.mpda.core.node.ToolNode;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,12 +117,19 @@ public class RecommendationGraph extends AbstractGraph {
         try {
             if (toolExtend != null) {
                 for (Object resp : toolExtend) {
-                    List<Map<String, String>> list = (List<Map<String, String>>) resp;
-                    if (list == null || list.isEmpty()) {
+                    LinkedHashMap<String,Object> map = (LinkedHashMap<String,Object>) resp;
+                    if (map == null || map.isEmpty()) {
                         platformExtend.setBuyLink(false);
                         return new SceneExtend(platformExtend);
                     }
-                    list.forEach(entry -> fundCodes.add(entry.get("fundCode")));
+                    if(map.containsKey("result")){
+                        List<Map<String, String>> list = (List<Map<String, String>>) map.get("result");
+                        if (list == null || list.isEmpty()) {
+                            platformExtend.setBuyLink(false);
+                            return new SceneExtend(platformExtend);
+                        }
+                        list.forEach(entry -> fundCodes.add(entry.get("fundCode")));
+                    }
                 }
             }
 

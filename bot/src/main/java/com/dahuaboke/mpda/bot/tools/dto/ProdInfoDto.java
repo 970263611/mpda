@@ -9,6 +9,11 @@ public class ProdInfoDto {
     private String fundCode;
 
     /**
+     * 基金类型
+     */
+    private String prodtClsCode;
+
+    /**
      * 基金全称
      **/
     private String fundFnm;
@@ -307,6 +312,14 @@ public class ProdInfoDto {
 
     public void setFundCode(String fundCode) {
         this.fundCode = fundCode;
+    }
+
+    public String getProdtClsCode() {
+        return prodtClsCode;
+    }
+
+    public void setProdtClsCode(String prodtClsCode) {
+        this.prodtClsCode = prodtClsCode;
     }
 
     public String getFundFnm() {

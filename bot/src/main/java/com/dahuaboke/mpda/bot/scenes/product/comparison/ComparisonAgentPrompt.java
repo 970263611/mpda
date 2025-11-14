@@ -21,7 +21,7 @@ public class ComparisonAgentPrompt extends AbstractProductAgentPrompt {
                             2.如果不满足工具调用条件，需要引导用户补充。
                             3.如果基金超过三个,返回:邮小盈仅支持三个以内的产品对比
                         """
-                , "tool", "根据工具执行后的结果,需要进行字段翻译,字段关系映射如下:" + translate() + """
+                , "tool", "根据工具执行后的结果,需要进行字段翻译,字段关系映射如下:" + translate("informationTranslatePrompt" ) + """
                             根据工具执行结果，返回以下信息的对比结果：
                                 基金名称
                                 基金代码
@@ -29,7 +29,7 @@ public class ComparisonAgentPrompt extends AbstractProductAgentPrompt {
                                 基金类型
                                 基金经理
                                 基金规模（提取其中的数字信息）
-                                近3月收益率
+                                近3月年化收益率
                                 近3月最大回撤
                             需要完全引用字段的实际内容不要推测。
                             最后需用一段连贯文字给出综合投资建议，且必须包含以下维度的分析：

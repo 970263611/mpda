@@ -71,17 +71,27 @@ public class RobotService {
                 .eq(BrProductSummary::getFundCode, code);
         List<BrProductSummary> brProductSummaries = brProductSummaryMapper.selectList(queryWrapper1);
 
+        LambdaQueryWrapper<BrProduct> queryWrapper2 = new LambdaQueryWrapper<BrProduct>()
+                .eq(BrProduct::getFundCode, code);
+        List<BrProduct> brProducts = brProductMapper.selectList(queryWrapper2);
+
         BrProductReport report = new BrProductReport();
         BrProductSummary summary = new BrProductSummary();
+        BrProduct brProduct = new BrProduct();
+
         if (!brProductReports.isEmpty()) {
             report = brProductReports.get(0);
         }
         if (!brProductSummaries.isEmpty()) {
             summary = brProductSummaries.get(0);
         }
+        if (!brProducts.isEmpty()) {
+            brProduct = brProducts.get(0);
+        }
 
         BeanUtils.copyProperties(report, prodInfoDto);
         BeanUtils.copyProperties(summary, prodInfoDto);
+        BeanUtils.copyProperties(brProduct, prodInfoDto);
         return prodInfoDto;
     }
 
