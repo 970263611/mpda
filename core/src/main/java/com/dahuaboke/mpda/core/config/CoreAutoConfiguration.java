@@ -11,6 +11,8 @@ import com.dahuaboke.mpda.core.client.RerankerClientManager;
 import com.dahuaboke.mpda.core.exception.MpdaIllegalArgumentException;
 import com.dahuaboke.mpda.core.memory.MemoryManager;
 import com.dahuaboke.mpda.core.rag.config.RagConfiguration;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +23,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.codec.json.Jackson2JsonDecoder;
+import org.springframework.http.codec.json.Jackson2JsonEncoder;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @AutoConfiguration
 @Import(RagConfiguration.class)
@@ -56,5 +61,20 @@ public class CoreAutoConfiguration {
                 return new RouteStrategy();
         }
         throw new MpdaIllegalArgumentException("Unknown find scene strategy: " + strategy);
+    }
+
+    @Bean
+    public ObjectMapper utf8ObjectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(JsonGenerator.Feature.COMBINE_UNICODE_SURROGATES_IN_UTF8, true);
+        return objectMapper;
+    }
+
+    @Bean
+    public WebClient.Builder openAiWebClientBuilder(ObjectMapper objectMapper) {
+        return WebClient.builder().codecs(configurer -> {
+            configurer.defaultCodecs().jackson2JsonEncoder(new Jackson2JsonEncoder(objectMapper));
+            configurer.defaultCodecs().jackson2JsonDecoder(new Jackson2JsonDecoder(objectMapper));
+        });
     }
 }
