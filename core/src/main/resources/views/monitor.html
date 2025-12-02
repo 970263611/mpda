@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSE 监控中心</title>
+    <script src="/views/js/tailwindcss.js" type="application/javascript"></script>
+    <link href="/views/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        success: '#00B42A',
+                        warning: '#FF7D00',
+                        danger: '#F53F3F',
+                        info: '#86909C',
+                        added: '#00B42A',
+                        removed: '#F53F3F',
+                        traceIn: '#165DFF',
+                        traceOut: '#722ED1',
+                        traceException: '#F53F3F',
+                        requestSync: '#14C9C9',
+                        requestAsync: '#722ED1',
+                        requestUnknown: '#86909C',
+                        messageUser: '#00B42A',
+                        messageTool: '#FF7D00',
+                        messageAssistant: '#00B42A',
+                        messageSystem: '#86909C'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+
+            .scrollbar-thin {
+                scrollbar-width: thin;
+            }
+
+            .scrollbar-thin::-webkit-scrollbar {
+                width: 4px;
+                height: 4px;
+            }
+
+            .scrollbar-thin::-webkit-scrollbar-thumb {
+                background-color: #d1d5db;
+                border-radius: 2px;
+            }
+
+            .card-hover {
+                transition: all 0.2s ease;
+            }
+
+            .card-hover:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-inter text-gray-800 min-h-screen flex flex-col">
+<!-- 顶部导航 -->
+<header class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+        <div class="flex items-center mb-4 md:mb-0">
+            <i class="fa fa-bolt text-primary text-2xl mr-3"></i>
+            <h1 class="text-xl md:text-2xl font-bold text-gray-800">实时监控</h1>
+            <span id="connection-status" class="ml-4 px-2 py-1 rounded-full text-xs bg-gray-200 text-gray-600">
+                    <i class="fa fa-circle text-gray-400 animate-pulse"></i> 未连接
+                </span>
+        </div>
+        <div class="flex items-center space-x-3">
+            <!-- SSE 地址配置 -->
+            <div class="relative">
+                <input type="text" id="sse-url-input" placeholder="SSE 后端地址"
+                       value="http://localhost:18080/monitor-sse" style="width: 260px;"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-sm">
+            </div>
+            <button id="connect-btn"
+                    class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center">
+                <i class="fa fa-plug mr-2"></i> 连接 SSE
+            </button>
+            <button id="clear-btn"
+                    class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors flex items-center">
+                <i class="fa fa-trash mr-2"></i> 清空日志
+            </button>
+        </div>
+    </div>
+    <!-- 搜索栏 - 仅增强全局搜索框，移除右侧新增筛选 -->
+    <div class="container mx-auto px-4 pb-4">
+        <div class="flex flex-col md:flex-row gap-3">
+            <div class="relative flex-1">
+                <!-- 优化搜索提示，明确包含 Message Type 和 Simple Name -->
+                <input type="text" id="search-input"
+                       placeholder="搜索 conversationId/sceneId/description/text/MessageType/SimpleName..."
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary">
+                <i class="fa fa-search absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            </div>
+            <div class="flex gap-2 flex-wrap">
+                <select id="filter-type"
+                        class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary bg-white">
+                    <option value="all">所有类型</option>
+                    <option value="traceMessage">轨迹信息</option>
+                    <option value="messageWrapper">消息信息</option>
+                </select>
+                <select id="filter-changeType"
+                        class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary bg-white">
+                    <option value="all">所有变更类型</option>
+                    <option value="ADDED">添加</option>
+                    <option value="REMOVED">移除</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- 主要内容 -->
+<main class="flex-1 container mx-auto px-4 py-6">
+    <!-- 统计卡片（修复金刚区图标丢失问题） -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white rounded-lg shadow p-4 card-hover">
+            <div class="flex items-center justify-between">
+                <h3 class="text-gray-500 text-sm font-medium">总消息数</h3>
+                <i class="fa fa-file-text-o text-primary text-xl"></i>
+            </div>
+            <p id="total-count" class="text-2xl font-bold mt-2">0</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4 card-hover">
+            <div class="flex items-center justify-between">
+                <h3 class="text-gray-500 text-sm font-medium">轨迹信息数</h3>
+                <!-- 替换为 FontAwesome 4.7 兼容的轨迹图标，避免丢失 -->
+                <i class="fa fa-location-arrow text-traceIn text-xl"></i>
+            </div>
+            <p id="trace-count" class="text-2xl font-bold mt-2">0</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4 card-hover">
+            <div class="flex items-center justify-between">
+                <h3 class="text-gray-500 text-sm font-medium">记忆信息数</h3>
+                <!-- 替换为 FontAwesome 4.7 兼容的消息图标，避免丢失 -->
+                <i class="fa fa-commenting-o text-messageAssistant text-xl"></i>
+            </div>
+            <p id="message-count" class="text-2xl font-bold mt-2">0</p>
+        </div>
+    </div>
+
+    <!-- 日志列表 -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <h2 class="font-semibold text-lg">实时日志列表</h2>
+            <div class="text-sm text-gray-500">
+                <span id="log-count">0</span> 条记录
+            </div>
+        </div>
+        <div id="logs-container" class="max-h-[70vh] overflow-y-auto scrollbar-thin">
+            <div class="px-6 py-4 text-center text-gray-500 border-b border-gray-100">
+                <i class="fa fa-info-circle mr-2"></i> 等待 SSE 连接并接收数据...
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- 页脚 -->
+<footer class="bg-white border-t border-gray-200 py-4 mt-6">
+    <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
+        <p>实时监控系统 © world.dahua.com</p>
+    </div>
+</footer>
+
+<script>
+    // 全局变量 - 恢复原有变量，移除新增筛选变量
+    let eventSource = null;
+    let logs = [];
+    let searchTerm = '';
+    let filterType = 'all';
+    let filterChangeType = 'all';
+    let reconnectTimer = null; // 重连定时器
+    const RECONNECT_DELAY = 3000; // 重连延迟 3 秒
+
+    // DOM 元素 - 恢复原有元素，移除新增筛选元素
+    const connectionStatus = document.getElementById('connection-status');
+    const connectBtn = document.getElementById('connect-btn');
+    const clearBtn = document.getElementById('clear-btn');
+    const logsContainer = document.getElementById('logs-container');
+    const searchInput = document.getElementById('search-input');
+    const filterTypeSelect = document.getElementById('filter-type');
+    const filterChangeTypeSelect = document.getElementById('filter-changeType');
+    const totalCountEl = document.getElementById('total-count');
+    const traceCountEl = document.getElementById('trace-count');
+    const messageCountEl = document.getElementById('message-count');
+    const logCountEl = document.getElementById('log-count');
+    const sseUrlInput = document.getElementById('sse-url-input');
+
+    // 初始化 - 恢复原有事件绑定
+    document.addEventListener('DOMContentLoaded', () => {
+        connectBtn.addEventListener('click', toggleConnection);
+        clearBtn.addEventListener('click', clearLogs);
+        searchInput.addEventListener('input', handleSearch);
+        filterTypeSelect.addEventListener('change', handleFilterChange);
+        filterChangeTypeSelect.addEventListener('change', handleFilterChange);
+
+        // 监听地址输入框回车事件
+        sseUrlInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') toggleConnection();
+        });
+    });
+
+    // 核心：稳定的 SSE 连接逻辑（保持不变）
+    function toggleConnection() {
+        // 清除重连定时器
+        if (reconnectTimer) {
+            clearTimeout(reconnectTimer);
+            reconnectTimer = null;
+        }
+
+        if (eventSource) {
+            // 主动关闭连接
+            eventSource.close();
+            eventSource = null;
+            updateConnectionStatus('disconnected');
+            connectBtn.innerHTML = '<i class="fa fa-plug mr-2"></i> 连接 SSE';
+            connectBtn.classList.remove('bg-danger');
+            connectBtn.classList.add('bg-primary');
+            return;
+        }
+
+        // 获取并验证地址
+        const sseUrl = sseUrlInput.value.trim();
+        if (!sseUrl) {
+            alert('请输入有效的 SSE 后端地址！');
+            return;
+        }
+
+        // 验证地址格式
+        try {
+            new URL(sseUrl); // 简单验证 URL 格式
+        } catch (err) {
+            alert('SSE 地址格式错误！请输入如 http://localhost:18080/monitor 的地址');
+            return;
+        }
+
+        // 开始连接
+        updateConnectionStatus('connecting');
+        connectBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> 连接中...';
+        connectBtn.disabled = true;
+
+        try {
+            // 创建 SSE 连接（无 withCredentials，避免 CORS 问题）
+            eventSource = new EventSource(sseUrl, {
+                withCredentials: false // 显式关闭，避免隐式开启
+            });
+
+            // 连接成功
+            eventSource.onopen = (e) => {
+                console.log('✅ SSE 连接成功', e);
+                updateConnectionStatus('connected');
+                connectBtn.innerHTML = '<i class="fa fa-unplug mr-2"></i> 断开连接';
+                connectBtn.classList.remove('bg-primary');
+                connectBtn.classList.add('bg-danger');
+                connectBtn.disabled = false;
+            };
+
+            // 接收消息（兼容多种格式）
+            eventSource.onmessage = (e) => {
+                console.log('📥 收到 SSE 消息:', e.data);
+                let data = null;
+
+                // 兼容各种数据格式
+                try {
+                    // 移除可能的前缀/后缀
+                    let cleanData = e.data.trim().replace(/^data:/, '').trim();
+                    // 处理多行 JSON
+                    if (cleanData.includes('\n')) {
+                        cleanData = cleanData.split('\n').filter(line => line.trim()).join('');
+                    }
+                    data = JSON.parse(cleanData);
+                } catch (err) {
+                    console.warn('⚠️ 消息解析失败，跳过:', err.message);
+                    // 记录原始数据到日志（方便排查）
+                    logs.unshift({
+                        receiveTime: new Date().toLocaleString(),
+                        changeEventType: 'ERROR',
+                        traceMessage: {
+                            conversationId: 'parse_error',
+                            description: '消息解析失败',
+                            simpleName: 'JSON Parse Error',
+                            traceType: 'EXCEPTION',
+                            requestType: 'UNKNOW',
+                            time: Date.now()
+                        }
+                    });
+                    updateStatistics();
+                    renderLogs();
+                    return;
+                }
+
+                if (data) {
+                    processLogData(data);
+                }
+            };
+
+            // 错误处理（核心修复）
+            eventSource.onerror = (e) => {
+                console.error('❌ SSE 错误:', e, '状态:', eventSource.readyState);
+
+                // 连接关闭时的处理
+                if (eventSource.readyState === EventSource.CLOSED) {
+                    const errorMsg = `SSE 连接断开！\n地址: ${sseUrl}\n请检查：\n1. 后端服务是否启动\n2. 后端跨域配置是否允许当前源\n3. 地址是否正确`;
+                    updateConnectionStatus('error');
+                    // 仅主动连接时弹出提示，自动重连时不弹
+                    if (!reconnectTimer) {
+                        alert(errorMsg);
+                    }
+
+                    // 重置连接状态
+                    eventSource = null;
+                    connectBtn.innerHTML = '<i class="fa fa-plug mr-2"></i> 连接 SSE';
+                    connectBtn.classList.remove('bg-danger');
+                    connectBtn.classList.add('bg-primary');
+                    connectBtn.disabled = false;
+
+                    // 自动重连（可选，注释掉则关闭自动重连）
+                    // reconnectTimer = setTimeout(() => {
+                    //     console.log('🔄 尝试自动重连...');
+                    //     toggleConnection();
+                    // }, RECONNECT_DELAY);
+                }
+                // 连接中错误
+                else if (eventSource.readyState === EventSource.CONNECTING) {
+                    updateConnectionStatus('connecting');
+                }
+            };
+
+        } catch (err) {
+            console.error('❌ 创建 SSE 连接失败:', err);
+            alert(`连接失败：${err.message}\n地址: ${sseUrl}`);
+            updateConnectionStatus('error');
+            connectBtn.innerHTML = '<i class="fa fa-plug mr-2"></i> 连接 SSE';
+            connectBtn.classList.remove('bg-danger');
+            connectBtn.classList.add('bg-primary');
+            connectBtn.disabled = false;
+            eventSource = null;
+        }
+    }
+
+    // 更新连接状态显示（保持不变）
+    function updateConnectionStatus(status) {
+        const statusMap = {
+            connecting: {
+                html: '<i class="fa fa-circle text-warning animate-pulse"></i> 正在连接',
+                class: 'ml-4 px-2 py-1 rounded-full text-xs bg-warning/10 text-warning'
+            },
+            connected: {
+                html: '<i class="fa fa-circle text-success animate-pulse"></i> 已连接',
+                class: 'ml-4 px-2 py-1 rounded-full text-xs bg-success/10 text-success'
+            },
+            disconnected: {
+                html: '<i class="fa fa-circle text-gray-400"></i> 已断开',
+                class: 'ml-4 px-2 py-1 rounded-full text-xs bg-gray-200 text-gray-600'
+            },
+            error: {
+                html: '<i class="fa fa-circle text-danger"></i> 连接错误',
+                class: 'ml-4 px-2 py-1 rounded-full text-xs bg-danger/10 text-danger'
+            }
+        };
+        connectionStatus.innerHTML = statusMap[status].html;
+        connectionStatus.className = statusMap[status].class;
+    }
+
+    // 处理日志数据（保持不变）
+    function processLogData(data) {
+        if (data.connectionType) {
+            return
+        }
+        data.receiveTime = new Date().toLocaleString();
+        logs.unshift(data);
+        updateStatistics();
+        renderLogs();
+    }
+
+    // 更新统计信息（保持不变）
+    function updateStatistics() {
+        const total = logs.length;
+        const traceCount = logs.filter(item => item.traceMessage).length;
+        const messageCount = logs.filter(item => item.messageWrapper).length;
+
+        totalCountEl.textContent = total;
+        traceCountEl.textContent = traceCount;
+        messageCountEl.textContent = messageCount;
+    }
+
+    // 搜索和筛选逻辑 - 核心增强：全局搜索包含 Message Type 和 Simple Name
+    function handleSearch(e) {
+        searchTerm = e.target.value.toLowerCase().trim();
+        renderLogs();
+    }
+
+    function handleFilterChange() {
+        filterType = filterTypeSelect.value;
+        filterChangeType = filterChangeTypeSelect.value;
+        renderLogs();
+    }
+
+    function filterLogs() {
+        return logs.filter(log => {
+            // 1. 基础类型筛选（保持不变）
+            if (filterType !== 'all') {
+                if (filterType === 'traceMessage' && !log.traceMessage) return false;
+                if (filterType === 'messageWrapper' && !log.messageWrapper) return false;
+            }
+
+            // 2. 变更类型筛选（保持不变）
+            if (filterChangeType !== 'all' && log.changeEventType !== filterChangeType) return false;
+
+            // 3. 全局搜索 - 增强：包含 Message Type 和 Simple Name
+            if (searchTerm) {
+                const searchable = [
+                    // 原有搜索项
+                    log.traceMessage?.conversationId || '',
+                    log.traceMessage?.sceneId || '',
+                    log.traceMessage?.description || '',
+                    log.messageWrapper?.conversationId || '',
+                    log.messageWrapper?.sceneId || '',
+                    log.messageWrapper?.text || '',
+                    // 新增搜索项（核心）
+                    log.traceMessage?.simpleName || '', // Simple Name（轨迹信息）
+                    (log.messageWrapper?.messageType || '').toLowerCase() // Message Type（消息信息，兼容大小写）
+                ].join(' ').toLowerCase();
+                if (!searchable.includes(searchTerm)) return false;
+            }
+
+            return true;
+        });
+    }
+
+    // 渲染日志（保持不变）
+    function renderLogs() {
+        const filteredLogs = filterLogs();
+        logCountEl.textContent = filteredLogs.length;
+
+        if (filteredLogs.length === 0) {
+            logsContainer.innerHTML = `
+                    <div class="px-6 py-4 text-center text-gray-500 border-b border-gray-100">
+                        <i class="fa fa-search mr-2"></i> 未找到匹配的日志记录
+                    </div>
+                `;
+            return;
+        }
+        logsContainer.innerHTML = filteredLogs.map(log => createLogCard(log)).join('');
+    }
+
+    // 创建日志卡片（修复图标丢失，优化 ASSISTANT 和轨迹图标）
+    function createLogCard(log) {
+        const isTrace = !!log.traceMessage;
+        const changeTypeClass = log.changeEventType === 'ADDED' ? 'text-added' : 'text-removed';
+        const changeTypeIcon = log.changeEventType === 'ADDED' ? 'fa-plus-circle' : 'fa-minus-circle';
+        const time = log.traceMessage?.time || log.messageWrapper?.time || log.receiveTime;
+        const formattedTime = typeof time === 'number' ? new Date(time).toLocaleString() : time;
+
+        // 通用乱码解码
+        const decodeText = (str) => {
+            if (!str) return '无';
+            try {
+                str = str.replace(/\\u([0-9a-fA-F]{4})/g, (_, p1) => String.fromCharCode(parseInt(p1, 16)));
+                return decodeURIComponent(escape(str));
+            } catch (e) {
+                return str;
+            }
+        };
+
+        // 轨迹信息卡片 - 优化轨迹图标（使用 FontAwesome 4.7 兼容图标）
+        if (isTrace) {
+            const trace = log.traceMessage;
+            const traceTypeClass = {
+                'IN': 'text-traceIn',
+                'OUT': 'text-traceOut',
+                'EXCEPTION': 'text-traceException'
+            }[trace.traceType] || 'text-info';
+            // 优化轨迹类型图标（替换为 4.7 兼容版本）
+            const traceTypeIcon = {
+                'IN': 'fa-long-arrow-right',
+                'OUT': 'fa-long-arrow-left',
+                'EXCEPTION': 'fa-exclamation-triangle'
+            }[trace.traceType] || 'fa-question';
+            const requestTypeClass = {
+                'SYNC': 'text-requestSync',
+                'ASYNC': 'text-requestAsync',
+                'UNKNOW': 'text-requestUnknown'
+            }[trace.requestType] || 'text-info';
+            const description = decodeText(trace.description);
+            // 轨迹标题：轨迹-xxx（Simple Name，无则显示"未知"）
+            const traceTitle = `轨迹-${trace.simpleName || '未知'}`;
+
+            return `
+                    <div class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                        <div class="px-6 py-4">
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="flex items-center">
+                                    <!-- 替换为 FontAwesome 4.7 兼容的轨迹主图标，避免丢失 -->
+                                    <span class="bg-blue-50 p-2 rounded-full mr-3"><i class="fa fa-map-signs text-traceIn"></i></span>
+                                    <div>
+                                        <h3 class="font-medium text-gray-800">${traceTitle}</h3>
+                                    </div>
+                                </div>
+                                <span class="${changeTypeClass} text-xs flex items-center">
+                                    <i class="fa ${changeTypeIcon} mr-1"></i> ${log.changeEventType}
+                                </span>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-sm">
+                                <div><span class="text-gray-500">Conversation ID:</span> <span class="font-medium ml-1">${trace.conversationId || '无'}</span></div>
+                                <div><span class="text-gray-500">Simple Name:</span> <span class="font-medium ml-1">${trace.simpleName || '无'}</span></div>
+                                <div><span class="text-gray-500">描述:</span> <span class="font-medium ml-1">${description}</span></div>
+                                <div class="flex items-center"><span class="text-gray-500">Trace Type:</span> 
+                                    <span class="${traceTypeClass} font-medium ml-1 flex items-center">
+                                        <i class="fa ${traceTypeIcon} mr-1"></i> ${trace.traceType || '未知'}
+                                    </span>
+                                </div>
+                                <div class="flex items-center"><span class="text-gray-500">Request Type:</span> 
+                                    <span class="${requestTypeClass} font-medium ml-1">${trace.requestType || 'UNKNOW'}</span>
+                                </div>
+                                <div><span class="text-gray-500">时间:</span> <span class="font-medium ml-1">${formattedTime}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+        }
+        // 消息信息卡片 - 优化 ASSISTANT 图标（使用 FontAwesome 4.7 兼容图标）
+        else {
+            const message = log.messageWrapper;
+            // 修复消息类型样式类（兼容大小写）
+            const messageTypeNormalized = (message.messageType || '').toUpperCase();
+            const messageTypeClass = {
+                'USER': 'text-messageUser',
+                'TOOL': 'text-messageTool',
+                'ASSISTANT': 'text-messageAssistant',
+                'SYSTEM': 'text-messageSystem'
+            }[messageTypeNormalized] || 'text-info';
+            // 优化 ASSISTANT 图标（替换为 FontAwesome 4.7 兼容的更美观图标）
+            const messageTypeIcon = {
+                'USER': 'fa-user',                // 用户 - 实心图标
+                'TOOL': 'fa-wrench',              // 工具 - 保持不变
+                'ASSISTANT': 'fa-headphones',          // 助手 - 替换为机器人图标（4.7 兼容）
+                'SYSTEM': 'fa-cog'                // 系统 - 保持不变
+            }[messageTypeNormalized] || 'fa-comment';
+            const text = decodeText(message.text).replace(/\\n/g, '<br>').replace(/\\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+            // 消息标题：消息-xxx（消息类型，无则显示"未知"）
+            const messageTitle = `记忆-${message.messageType || '未知'}`;
+
+            return `
+                    <div class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                        <div class="px-6 py-4">
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="flex items-center">
+                                    <!-- 消息卡片主图标使用 4.7 兼容版本 -->
+                                    <span class="bg-green-50 p-2 rounded-full mr-3"><i class="fa ${messageTypeIcon} ${messageTypeClass}"></i></span>
+                                    <div>
+                                        <h3 class="font-medium text-gray-800">${messageTitle}</h3>
+                                    </div>
+                                </div>
+                                <span class="${changeTypeClass} text-xs flex items-center">
+                                    <i class="fa ${changeTypeIcon} mr-1"></i> ${log.changeEventType}
+                                </span>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-sm">
+                                <div><span class="text-gray-500">Conversation ID:</span> <span class="font-medium ml-1">${message.conversationId || '无'}</span></div>
+                                <div class="flex items-center"><span class="text-gray-500">Message Type:</span> 
+                                    <span class="${messageTypeClass} font-medium ml-1 flex items-center">
+                                        <i class="fa ${messageTypeIcon} mr-1"></i> ${message.messageType || '未知'}
+                                    </span>
+                                </div>
+                                <div><span class="text-gray-500">Scene ID:</span> <span class="font-medium ml-1 text-xs break-all">${message.sceneId || '无'}</span></div>
+                                <div><span class="text-gray-500">时间戳:</span> <span class="font-medium ml-1">${formattedTime}</span></div>
+                            </div>
+                            <div class="mt-4 text-sm">
+                                <span class="text-gray-500 block mb-2">消息内容:</span>
+                                <div class="bg-gray-50 p-3 rounded-md border border-gray-200 whitespace-pre-line">${text}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+        }
+    }
+
+    // 清空日志（保持不变）
+    function clearLogs() {
+        if (confirm('确定要清空所有日志记录吗？')) {
+            logs = [];
+            updateStatistics();
+            renderLogs();
+        }
+    }
+
+    // 页面关闭时清理连接（保持不变）
+    window.addEventListener('beforeunload', () => {
+        if (eventSource) eventSource.close();
+        if (reconnectTimer) clearTimeout(reconnectTimer);
+    });
+</script>
+</body>
+</html>

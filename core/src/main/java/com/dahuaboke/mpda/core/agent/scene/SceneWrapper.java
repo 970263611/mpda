@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  */
 public class SceneWrapper {
 
-    private final String sceneId = UUID.randomUUID().toString();
+    private final String sceneId;
     private final Chain chain;
     private final Scene scene;
     protected Set<SceneWrapper> childrenWrapper;
@@ -27,6 +27,11 @@ public class SceneWrapper {
     protected SceneWrapper(Chain chain, Scene scene) {
         this.chain = chain;
         this.scene = scene;
+        if (scene != null) {
+            this.sceneId = scene.getClass().getName();
+        } else {
+            this.sceneId = UUID.randomUUID().toString();
+        }
     }
 
     public static Builder builder() {
