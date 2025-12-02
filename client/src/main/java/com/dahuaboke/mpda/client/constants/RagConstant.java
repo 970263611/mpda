@@ -25,6 +25,9 @@ public class RagConstant {
 
     public static final String RAG_V1_C014006 = "rag_v1_C014006";
 
+    public static final String RAG_V1_C014004 = "rag_v1_C014004";
+
+
     public static final String RAG_V1_C014005 = "rag_v1_C014005";
 
     public static final String RAG_V1_C014008 = "rag_v1_C014008";
@@ -38,6 +41,8 @@ public class RagConstant {
     public static final String C014007 = "C014007";
 
     public static final String C014006 = "C014006";
+
+    public static final String C014004 = "C014004";
 
     public static final String C014005 = "C014005";
 

@@ -7,10 +7,12 @@ import com.dahuaboke.mpda.client.entity.CommonReq;
 import com.dahuaboke.mpda.client.entity.TxBodyReq;
 import com.dahuaboke.mpda.client.entity.TxHeaderReq;
 import com.dahuaboke.mpda.client.entity.req.C014001Req;
+import com.dahuaboke.mpda.client.entity.req.C014004Req;
 import com.dahuaboke.mpda.client.entity.req.C014005Req;
 import com.dahuaboke.mpda.client.entity.req.C014006Req;
 import com.dahuaboke.mpda.client.entity.req.C014008Req;
 import com.dahuaboke.mpda.client.entity.resp.C014001Resp;
+import com.dahuaboke.mpda.client.entity.resp.C014004Resp;
 import com.dahuaboke.mpda.client.entity.resp.C014005Resp;
 import com.dahuaboke.mpda.client.entity.resp.C014006Resp;
 import com.dahuaboke.mpda.client.entity.resp.C014008Resp;
@@ -58,6 +60,37 @@ public class VectorStoreRequestHandle {
         bodyReq.setTxBody(insertReq);
 
         return customCommonClient.execute(coreClientProperties.getUrl() + RagConstant.C014001, bodyReq, C014001Resp.class);
+    }
+
+    /**
+     * 通用数据普通查询接口发送
+     *
+     * @param indexName      索引名称
+     * @param conditionMap   筛选条件 非必输
+     * @param orderCondition 排序字段 非必输
+     * @return
+     */
+    public C014004Resp sendC014004(String indexName, Map<String, Object> conditionMap, Map<String, String> orderCondition ,int currentPage ,int pageSize) {
+        CommonReq<C014004Req> bodyReq = new CommonReq<>();
+        TxHeaderReq headerReq = CommonHeaderUtils.build(coreClientProperties, RagConstant.RAG_V1_C014004);
+        bodyReq.setTxHeader(headerReq);
+
+        TxBodyReq<C014004Req> txBodyReq = new TxBodyReq<>();
+        C014004Req c014004Req = new C014004Req();
+        c014004Req.setSystemNo(coreClientProperties.getSendSysNo());
+        c014004Req.setIndexName(indexName);
+        if (!conditionMap.isEmpty()) {
+            c014004Req.setConditionMap(conditionMap);
+        }
+        if (!orderCondition.isEmpty()) {
+            c014004Req.setOrderCondition(orderCondition);
+        }
+        c014004Req.setCurrentPage(currentPage);
+        c014004Req.setPageSize(pageSize);
+        txBodyReq.setTxEntity(c014004Req);
+        bodyReq.setTxBody(txBodyReq);
+
+        return customCommonClient.execute(coreClientProperties.getUrl() + RagConstant.C014004, bodyReq, C014004Resp.class);
     }
 
     /**
