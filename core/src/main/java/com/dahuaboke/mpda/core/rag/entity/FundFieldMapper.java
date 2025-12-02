@@ -22,11 +22,13 @@ public class FundFieldMapper {
                 .forEach(f -> {
                     String question = f.getAnnotation(FieldComment.class).question();
                     String keyWord = f.getAnnotation(FieldComment.class).keyWord();
-
                     f.setAccessible(true);
                     commentToFieldMap.put(question, f);
                     questionKeyWordMap.put(question, keyWord);
                 });
+    }
+
+    public FundFieldMapper() {
     }
 
     /**
@@ -58,4 +60,19 @@ public class FundFieldMapper {
     public Map<String, String> getQuestionKeyWordMap() {
         return questionKeyWordMap;
     }
+
+    public Map<String,String> getQuestionByName (Class<?> clazz) {
+        Map<String,String> map = new HashMap<>();
+        // 初始化时构建注释到字段的映射
+        Arrays.stream(clazz.getDeclaredFields())
+                .filter(f -> f.isAnnotationPresent(FieldComment.class))
+                .forEach(f -> {
+                    String question = f.getAnnotation(FieldComment.class).question();
+                    String name = f.getName();
+                    f.setAccessible(true);
+                    map.put(name, question);
+                });
+        return map;
+    }
+    
 }

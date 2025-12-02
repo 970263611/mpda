@@ -30,7 +30,7 @@ public class Map2MdUtil {
     private static void processMap(Map<?, ?> map, StringBuilder sb, int level) {
         for (Map.Entry<?, ?> entry : map.entrySet()) {
             Object key = entry.getKey();
-            Object value = entry.getValue();
+            Object value = "\n" + entry.getValue();
 
             // 添加当前层级的列表前缀
             appendListPrefix(sb, level);

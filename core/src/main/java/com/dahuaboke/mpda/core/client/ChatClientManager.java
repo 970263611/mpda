@@ -81,7 +81,16 @@ public class ChatClientManager {
             message = UserMessageWrapper.builder().text((String) query).conversationId(conversationId).sceneId(sceneId).build();
         }
         List<Message> finalMessages = new ArrayList<>(messages);
-        finalMessages.add(message);
+        if(!messages.isEmpty()){
+            Message lastMessage = messages.get(messages.size() - 1);
+            boolean isUserMessage = lastMessage instanceof UserMessageWrapper;
+            boolean shouldAdd = isUserMessage ? !lastMessage.getText().equals(query) : lastMessage != message;
+            if(shouldAdd){
+                finalMessages.add(message);
+            }
+        }else {
+            finalMessages.add(message);
+        }
         finalMessages.add(new UserMessage(prompt));
         spec.messages(finalMessages);
         if (!CollectionUtils.isEmpty(tools)) {

@@ -110,7 +110,7 @@ public class MemoryManager implements SmartLifecycle {
         });
         if (!memoryExclude.isEmpty()) {
             stream = stream.filter(
-                    m3 -> !memoryExclude.stream().anyMatch(me -> me.getClass().isAssignableFrom(m3.getClass())));
+                    m3 -> !memoryExclude.stream().anyMatch(me -> me.isAssignableFrom(m3.getClass())));
         }
         return stream;
     }
