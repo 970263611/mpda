@@ -8,12 +8,12 @@ spring:
       datasource:
         master:
           driver-class-name: org.postgresql.Driver
-          url: jdbc:postgresql://20.12.0.38:5432/prptdb
+          url: jdbc:postgresql://20.12.0.38:5432/prptdb?ApplicationName=${spring.application.name}
           username: schedulerdb
           password: ENC(hudLofS2FZEVgBOwqraR7Em9plV0ife9)
         db1:
           driver-class-name: org.postgresql.Driver
-          url: jdbc:postgresql://20.200.98.154:5434/mdbfinsys1?connectTimeout=1
+          url: jdbc:postgresql://20.200.98.154:5434/mdbfinsys1?connectTimeout=1&ApplicationName=${spring.application.name}
           username: mdbfinsys1
           password: ENC(YUSjv+h5OAFZ9lVRzhkgdbhl3sYlcbGG)
           druid:

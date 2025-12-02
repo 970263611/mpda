@@ -8,21 +8,21 @@ spring:
       datasource:
         master:
           driver-class-name: org.postgresql.Driver
-          url: jdbc:postgresql://20.240.233.100:5432/prptdb
+          url: jdbc:postgresql://20.240.233.100:5432/prptdb?ApplicationName=${spring.application.name}
           username: ifundrobot
           password: ENC(cR58FU/mdN/7ILRTL6VN3U74DQNJxAvL)
         db1:
           driver-class-name: org.postgresql.Driver
-          url: jdbc:postgresql://20.240.93.191:5434/mdbfinsys1?connectTimeout=1
-          username: mdbfinsys1
-          password: ENC(0Q7n0bg0GEvb9r2f5p37jpVROk7nY7U7)
+          url: jdbc:postgresql://20.240.233.100:5432/admdb?connectTimeout=1&ApplicationName=${spring.application.name}
+          username: finsys
+          password: ENC(S9bLS1BD5slDb5xsrbIxtCQfk/BmVXUG)
           druid:
             # 初始化时建立物理连接的个数
-            initial-size: 2
+            initial-size: 1
             # 连接池的最小空闲数量
-            min-idle: 2
+            min-idle: 1
             # 连接池最大连接数量
-            max-active: 5
+            max-active: 3
             # 获取连接时最大等待时间，单位毫秒
             max-wait: 60000
             # 申请连接的时候检测，如果空闲时间大于timeBetweenEvictionRunsMillis，执行validationQuery检测连接是否有效。
@@ -37,16 +37,16 @@ spring:
             test-on-borrow: false
             # 归还连接时会执行validationQuery检测连接是否有效,开启会降低性能,默认为true
             test-on-return: false
-#            stat-view-servlet:
-#              # 是否启用StatViewServlet默认值true
-#              enabled: true
-#              # 访问路径为/druid时，跳转到StatViewServlet
-#              url-pattern: /druid/*
-#              # 是否能够重置数据
-#              reset-enable: false
-#              # 需要账号密码才能访问控制台，默认为root
-#              login-username: druid
-#              login-password: druid
+  #            stat-view-servlet:
+  #              # 是否启用StatViewServlet默认值true
+  #              enabled: true
+  #              # 访问路径为/druid时，跳转到StatViewServlet
+  #              url-pattern: /druid/*
+  #              # 是否能够重置数据
+  #              reset-enable: false
+  #              # 需要账号密码才能访问控制台，默认为root
+  #              login-username: druid
+  #              login-password: druid
 
   cloud:
     compatibility-verifier:

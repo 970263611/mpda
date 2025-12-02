@@ -7,6 +7,7 @@ import com.dahuaboke.mpda.bot.tools.service.BrMarketProductReportService;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -28,7 +29,7 @@ public class MarketRankTask {
     @Autowired
     ProductToolHandler productToolHandler;
 
-    @Scheduled(cron = "0 0 8 * * ?")
+    @Scheduled(cron = "0 0 07 * * ?")
     public void marketRankJob() {
         log.info("开始执行市场产品报告任务...........");
 
@@ -61,60 +62,99 @@ public class MarketRankTask {
         LocalDateTime mouth1 = now.plusMonths(-1);
         LocalDateTime mouth3 = now.plusMonths(-3);
         LocalDateTime year = now.plusYears(-1);
+        LocalDateTime yearStart = LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0);
 
-        LocalDateTime quarter1Start = LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0);
-        LocalDateTime quarter1End = LocalDateTime.of(now.getYear(), 3, 31, 23, 59, 59);
-        LocalDateTime quarter2Start = LocalDateTime.of(now.getYear(), 4, 1, 0, 0, 0);
-        LocalDateTime quarter2End = LocalDateTime.of(now.getYear(), 6, 30, 23, 59, 59);
-        LocalDateTime quarter3Start = LocalDateTime.of(now.getYear(), 7, 1, 0, 0, 0);
-        LocalDateTime quarter3End = LocalDateTime.of(now.getYear(), 9, 30, 23, 59, 59);
-        LocalDateTime quarter4Start = LocalDateTime.of(now.getYear(), 10, 1, 0, 0, 0);
-        LocalDateTime quarter4End = LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59);
+        List<LocalDateTime> quarterStart = getQuarterStart();
+        LocalDateTime quarter1Start = quarterStart.get(0);
+        LocalDateTime quarter1End = quarter1Start.plusMonths(3).minusSeconds(1);
+        LocalDateTime quarter2Start = quarterStart.get(1);
+        LocalDateTime quarter2End = quarter2Start.plusMonths(3).minusSeconds(1);
+        LocalDateTime quarter3Start = quarterStart.get(2);
+        LocalDateTime quarter3End =  quarter3Start.plusMonths(3).minusSeconds(1);
+        LocalDateTime quarter4Start = quarterStart.get(3);
+        LocalDateTime quarter4End = quarter4Start.plusMonths(3).minusSeconds(1);
+
 
         brMarketProductReports.forEach(brMarketProductReport -> {
             String fundCode = brMarketProductReport.getFundCode();
-            String weakRate = productToolHandler.yearRita(new NetValReq(fundCode, weak.format(yyyyMMdd), now.format(yyyyMMdd)));
-            String mouth1Rate = productToolHandler.yearRita(new NetValReq(fundCode, mouth1.format(yyyyMMdd), now.format(yyyyMMdd)));
-            String mouth3Rate = productToolHandler.yearRita(new NetValReq(fundCode, mouth3.format(yyyyMMdd), now.format(yyyyMMdd)));
-            String yearToDateRate = productToolHandler.yearRita(new NetValReq(fundCode, quarter1Start.format(yyyyMMdd), now.format(yyyyMMdd)));
-            //今年以来(年化)
-            double rate = parseRate(yearToDateRate);
-            long days = ChronoUnit.DAYS.between(quarter1Start, now);
-            double annualizedRate = Math.pow(1 + rate /100 ,365.0 /days) -1;
-            String annualizedRateStr = String.format("%.2f%%",annualizedRate * 100);
+            try {
+                //周,月,三月,年,今年以来 收益率
+                String weakRate = productToolHandler.yearRita(new NetValReq(fundCode, weak.format(yyyyMMdd), now.format(yyyyMMdd)));
+                String mouth1Rate = productToolHandler.yearRita(new NetValReq(fundCode, mouth1.format(yyyyMMdd), now.format(yyyyMMdd)));
+                String mouth3Rate = productToolHandler.yearRita(new NetValReq(fundCode, mouth3.format(yyyyMMdd), now.format(yyyyMMdd)));
+                String yearRate = productToolHandler.yearRita(new NetValReq(fundCode, year.format(yyyyMMdd), now.format(yyyyMMdd)));
+                String yearToDateRate = productToolHandler.yearRita(new NetValReq(fundCode, yearStart.format(yyyyMMdd), now.format(yyyyMMdd)));
+                //今年以来(年化)
+                double rate = parseRate(yearToDateRate);
+                long days = ChronoUnit.DAYS.between(yearStart, now);
+                double annualizedRate = Math.pow(1 + rate /100 ,365.0 /days) -1;
+                String annualizedRateStr = String.format("%.2f%%",annualizedRate * 100);
 
-            String yearRate = productToolHandler.yearRita(new NetValReq(fundCode, year.format(yyyyMMdd), now.format(yyyyMMdd)));
+                //四季度 收益率
+                String quarter1Rate = productToolHandler.yearRita(new NetValReq(fundCode, quarter1Start.format(yyyyMMdd), quarter1End.format(yyyyMMdd)));
+                String quarter2Rate = productToolHandler.yearRita(new NetValReq(fundCode, quarter2Start.format(yyyyMMdd), quarter2End.format(yyyyMMdd)));
+                String quarter3Rate = productToolHandler.yearRita(new NetValReq(fundCode, quarter3Start.format(yyyyMMdd), quarter3End.format(yyyyMMdd)));
+                String quarter4Rate = productToolHandler.yearRita(new NetValReq(fundCode, quarter4Start.format(yyyyMMdd), quarter4End.format(yyyyMMdd)));
 
-            String quarter1Rate = productToolHandler.yearRita(new NetValReq(fundCode, quarter1Start.format(yyyyMMdd), quarter1End.format(yyyyMMdd)));
-            String quarter2Rate = productToolHandler.yearRita(new NetValReq(fundCode, quarter2Start.format(yyyyMMdd), quarter2End.format(yyyyMMdd)));
-            String quarter3Rate = productToolHandler.yearRita(new NetValReq(fundCode, quarter3Start.format(yyyyMMdd), quarter3End.format(yyyyMMdd)));
-            String quarter4Rate = productToolHandler.yearRita(new NetValReq(fundCode, quarter4Start.format(yyyyMMdd), quarter4End.format(yyyyMMdd)));
+                //周,月,三月,年 回撤
+                String weakWithDrawal = productToolHandler.maxWithDrawal(new NetValReq(fundCode, weak.format(yyyyMMdd), now.format(yyyyMMdd)));
+                String mouth1WithDrawal = productToolHandler.maxWithDrawal(new NetValReq(fundCode, mouth1.format(yyyyMMdd), now.format(yyyyMMdd)));
+                String mouth3WithDrawal = productToolHandler.maxWithDrawal(new NetValReq(fundCode, mouth3.format(yyyyMMdd), now.format(yyyyMMdd)));
+                String yearWithDrawal = productToolHandler.maxWithDrawal(new NetValReq(fundCode, year.format(yyyyMMdd), now.format(yyyyMMdd)));
 
-            String weakWithDrawal = productToolHandler.maxWithDrawal(new NetValReq(fundCode, weak.format(yyyyMMdd), now.format(yyyyMMdd)));
-            String mouth1WithDrawal = productToolHandler.maxWithDrawal(new NetValReq(fundCode, mouth1.format(yyyyMMdd), now.format(yyyyMMdd)));
-            String mouth3WithDrawal = productToolHandler.maxWithDrawal(new NetValReq(fundCode, mouth3.format(yyyyMMdd), now.format(yyyyMMdd)));
-            String yearWithDrawal = productToolHandler.maxWithDrawal(new NetValReq(fundCode, year.format(yyyyMMdd), now.format(yyyyMMdd)));
-
-
-            brMarketProductReport.setNwk1CombProfrat(weakRate);
-            brMarketProductReport.setNmm1CombProfrat(mouth1Rate);
-            brMarketProductReport.setNmm3CombProfrat(mouth3Rate);
-            brMarketProductReport.setDrtPftrtTval(yearToDateRate);
-            brMarketProductReport.setPftrtName(annualizedRateStr);
-            brMarketProductReport.setNyy1Profrat(yearRate);
-            brMarketProductReport.setLastYrlyPftrt(quarter1Rate);
-            brMarketProductReport.setNmm6CombProfrat(quarter2Rate);
-            brMarketProductReport.setNmm3YrlyPftrt(quarter3Rate);
-            brMarketProductReport.setNmm1YearlyProfrat(quarter4Rate);
-            brMarketProductReport.setStyoMaxWdwDesc(weakWithDrawal);
-            brMarketProductReport.setMaxWdwrt(mouth1WithDrawal);
-            brMarketProductReport.setFundstgMaxWdwrt(mouth3WithDrawal);
-            brMarketProductReport.setNyy1Wdwrt(yearWithDrawal);
-            brMarketProductReportService.insertMarketProductReport(brMarketProductReport);
-
+                //赋值更新
+                brMarketProductReport.setNwk1CombProfrat(weakRate);
+                brMarketProductReport.setNmm1CombProfrat(mouth1Rate);
+                brMarketProductReport.setNmm3CombProfrat(mouth3Rate);
+                brMarketProductReport.setDrtPftrtTval(yearToDateRate);
+                brMarketProductReport.setPftrtName(annualizedRateStr);
+                brMarketProductReport.setNyy1Profrat(yearRate);
+                brMarketProductReport.setLastYrlyPftrt(quarter1Rate);
+                brMarketProductReport.setNmm6CombProfrat(quarter2Rate);
+                brMarketProductReport.setNmm3YrlyPftrt(quarter3Rate);
+                brMarketProductReport.setNmm1YearlyProfrat(quarter4Rate);
+                brMarketProductReport.setStyoMaxWdwDesc(weakWithDrawal);
+                brMarketProductReport.setMaxWdwrt(mouth1WithDrawal);
+                brMarketProductReport.setFundstgMaxWdwrt(mouth3WithDrawal);
+                brMarketProductReport.setNyy1Wdwrt(yearWithDrawal);
+                brMarketProductReportService.insertMarketProductReport(brMarketProductReport);
+            } catch (Exception e) {
+                log.error("{}计算利率债和最大回撤失败",fundCode, e);
+            }
         });
     }
 
+    private List<LocalDateTime> getQuarterStart(){
+        List<LocalDateTime> localDateTimeList = new ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
+
+        int currentYear = now.getYear();
+        int currentMonth = now.getMonthValue();
+        //当前年已完整结束的季度数
+        int finishedQuarters;
+        if(currentMonth <= 3){
+            finishedQuarters = 0;
+        }else if (currentMonth <= 6){
+            finishedQuarters = 1;
+        }else if (currentMonth <= 9){
+            finishedQuarters = 2;
+        }else {
+            finishedQuarters = 3;
+        }
+        int[][] quarterMonthRanges = {{1,3},{4,6},{7,9},{10,12}};
+        for (int quarterIdx = 0; quarterIdx < 4; quarterIdx++) {
+            int[] monthRange = quarterMonthRanges[quarterIdx];
+            int targetYear;
+            if(quarterIdx < finishedQuarters){
+                targetYear = currentYear;
+            }else {
+                targetYear = currentYear - 1;
+            }
+            LocalDateTime quarterStart = LocalDateTime.of(targetYear, monthRange[0], 1, 0, 0, 0);
+            localDateTimeList.add(quarterStart);
+        }
+        return localDateTimeList;
+    }
 
     private void yesterdayRank(List<BrMarketProductReport> brMarketProductReports) {
         brMarketProductReports.forEach(report -> {

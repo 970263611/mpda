@@ -88,7 +88,6 @@ public class ComparisonGraph extends AbstractGraph {
     }
 
     @Override
-    @MemoryMerge(MarketRankingScene.class)
     public Flux<SceneResponse> executeAsync(Map<String, Object> attribute) throws MpdaRuntimeException {
         attribute.put(Constants.TOOLS, List.of("comparisonTool"));
         comparisonPrompt.changePrompt("guide");

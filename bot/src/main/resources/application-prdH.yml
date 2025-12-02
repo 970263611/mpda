@@ -7,13 +7,13 @@ spring:
       strict: false
       datasource:
         master:
-          url: jdbc:postgresql://25.2.6.144:5432/prptdb
+          url: jdbc:postgresql://25.2.6.144:5432/prptdb?ApplicationName=${spring.application.name}
           username: ifundrobot
           password: ENC(cR58FU/mdN/7ILRTL6VN3U74DQNJxAvL)
           driver-class-name: org.postgresql.Driver
         db1:
           driver-class-name: org.postgresql.Driver
-          url: jdbc:postgresql://22.240.131.166:5432/admdb?connectTimeout=10
+          url: jdbc:postgresql://22.240.131.166:5432/admdb?connectTimeout=10&ApplicationName=${spring.application.name}
           username: finsys
           password: ENC(FLOkut+Zk78VQbBIl7vqGlF1OFN7vDxq)
           druid:

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
  * time: 2025/10/28 10:12
  */
 @Component
+@MemoryExclude(ToolResponseMessage.class)
 public class InformationScene implements Scene {
 
     @Autowired
@@ -26,8 +27,8 @@ public class InformationScene implements Scene {
     @Override
     public String description() {
         return """
-                    了解/查询/咨询/介绍基金具体/某一/部分信息
-                    了解/查询/咨询/介绍产品具体/某一/部分信息
+                    了解/查询/咨询/介绍/分析基金具体/某一/部分信息
+                    了解/查询/咨询/介绍/分析产品具体/某一/部分信息
                 """;
     }
 

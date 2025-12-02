@@ -2,16 +2,14 @@ package com.dahuaboke.mpda.bot.scenes.product.information;
 
 
 import com.dahuaboke.mpda.core.agent.prompt.AgentPrompt;
+import com.dahuaboke.mpda.core.utils.List2MdUtil;
 import com.dahuaboke.mpda.core.utils.Map2MdUtil;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.List;
-import java.util.Set;
 import org.springframework.ai.chat.prompt.PromptTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * auth: dahua
@@ -21,18 +19,19 @@ import java.util.Map;
 public class InformationAgentPrompt implements AgentPrompt {
 
     private final String prompt = """
-                1.根据上下文消息和用户新问题,来判断查询产品是通过位6位产品编号还是产品名称。
+                1.根据上下文消息和用户新问题,来判断查询产品是通过提供的【6位产品编号】还是【产品名称】亦或者是【没有提供编号或名称】。
                 2.根据以下对应关系返回产品编号场景还是产品名称场景的对应场景编号：
                     {scenes}
-                4.关键！ 必须返回{ids}的其中之一,注意不要添加任何其他符号,切勿返回其余内容影响后续流程
-                5.示例：
+                3.【6位产品编号】：返回通过编号查询产品场景的场景编号。
+                4.【产品名称】：返回通过产品名称查询产品的场景编号。
+                5.【没有提供编号或名称】：返回没有提供编号或名称场景编号。
+                6.示例：
                     数据：
                         abcdefg
                         1234567
                     返回：abcdefg
+                7.关键！ 必须返回{ids}的其中之一,注意不要添加任何其他符号,切勿返回其余内容影响后续流程。
             """;
-    @Autowired
-    private ObjectMapper objectMapper;
     private String description;
 
     @Override
@@ -42,15 +41,11 @@ public class InformationAgentPrompt implements AgentPrompt {
 
     @Override
     public void build(Map params) {
-        try {
-            PromptTemplate promptTemplate = new PromptTemplate(prompt);
-            Set<Map.Entry<String, String>> set = params.entrySet();
-            List<String> keys = set.stream().map(Map.Entry::getKey).toList();
-            promptTemplate.add("scenes", Map2MdUtil.convert(params));
-            promptTemplate.add("ids", objectMapper.writeValueAsString(String.join("\n", keys)));
-            this.description = promptTemplate.create().getContents();
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();//TODO
-        }
+        PromptTemplate promptTemplate = new PromptTemplate(prompt);
+        Set<Map.Entry<String, String>> set = params.entrySet();
+        List<String> keys = set.stream().map(Map.Entry::getKey).toList();
+        promptTemplate.add("scenes", Map2MdUtil.convert(params));
+        promptTemplate.add("ids", List2MdUtil.convert(keys));
+        this.description = promptTemplate.create().getContents();
     }
 }

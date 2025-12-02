@@ -25,7 +25,7 @@ public class DocContextHandler {
         this.vectorStore = vectorStore;
     }
 
-    public List<Document> handler(SearchRequest searchRequest, List<Document> documents) {
+    public List<Document> handler(SearchRequest searchRequest, List<Document> documents,String fileType) {
         ArrayList<Document> docContext = new ArrayList<>();
         //文件名称分组
         Map<String, List<Document>> docsByFileName = documents.stream()
@@ -45,10 +45,10 @@ public class DocContextHandler {
                 Double minPage = segment.get(0);
                 Double maxPage = segment.get(segment.size() - 1);
                 if (minPage > 1) {
-                    List<Document> docPre = requestPage(searchRequest, fileName, minPage - 1);
+                    List<Document> docPre = requestPage(searchRequest, fileName,fileType, minPage - 1);
                     docContext.addAll(docPre);
                 }
-                List<Document> docNext = requestPage(searchRequest, fileName, maxPage + 1);
+                List<Document> docNext = requestPage(searchRequest, fileName, fileType,maxPage + 1);
                 docContext.addAll(docNext);
             }
         }
@@ -76,17 +76,23 @@ public class DocContextHandler {
         return continuousSegments;
     }
 
-    private List<Document> requestPage(SearchRequest searchRequest, String fileName, double pageNumber) {
+    private List<Document> requestPage(SearchRequest searchRequest, String fileName, String fileType, double pageNumber) {
         SearchRequest request = SearchRequest.builder()
                 .query(searchRequest.getQuery())
                 .topK(searchRequest.getTopK())
                 .filterExpression(new Filter.Expression(
                         Filter.ExpressionType.AND,
                         new Filter.Expression(
-                                Filter.ExpressionType.EQ, new Filter.Key("file_name"), new Filter.Value(fileName)
+                                Filter.ExpressionType.AND,
+                                new Filter.Expression(
+                                        Filter.ExpressionType.EQ, new Filter.Key("file_name"), new Filter.Value(fileName)
+                                ),
+                                new Filter.Expression(
+                                        Filter.ExpressionType.EQ, new Filter.Key("page_number"), new Filter.Value(pageNumber)
+                                )
                         ),
                         new Filter.Expression(
-                                Filter.ExpressionType.EQ, new Filter.Key("page_number"), new Filter.Value(pageNumber)
+                                Filter.ExpressionType.EQ, new Filter.Key("file_type"), new Filter.Value(fileType)
                         )
                 ))
                 .similarityThreshold(searchRequest.getSimilarityThreshold())

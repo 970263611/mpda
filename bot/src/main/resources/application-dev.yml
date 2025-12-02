@@ -8,12 +8,12 @@ spring:
       datasource:
         master:
           driver-class-name: org.postgresql.Driver
-          url: jdbc:postgresql://20.12.0.38:5432/prptdb
+          url: jdbc:postgresql://20.12.0.38:5432/prptdb?ApplicationName=${spring.application.name}
           username: schedulerdb
           password: ENC(hudLofS2FZEVgBOwqraR7Em9plV0ife9)
         db1:
           driver-class-name: org.postgresql.Driver
-          url: jdbc:postgresql://20.200.34.135:5433/mdbfinver1?connectTimeout=10
+          url: jdbc:postgresql://20.200.34.135:5433/mdbfinver1?connectTimeout=10&ApplicationName=${spring.application.name}
           username: test
           password: ENC(9TrmlKVvCukSE9WE+ftNpooU8UZf5+Abp3L9SILj5cA=)
           druid:
@@ -37,16 +37,16 @@ spring:
             test-on-borrow: false
             # 归还连接时会执行validationQuery检测连接是否有效,开启会降低性能,默认为true
             test-on-return: false
-#            stat-view-servlet:
-#              # 是否启用StatViewServlet默认值true
-#              enabled: true
-#              # 访问路径为/druid时，跳转到StatViewServlet
-#              url-pattern: /druid/*
-#              # 是否能够重置数据
-#              reset-enable: false
-#              # 需要账号密码才能访问控制台，默认为root
-#              login-username: druid
-#              login-password: druid
+  #            stat-view-servlet:
+  #              # 是否启用StatViewServlet默认值true
+  #              enabled: true
+  #              # 访问路径为/druid时，跳转到StatViewServlet
+  #              url-pattern: /druid/*
+  #              # 是否能够重置数据
+  #              reset-enable: false
+  #              # 需要账号密码才能访问控制台，默认为root
+  #              login-username: druid
+  #              login-password: druid
 
   cloud:
     compatibility-verifier:

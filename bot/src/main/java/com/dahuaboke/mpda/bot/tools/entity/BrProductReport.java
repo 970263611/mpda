@@ -150,13 +150,13 @@ public class BrProductReport {
     /**
      * 期末基金资产净值
      **/
-    @FieldComment(question = "期末基金资产净值(只要值,如果获取不到,返回0.00)", keyWord = "期末基金资产净值")
+    @FieldComment(question = "期末基金资产净值是什么，并且该基金代码下有且仅有一个值(只要值,如果获取不到,返回0.00)", keyWord = "期末基金资产净值")
     private String assetNval;
 
     /**
      * 报告期期末基金份额总额
      **/
-    @FieldComment(question = "报告期期末基金份额总额", keyWord = "报告期期末基金份额总额")
+    @FieldComment(question = "报告期期末基金份额总额，该基金代码下只有一个符合值", keyWord = "报告期期末基金份额总额")
     private String projTotLimt;
 
     /**

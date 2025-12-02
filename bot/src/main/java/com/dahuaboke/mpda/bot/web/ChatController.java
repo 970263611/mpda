@@ -3,6 +3,7 @@ package com.dahuaboke.mpda.bot.web;
 import com.dahuaboke.mpda.bot.constants.enums.ResponseCode;
 import com.dahuaboke.mpda.bot.scenes.entity.PlatformRep;
 import com.dahuaboke.mpda.bot.tools.dto.MarketRankDto;
+import com.dahuaboke.mpda.bot.tools.dto.MarketRankESBDto;
 import com.dahuaboke.mpda.bot.tools.dto.MarketRankReq;
 import com.dahuaboke.mpda.bot.tools.service.RobotService;
 import com.dahuaboke.mpda.bot.web.service.ChatService;
@@ -106,8 +107,8 @@ public class ChatController {
             commonResp.setTxBody(txBodyResp);
             return commonResp;
         }
-        List<MarketRankDto> marketRankDtos = robotService.selectMarketReportByTimeAndFundType(marketRankReq.getFinBondType(), marketRankReq.getPeriod());
-        platformRep.setMarketRankDtoList(marketRankDtos);
+        List<MarketRankESBDto> marketRankESBDtoList = robotService.selectMarketReportByTimeAndFundType(marketRankReq.getFinBondType(), marketRankReq.getPeriod());
+        platformRep.setMarketRankESBDtoList(marketRankESBDtoList);
         txHeaderResp.setServRespCd(ResponseCode.SUCCESS.getCode());
         txHeaderResp.setServRespDescInfo(ResponseCode.SUCCESS.getMsg());
         txBodyResp.setTxEntity(platformRep);

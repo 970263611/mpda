@@ -43,6 +43,17 @@ public class BrProductService {
         return brProducts;
     }
 
+    public BrProduct selectBrProductById(String fundCode,String ancmTpBclsCd){
+        LambdaQueryWrapper<BrProduct> queryWrapper = new LambdaQueryWrapper<BrProduct>()
+                .eq(BrProduct::getFundCode,fundCode)
+                .eq(BrProduct::getAncmTpBclsCd,ancmTpBclsCd);
+        List<BrProduct> brProducts = brProductMapper.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(brProducts)) {
+            return new BrProduct();
+        }
+        return brProducts.get(0);
+    }
+
     public int resetTimeout() {
         LambdaUpdateWrapper<BrProduct> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(BrProduct::getDealFlag, FileDealFlag.PROCESSING.getCode())

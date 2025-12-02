@@ -4,8 +4,15 @@ import com.alibaba.fastjson.JSONObject;
 import com.dahuaboke.mpda.bot.rag.client.FundEntity;
 import com.dahuaboke.mpda.bot.constants.FundConstant;
 import com.dahuaboke.mpda.bot.rag.ProcessingMonitor;
+import com.dahuaboke.mpda.bot.tools.entity.BrPdfParseExceptions;
+import com.dahuaboke.mpda.bot.tools.entity.BrProduct;
+import com.dahuaboke.mpda.bot.tools.enums.FileDealFlag;
+import com.dahuaboke.mpda.bot.tools.enums.PdfExceptionType;
 import com.dahuaboke.mpda.client.entity.resp.C014005Resp;
 import com.dahuaboke.mpda.client.handle.VectorStoreRequestHandle;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -21,6 +28,9 @@ import java.util.Map;
  */
 @Component
 public class DocumentDeleteService {
+
+    private static final Logger log = LoggerFactory.getLogger(DocumentDeleteService.class);
+
 
     @Autowired
     private VectorStore vectorStore;
@@ -53,7 +63,7 @@ public class DocumentDeleteService {
         ProcessingMonitor.ProcessingResult<Map.Entry<String, Map<String, Object>>> result = processingMonitor.processBatch(
                 entries,
                 entry -> doDel(entry.getValue()),
-                entry -> System.out.println(),
+                this::failProcess,
                 Map.Entry::getKey,
                 "基金通过基金名称删除"
         );
@@ -61,6 +71,10 @@ public class DocumentDeleteService {
         // 将失败记录写入文件
         processingMonitor.writeFailuresToFile(result.getFailures(), "pdf_del_processing");
 
+    }
+
+    private  void failProcess(Map.Entry<String, Map<String, Object>> entry, Exception e) {
+        log.error("{}文档插入失败",entry.getKey(),e);
     }
 
 }

@@ -56,6 +56,11 @@ public class MarketRankDto extends BrMarketProductReport {
      */
     private String period;
 
+    /**
+     * 支持查询的最新季度-逻辑=文件名中季度
+     */
+    private String quarterRule;
+
 
     public String getAssetNval() {
         return assetNval;
@@ -137,6 +142,14 @@ public class MarketRankDto extends BrMarketProductReport {
         this.period = period;
     }
 
+    public String getQuarterRule() {
+        return quarterRule;
+    }
+
+    public void setQuarterRule(String quarterRule) {
+        this.quarterRule = quarterRule;
+    }
+
     @Override
     public String toString() {
         String s = super.toString();
@@ -151,6 +164,7 @@ public class MarketRankDto extends BrMarketProductReport {
                 ", curDate='" + curDate + '\'' +
                 ", dldFlnm='" + dldFlnm + '\'' +
                 ", period='" + period + '\'' +
+                ", quarterRule='" + quarterRule + '\'' +
                 '}';
         return s1 + s;
     }

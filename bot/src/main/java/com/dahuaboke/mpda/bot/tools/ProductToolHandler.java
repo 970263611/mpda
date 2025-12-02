@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +41,7 @@ public class ProductToolHandler {
      *
      * @return Map
      */
-    public Map<String, List<String>> getMap() {
+    public Map<String, String> getMap() {
         return robotService.getMap();
     }
 
@@ -94,6 +95,12 @@ public class ProductToolHandler {
         return robotService.sevenDayYearlyProfrat(netValReq);
     }
 
+    /**
+     * 市场排名报告
+     * @param finBondType
+     * @param period
+     * @return
+     */
     public List<MarketRankDto> getMarketRank(String finBondType, String period) {
         return robotService.getMarketRank(finBondType, period);
     }
@@ -103,4 +110,12 @@ public class ProductToolHandler {
         return robotService.getFundInfoByType(fundType);
     }
 
+    /**
+     * 获取最新季度时间
+     * @param localDate
+     * @return
+     */
+    public String dealDldFlnm(LocalDate localDate) {
+        return robotService.dealDldFlnm(localDate);
+    }
 }

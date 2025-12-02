@@ -41,4 +41,13 @@ public enum TimeType {
         return NONE;
     }
 
+    public static TimeType getDescByCode(String code) {
+        for (TimeType timeType : values()) {
+            if (timeType.getCode().equals(code)) {
+                return timeType;
+            }
+        }
+        return NONE;
+    }
+
 }

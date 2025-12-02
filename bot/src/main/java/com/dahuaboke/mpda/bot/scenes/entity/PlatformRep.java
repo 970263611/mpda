@@ -1,6 +1,7 @@
 package com.dahuaboke.mpda.bot.scenes.entity;
 
 import com.dahuaboke.mpda.bot.tools.dto.MarketRankDto;
+import com.dahuaboke.mpda.bot.tools.dto.MarketRankESBDto;
 
 import java.util.List;
 
@@ -11,22 +12,20 @@ import java.util.List;
  */
 public class PlatformRep {
 
-    private List<MarketRankDto> marketRankDtoList;
+    private List<MarketRankESBDto> marketRankESBDtoList;
 
-    public List<MarketRankDto> getMarketRankDtoList() {
-        return marketRankDtoList;
-    }
-
-
-    public void setMarketRankDtoList(List<MarketRankDto> marketRankDtoList) {
-        this.marketRankDtoList = marketRankDtoList;
-    }
-
-    public PlatformRep(List<MarketRankDto> marketRankDtoList) {
-        this.marketRankDtoList = marketRankDtoList;
+    public PlatformRep(List<MarketRankESBDto> marketRankESBDtoList) {
+        this.marketRankESBDtoList = marketRankESBDtoList;
     }
 
     public PlatformRep() {
     }
 
+    public List<MarketRankESBDto> getMarketRankESBDtoList() {
+        return marketRankESBDtoList;
+    }
+
+    public void setMarketRankESBDtoList(List<MarketRankESBDto> marketRankESBDtoList) {
+        this.marketRankESBDtoList = marketRankESBDtoList;
+    }
 }

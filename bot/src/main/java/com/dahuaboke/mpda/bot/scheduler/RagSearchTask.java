@@ -11,6 +11,7 @@ import com.dahuaboke.mpda.bot.rag.utils.FundDocUtil;
 import com.dahuaboke.mpda.bot.tools.ContentManageTool;
 import com.dahuaboke.mpda.bot.tools.dto.ContentManageResponse;
 import com.dahuaboke.mpda.bot.tools.entity.BrMarketProductReport;
+import com.dahuaboke.mpda.bot.tools.entity.BrPdfParseExceptions;
 import com.dahuaboke.mpda.bot.tools.entity.BrProduct;
 import com.dahuaboke.mpda.bot.tools.entity.BrProductReport;
 import com.dahuaboke.mpda.bot.tools.entity.BrProductSummary;
@@ -18,6 +19,8 @@ import com.dahuaboke.mpda.bot.tools.enums.BondFundType;
 import com.dahuaboke.mpda.bot.tools.enums.FileDealFlag;
 import com.dahuaboke.mpda.bot.tools.enums.FundInfoType;
 import com.dahuaboke.mpda.bot.tools.enums.FundType;
+import com.dahuaboke.mpda.bot.tools.enums.PdfExceptionType;
+import com.dahuaboke.mpda.bot.tools.service.BrPdfParseExceptionsService;
 import com.dahuaboke.mpda.bot.tools.service.BrProductReportService;
 import com.dahuaboke.mpda.bot.tools.service.BrProductService;
 import com.dahuaboke.mpda.bot.tools.service.BrProductSummaryService;
@@ -37,6 +40,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.document.Document;
@@ -83,6 +87,9 @@ public class RagSearchTask {
     @Autowired
     BrProductSummaryService brProductSummaryService;
 
+    @Autowired
+    BrPdfParseExceptionsService brPdfParseExceptionsService;
+
     private static final int SUM_TOTAL = 2500;
 
     private static final Long TIME_OUT = 3 * 60 * 60L;
@@ -91,12 +98,12 @@ public class RagSearchTask {
 
     private static final int INSERT_BATCH = 25;
 
-    @Scheduled(cron = "0 0 04 * * ?")
+    @Scheduled(cron = "0 0 20 * * ?")
     public void ragSearchJob() {
         log.info("开始执行pdf数据处理任务.......");
 
         // 获取未处理文件
-        List<BrProduct> brProducts = brProductService.markAndSelectUnprocessed(1500);
+        List<BrProduct> brProducts = brProductService.markAndSelectUnprocessed(6000);
         if (brProducts.isEmpty()) {
             log.info("基金报告表不存在数据返回.......");
             return;
@@ -106,8 +113,8 @@ public class RagSearchTask {
 
     public void processDataList(List<BrProduct> brProducts) {
         ThreadPoolExecutor executorService = new ThreadPoolExecutor(
-                10,
-                15,
+                20,
+                25,
                 60L,
                 TimeUnit.SECONDS,
                 new LinkedBlockingDeque<>(5000),
@@ -179,11 +186,25 @@ public class RagSearchTask {
         return true;
     }
 
-    private void failProcess(BrProduct brProduct) {
-        brProduct.setDealFlag(FileDealFlag.PROCESS_FAIL.getCode());
-        brProduct.setDealBgnTime(null);
-        brProduct.setTmoutTimeNum(null);
-        brProductService.updateProduct(brProduct);
+    private void failProcess(BrProduct brProduct,Exception e) {
+        try {
+            brProduct.setDealFlag(FileDealFlag.PROCESS_FAIL.getCode());
+            brProduct.setDealBgnTime(null);
+            brProduct.setTmoutTimeNum(null);
+            brProductService.updateProduct(brProduct);
+
+            BrPdfParseExceptions parseExceptions = new BrPdfParseExceptions();
+            parseExceptions.setFundCode(brProduct.getFundCode());
+            parseExceptions.setAncmTpBclsCd(brProduct.getAncmTpBclsCd());
+            parseExceptions.setExceptionType(PdfExceptionType.FILE_LEVEL.getCode());
+            parseExceptions.setDescription(e.getMessage());
+            parseExceptions.setDetails(ExceptionUtils.getStackTrace(e));
+            parseExceptions.setCount(0);
+            parseExceptions.setStatus(FileDealFlag.PROCESS_FAIL.getCode());
+            brPdfParseExceptionsService.insertParseException(parseExceptions);
+        } catch (Exception ex) {
+            log.error("{}:{} 文件处理失败，插入异常表失败。", brProduct.getFileNo(),brProduct.getAncmTpBclsCd(), ex);
+        }
     }
 
 

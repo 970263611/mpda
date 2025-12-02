@@ -110,15 +110,19 @@ public class MarketRankingGraph extends AbstractGraph {
         PlatformExtend platformExtend = new PlatformExtend();
         try {
             if (toolExtend != null) {
-                List<Map<String, Object>> o = (List<Map<String, Object>>) toolExtend.get(0);
-                if (o != null && !o.isEmpty()) {
-                    platformExtend.setDownloadLink(true);
-                    Map<String, Object> marketRankDto = o.get(0);
-                    String finBondType = (String) marketRankDto.get("finBondType");
-                    platformExtend.setFinBondType(BondFundType.getBondFundType(finBondType).getCode());
-                    platformExtend.setPeriod((String) marketRankDto.get("period"));
-                } else {
-                    platformExtend.setDownloadLink(false);
+                if (toolExtend instanceof List) {
+                    if(toolExtend.get(0) instanceof List) {
+                        List<Map<String, Object>> o = (List<Map<String, Object>>) toolExtend.get(0);
+                        if (o != null && !o.isEmpty()) {
+                            platformExtend.setDownloadLink(true);
+                            Map<String, Object> marketRankDto = o.get(0);
+                            String finBondType = (String) marketRankDto.get("finBondType");
+                            platformExtend.setFinBondType(BondFundType.getBondFundType(finBondType).getCode());
+                            platformExtend.setPeriod((String) marketRankDto.get("period"));
+                        } else {
+                            platformExtend.setDownloadLink(false);
+                        }
+                    }
                 }
             }
         } catch (Exception e) {

@@ -1,6 +1,8 @@
 package com.dahuaboke.mpda.bot.rag;
 
+import com.dahuaboke.mpda.core.exception.MpdaRuntimeException;
 import java.io.FileWriter;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +37,7 @@ public class ProcessingMonitor {
     public <T> ProcessingResult<T> processBatch(
             List<T> items,
             Function<T, Boolean> processor,
-            Consumer<T> failProcessor,
+            BiConsumer<T,Exception> failProcessor,
             Function<T, String> itemNameGetter,
             String operationName) {
 
@@ -55,12 +57,12 @@ public class ProcessingMonitor {
                     result.recordSuccess(item);
                     log.debug("基金处理成功: {}", itemName);
                 } else {
-                    failProcessor.accept(item);
+                    failProcessor.accept(item,new MpdaRuntimeException("处理返回失败"));
                     result.recordFailure(item, "处理返回失败");
                     log.warn("基金处理返回失败: {}", itemName);
                 }
             } catch (Exception e) {
-                failProcessor.accept(item);
+                failProcessor.accept(item,e);
                 result.recordFailure(item, e.getMessage());
                 log.error("基金处理失败: {} | 原因: {}", itemName, e.getMessage(), e);
             }

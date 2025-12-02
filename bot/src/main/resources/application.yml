@@ -10,7 +10,7 @@ spring:
   profiles:
     active: dev
   application:
-    name: ifund-bot
+    name: bot
 mybatis-plus:
   mapper-locations: classpath*:mapper/**/*.xml
   type-aliases-package: com.dahuaboke.mpda.bot.tools.entity,com.dahuaboke.mpda.bot.monitor.entity

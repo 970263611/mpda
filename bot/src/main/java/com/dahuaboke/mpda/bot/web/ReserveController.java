@@ -2,8 +2,12 @@ package com.dahuaboke.mpda.bot.web;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.dahuaboke.mpda.bot.constants.FundConstant;
+import com.dahuaboke.mpda.bot.rag.exception.AdvancedFundCodeExtractor;
+import com.dahuaboke.mpda.bot.rag.exception.InitExceptionService;
 import com.dahuaboke.mpda.bot.rag.service.ProductReportQueryService;
+import com.dahuaboke.mpda.bot.scheduler.AddProductNameTask;
 import com.dahuaboke.mpda.bot.scheduler.CalculatedRateBondTask;
+import com.dahuaboke.mpda.bot.scheduler.ExceptionRetryTask;
 import com.dahuaboke.mpda.bot.scheduler.MarketRankTask;
 import com.dahuaboke.mpda.bot.scheduler.MonitorTask;
 import com.dahuaboke.mpda.bot.scheduler.RagSearchTask;
@@ -13,8 +17,10 @@ import com.dahuaboke.mpda.bot.tools.ContentManageTool;
 import com.dahuaboke.mpda.bot.tools.dao.BrProductMapper;
 import com.dahuaboke.mpda.bot.tools.dto.ContentManageResponse;
 import com.dahuaboke.mpda.bot.tools.dto.MarketRankDto;
+import com.dahuaboke.mpda.bot.tools.dto.MarketRankESBDto;
 import com.dahuaboke.mpda.bot.tools.entity.BrProduct;
 import com.dahuaboke.mpda.bot.tools.entity.BrProductReport;
+import com.dahuaboke.mpda.bot.tools.service.BrPdfParseExceptionsService;
 import com.dahuaboke.mpda.bot.tools.service.BrProductService;
 import com.dahuaboke.mpda.bot.tools.service.RobotService;
 import com.dahuaboke.mpda.client.entity.resp.C014005Resp;
@@ -86,7 +92,22 @@ public class ReserveController {
     BrProductService brProductService;
 
     @Autowired
+    ExceptionRetryTask exceptionRetryTask;
+
+    @Autowired
     private UpdateProductValidFlagTask updateProductValidFlagTask;
+
+    @Autowired
+    private AddProductNameTask addProductNameTask;
+
+    @Autowired
+    private InitExceptionService initExceptionService;
+
+    @Autowired
+    private AdvancedFundCodeExtractor advancedFundCodeExtractor;
+
+    @Autowired
+    private BrPdfParseExceptionsService brPdfParseExceptionsService;
 
 
     /* ============================================定时任务=========================================================== */
@@ -122,6 +143,15 @@ public class ReserveController {
         } else {
             calculatedRateBondTask.calculatedRateBondJob(fundCodes);
         }
+    }
+    @GetMapping("task/addProductNameTask")
+    public void addProductNameTask() {
+        addProductNameTask.addProductNameJob();
+    }
+
+    @GetMapping("task/exceptionRetryTask")
+    public void exceptionRetryTask() {
+        exceptionRetryTask.exceptionRetryTask();
     }
 
     /* ============================================模型接口=========================================================== */
@@ -204,9 +234,9 @@ public class ReserveController {
      */
     @GetMapping("/selectMarketReportByTimeAndFundType/{finBondType}/{period}")
     public String selectMarketReportByTimeAndFundType(@PathVariable("finBondType") String finBondType, @PathVariable("period") String period) {
-        List<MarketRankDto> marketRankDtos = robotService.selectMarketReportByTimeAndFundType(finBondType, period);
+        List<MarketRankESBDto> marketRankESBDtoList = robotService.selectMarketReportByTimeAndFundType(finBondType, period);
         Gson gson = new Gson();
-        return gson.toJson(marketRankDtos);
+        return gson.toJson(marketRankESBDtoList);
     }
 
     /* ============================================sql更新=========================================================== */
@@ -216,7 +246,13 @@ public class ReserveController {
     }
 
 
-    /* ============================================业务代码逻辑处理===================================================== */
+    @GetMapping("sql/updateExceptionCount")
+    public int updateExceptionCount() {
+        return brPdfParseExceptionsService.updateCount();
+    }
+
+
+    /* ============================================文件处理===================================================== */
     @PostMapping("fund/processDataList")
     public void processDataList(@RequestBody List<String> fundCodes) {
         ArrayList<BrProduct> brProducts = new ArrayList<>();
@@ -231,7 +267,7 @@ public class ReserveController {
         ragSearchTask.processDataList(brProducts);
     }
 
-    @GetMapping("model/queryReport")
+    @GetMapping("fund/queryReport")
     public BrProductReport queryReport() {
         BrProduct brProduct = new BrProduct();
         brProduct.setFundCode("008256");
@@ -239,6 +275,18 @@ public class ReserveController {
         BrProductReport report = productReportQueryService.queryFundProduct(brProduct);
         return report;
     }
+
+    @GetMapping("fund/init")
+    public void initException(){
+        initExceptionService.initEmpty();
+    }
+
+    @GetMapping("fund/extraErrorLog")
+    public void extraErrorLog(@RequestParam("path") String path, @RequestParam("startDay") int startDay ){
+        advancedFundCodeExtractor.extraErrorLog(path,startDay);
+    }
+
+
 
     /**
      * 计算

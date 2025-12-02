@@ -5,6 +5,7 @@ import com.dahuaboke.mpda.bot.scenes.ToolCallContentParse;
 import com.dahuaboke.mpda.bot.tools.ProductTool;
 import com.dahuaboke.mpda.bot.tools.dto.NetValReq;
 import com.dahuaboke.mpda.bot.tools.dto.RecommendProductDto;
+import com.dahuaboke.mpda.bot.tools.enums.BondFundType;
 import com.dahuaboke.mpda.bot.tools.enums.FundType;
 import com.dahuaboke.mpda.core.agent.tools.ToolResult;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -14,9 +15,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
@@ -59,7 +58,7 @@ public class RecommendationTool extends ProductTool<RecommendationTool.Input> {
         try {
             List<IndexTimePair> params = input.indexTimePairs;
             if (CollectionUtils.isEmpty(params)) {
-                return ToolResult.error("查询失败","基金类型不能是空");
+                return ToolResult.error("查询失败", "基金类型不能是空");
             }
 
             log.info("recommendationTool 参数为 {}", input.indexTimePairs);
@@ -77,7 +76,7 @@ public class RecommendationTool extends ProductTool<RecommendationTool.Input> {
                 List<RecommendProductDto> prodInfoDtos = filterFundInfo(Integer.toString(fundType), fundInfoList, queryParam);
                 resultList.addAll(prodInfoDtos);
             }
-            return ToolResult.success("查询成功", Map.of("count",resultList.size(),"result",resultList));
+            return ToolResult.success("查询成功", Map.of("count", resultList.size(), "result", resultList));
         } catch (RestClientException e) {
             return ToolResult.error("查询失败");
         }
@@ -92,7 +91,7 @@ public class RecommendationTool extends ProductTool<RecommendationTool.Input> {
             int indexType = indexTimePair.indexType == 0 ? INDEX_TYPE : indexTimePair.indexType;
             Double indexValue = indexTimePair.indexValue;
             int timePeriod = indexTimePair.timePeriod == 0 ? TIME_PERIOD : indexTimePair.timePeriod;
-            totalCount += indexTimePair.count == 0 ? COUNT : indexTimePair.count;
+            totalCount = indexTimePair.count == 0 ? COUNT : indexTimePair.count;
             LocalDateTime now = LocalDateTime.now();
             LocalDateTime before = switch (timePeriod) {
                 case 1 -> now.plusDays(-7);
@@ -100,67 +99,103 @@ public class RecommendationTool extends ProductTool<RecommendationTool.Input> {
                 case 4 -> now.plusYears(-1);
                 default -> now.plusMonths(-1);
             };
+            calMaxWithDraw(filterInfoList, before, now, timePeriod);
+            if (fundType.equals(FundType.MONET_MARKET_FUND.getCode())) {
+                calMarketFund(filterInfoList, timePeriod);
+            } else {
+                calRate(filterInfoList, before, now, timePeriod);
+            }
             if (indexType == QueryType.DRAW.code) {
-                filterInfoList = filterMaxWithDraw(filterInfoList, indexValue, before, now);
+                filterInfoList = filterMaxWithDraw(filterInfoList, indexValue);
                 continue;
             }
-            if (fundType.equals(FundType.MONET_MARKET_FUND.getCode())) {
-                filterInfoList = filterMarketFund(filterInfoList, indexValue);
-            } else {
-                filterInfoList = filterRate(filterInfoList, indexValue, before, now);
-            }
+            filterInfoList = filterRate(filterInfoList, indexValue);
             type = QueryType.RATE.code;
         }
         if (filterInfoList.isEmpty()) {
             return List.of();
         }
 
-        if(type == QueryType.DRAW.code){
-            return filterInfoList.stream().sorted(Comparator.comparingDouble(RecommendProductDto::getMaxWithDraw)).limit(Math.min(COUNT, totalCount)).toList();
+        if (type == QueryType.DRAW.code) {
+            return filterInfoList.stream().sorted(Comparator.comparingDouble(RecommendProductDto::getMaxWithDraw)).limit(totalCount).toList();
         }
-        return filterInfoList.stream().sorted(Comparator.comparingDouble(RecommendProductDto::getRate).reversed()).limit(Math.min(COUNT, totalCount)).toList();
+        return filterInfoList.stream().sorted(Comparator.comparingDouble(RecommendProductDto::getRate).reversed()).limit(totalCount).toList();
+    }
+
+    private void calRate(List<RecommendProductDto> fundInfoList, LocalDateTime before, LocalDateTime now, int timePeriod) {
+        DateTimeFormatter yyyyMMdd = DateTimeFormatter.ofPattern("yyyyMMdd");
+        fundInfoList.forEach(fundInfo -> {
+            try {
+                String fundCode = fundInfo.getFundCode();
+                NetValReq netValReq = new NetValReq(fundCode, before.format(yyyyMMdd), now.format(yyyyMMdd));
+                String rate = productToolHandler.yearRita(netValReq).replace("%", "");
+                double value = Double.parseDouble(rate);
+                fundInfo.setRate(value);
+                fundInfo.setRateTimePeriod(TimePeriod.getTimePeriodDesc(timePeriod).getDesc());
+            } catch (Exception e) {
+                log.error("{} 计算利率失败",fundInfo.getFundCode(),e);
+            }
+        });
     }
 
 
-    private List<RecommendProductDto> filterRate(List<RecommendProductDto> fundInfoList, Double targetValue, LocalDateTime before, LocalDateTime now) {
+    private void calMaxWithDraw(List<RecommendProductDto> fundInfoList, LocalDateTime before, LocalDateTime now, int timePeriod) {
         DateTimeFormatter yyyyMMdd = DateTimeFormatter.ofPattern("yyyyMMdd");
-        return fundInfoList.stream().filter(fundInfo -> {
-            String fundCode = fundInfo.getFundCode();
-            NetValReq netValReq = new NetValReq(fundCode, before.format(yyyyMMdd), now.format(yyyyMMdd));
-            String rate = productToolHandler.yearRita(netValReq).replace("%", "");
-            double value = Double.parseDouble(rate);
-            fundInfo.setRate(value);
-            return value >= targetValue;
-        }).toList();
+        fundInfoList.forEach(fundInfo -> {
+            try {
+                String fundCode = fundInfo.getFundCode();
+                NetValReq netValReq = new NetValReq(fundCode, before.format(yyyyMMdd), now.format(yyyyMMdd));
+                String draw = productToolHandler.maxWithDrawal(netValReq).replace("%", "");
+                double value = Double.parseDouble(draw);
+                fundInfo.setMaxWithDraw(value);
+                fundInfo.setDrawTimePeriod(TimePeriod.getTimePeriodDesc(timePeriod).getDesc());
+            } catch (Exception e) {
+                log.error("{} 计算回撤失败",fundInfo.getFundCode(),e);
+            }
+        });
     }
 
-    private List<RecommendProductDto> filterMaxWithDraw(List<RecommendProductDto> fundInfoList, Double targetValue, LocalDateTime before, LocalDateTime now) {
-        DateTimeFormatter yyyyMMdd = DateTimeFormatter.ofPattern("yyyyMMdd");
-        return fundInfoList.stream().filter(fundInfo -> {
-            String fundCode = fundInfo.getFundCode();
-            NetValReq netValReq = new NetValReq(fundCode, before.format(yyyyMMdd), now.format(yyyyMMdd));
-            String draw = productToolHandler.maxWithDrawal(netValReq).replace("%", "");
-            double value = Double.parseDouble(draw);
-            fundInfo.setMaxWithDraw(value);
+
+    private void calMarketFund(List<RecommendProductDto> fundInfoList, int timePeriod) {
+        fundInfoList.forEach(fundInfo -> {
+            try {
+                String fundCode = fundInfo.getFundCode();
+                NetValReq netValReq = new NetValReq();
+                netValReq.setProdtCode(fundCode);
+                String sevenDayYearlyProfrat = productToolHandler.sevenDayYearlyProfrat(netValReq);
+                double value = Double.parseDouble(sevenDayYearlyProfrat);
+                fundInfo.setRate(value);
+                fundInfo.setRateTimePeriod(TimePeriod.getTimePeriodDesc(timePeriod).getDesc());
+            } catch (Exception e) {
+                log.error("{} 计算货基利率失败",fundInfo.getFundCode(),e);
+            }
+        });
+    }
+
+
+    private List<RecommendProductDto> filterMaxWithDraw(List<RecommendProductDto> filterInfoList, Double targetValue) {
+        return filterInfoList.stream().filter(fundInfo -> {
+            Double value = fundInfo.getMaxWithDraw();
+            if(value == null){
+                return false;
+            }
             return value <= targetValue;
         }).toList();
     }
 
-    private List<RecommendProductDto> filterMarketFund(List<RecommendProductDto> fundInfoList, Double targetValue) {
-        return fundInfoList.stream().filter(fundInfo -> {
-            String fundCode = fundInfo.getFundCode();
-            NetValReq netValReq = new NetValReq();
-            netValReq.setProdtCode(fundCode);
-            String sevenDayYearlyProfrat = productToolHandler.sevenDayYearlyProfrat(netValReq);
-            double value = Double.parseDouble(sevenDayYearlyProfrat);
-            fundInfo.setRate(value);
-            return value > targetValue;
+    private List<RecommendProductDto> filterRate(List<RecommendProductDto> filterInfoList, Double targetValue) {
+        return filterInfoList.stream().filter(fundInfo -> {
+            Double value = fundInfo.getRate();
+            if(value == null){
+                return false;
+            }
+            return value >= targetValue;
         }).toList();
     }
 
-    public enum QueryType{
-        RATE(1,"收益率"),
-        DRAW(2,"最大回撤");
+    public enum QueryType {
+        RATE(1, "收益率"),
+        DRAW(2, "最大回撤");
 
         private final int code;
 
@@ -177,6 +212,39 @@ public class RecommendationTool extends ProductTool<RecommendationTool.Input> {
         QueryType(int code, String desc) {
             this.code = code;
             this.desc = desc;
+        }
+    }
+
+
+    public enum TimePeriod {
+
+        WEEK(1, "周"),
+        MONTH(2, "月"),
+        QUARTER(3, "季"),
+        YEAR(4, "年");
+        private final int code;
+
+        private final String desc;
+
+        public int getCode() {
+            return code;
+        }
+
+        public String getDesc() {
+            return desc;
+        }
+
+        TimePeriod(int code, String desc) {
+            this.code = code;
+            this.desc = desc;
+        }
+        public static TimePeriod getTimePeriodDesc(int code){
+            for (TimePeriod timePeriod : values()) {
+                if (timePeriod.getCode()==code) {
+                    return timePeriod;
+                }
+            }
+            return WEEK;
         }
     }
 
@@ -215,7 +283,7 @@ public class RecommendationTool extends ProductTool<RecommendationTool.Input> {
                     请输入原生数值,不要自动转换百分比
                     示例:
                        用户说: "月收益率大于0.3" -> indexValue = 0.3
-                       用户说: "月收益率大于30%" -> indexValue = 0.3
+                       用户说: "月收益率大于30%" -> indexValue = 30
                     如果没有提取到,默认0.00
                     """) double indexValue,
 

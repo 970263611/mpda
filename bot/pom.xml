@@ -9,7 +9,7 @@
         <version>${revision}</version>
     </parent>
 
-    <artifactId>bot</artifactId>
+    <artifactId>ifund-bot</artifactId>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

@@ -61,6 +61,7 @@ public class QuestionAnswerAdvisor implements BaseAdvisor {
              2. **匹配逻辑**： \s
                 - 先筛选参考内容中所有与用户查询直接相关的片段 \s
                 - 选择其中语义匹配度最高的一段作为最终答案 \s
+                - 输出结果只包含答案即可，不需要包含问题 \s
                 - 若存在有多个结果(匹配度未达到绝对唯一),必须完整保留所有相关结果,按语义匹配度从高到底排序,整理输出                   
                 - 根据最终答案和用户查询问题,分析结果直接输出原文格式 \s
             
@@ -94,6 +95,8 @@ public class QuestionAnswerAdvisor implements BaseAdvisor {
 
     private final List<String> keys;
 
+    private final String fileType;
+
     private final SearchHandler searchHandler;
 
     private final EmbeddingSearchHandler embeddingSearchHandler;
@@ -106,7 +109,7 @@ public class QuestionAnswerAdvisor implements BaseAdvisor {
 
     public QuestionAnswerAdvisor(SearchRequest searchRequest, @Nullable PromptTemplate promptTemplate,
                                  @Nullable Scheduler scheduler, int order, List<String> productName, List<String> keys,
-                                 SearchHandler searchHandler, EmbeddingSearchHandler embeddingSearchHandler, SortHandler sortHandler
+                                 String fileType, SearchHandler searchHandler, EmbeddingSearchHandler embeddingSearchHandler, SortHandler sortHandler
             , DocContextHandler docContextHandler, Rerank rerankHandler) {
         this.searchRequest = searchRequest;
         this.promptTemplate = promptTemplate != null ? promptTemplate : DEFAULT_PROMPT_TEMPLATE;
@@ -114,6 +117,7 @@ public class QuestionAnswerAdvisor implements BaseAdvisor {
         this.order = order;
         this.productName = productName;
         this.keys = keys;
+        this.fileType = fileType;
         this.searchHandler = searchHandler;
         this.embeddingSearchHandler = embeddingSearchHandler;
         this.docContextHandler = docContextHandler;
@@ -157,14 +161,14 @@ public class QuestionAnswerAdvisor implements BaseAdvisor {
         //1. 通过关键字做精准查询
         List<Document> documents = new ArrayList<>();
         if (productName.isEmpty() && !keys.isEmpty()) {
-            documents.addAll(searchHandler.requestKey(searchRequest, keys));
+            documents.addAll(searchHandler.requestKey(searchRequest, keys,fileType));
         } else if (!productName.isEmpty() && !keys.isEmpty()) {
-            documents.addAll(searchHandler.requestProductAndKey(searchRequest, productName, keys));
+            documents.addAll(searchHandler.requestProductAndKey(searchRequest, productName, keys,fileType));
         }
 
         //2. 通过关键字并没有匹配到数据,或者匹配到的数据过少, 通过基金名称提取出来
         if (!productName.isEmpty() && (documents.isEmpty() || documents.size() < topK)) {
-            List<Document> productDocs = searchHandler.requestProduct(searchRequest, productName, topK * 2);
+            List<Document> productDocs = searchHandler.requestProduct(searchRequest, productName, topK * 2,fileType);
             documents.addAll(productDocs);
         }
 
@@ -176,27 +180,21 @@ public class QuestionAnswerAdvisor implements BaseAdvisor {
         //4. 查询的结果,有可能出现pdf分页情况,获取上下页防止分页场景出现
         List<Document> docContext = new ArrayList<>();
         if (!documents.isEmpty()) {
-            docContext = docContextHandler.handler(searchRequest, documents);
+            docContext = docContextHandler.handler(searchRequest, distinctById(documents),fileType);
         }
 
         //5. 根据Document ID去重
+        ArrayList<Document> allDocs = new ArrayList<>(documents);
+        allDocs.addAll(docContext);
+        List<Document> uniqueDocs = distinctById(allDocs);
+
+        //6. 按文件,页码整理有序,并返回
+        return sortHandler.handler(uniqueDocs);
+    }
+
+    private List<Document> distinctById(List<Document> documents){
         Set<String> seenIds = new HashSet<>();
-        List<Document> uniqueDocs = new ArrayList<>();
-        Stream.of(documents, docContext)
-                .flatMap(List::stream)
-                .forEach(doc -> {
-                    if (seenIds.add(doc.getId())) {
-                        uniqueDocs.add(doc);
-                    }
-                });
-
-        //6. 取决于是否重排序
-        List<Document> finalDocs = uniqueDocs.size() > topK
-                ? rerankHandler.handler(searchRequest, uniqueDocs, topK)
-                : uniqueDocs;
-
-        //7. 按文件,页码整理有序,并返回
-        return sortHandler.handler(finalDocs);
+        return documents.stream().filter(doc -> seenIds.add(doc.getId())).toList();
     }
 
     @Override
@@ -227,6 +225,7 @@ public class QuestionAnswerAdvisor implements BaseAdvisor {
         private SearchHandler searchHandler;
         private List<String> keys;
         private List<String> productName;
+        private String fileType;
         private SearchRequest searchRequest;
 
         public Builder() {
@@ -267,6 +266,11 @@ public class QuestionAnswerAdvisor implements BaseAdvisor {
             return this;
         }
 
+        public Builder fileType(String fileType) {
+            this.fileType = fileType;
+            return this;
+        }
+
         public Builder searchRequest(SearchRequest searchRequest) {
             this.searchRequest = searchRequest;
             return this;
@@ -274,7 +278,7 @@ public class QuestionAnswerAdvisor implements BaseAdvisor {
 
         public QuestionAnswerAdvisor build() {
             QuestionAnswerAdvisor questionAnswerAdvisor = new QuestionAnswerAdvisor(
-                    searchRequest, DEFAULT_PROMPT_TEMPLATE, null, 0, productName, keys,
+                    searchRequest, DEFAULT_PROMPT_TEMPLATE, null, 0, productName, keys,fileType,
                     searchHandler, embeddingSearchHandler, sortHandler, docContextHandler, rerankHandler);
             return questionAnswerAdvisor;
         }

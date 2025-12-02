@@ -1,6 +1,5 @@
 package com.dahuaboke.mpda.bot.tools.service;
 
-import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.dahuaboke.mpda.bot.tools.dao.*;
 import com.dahuaboke.mpda.bot.tools.dto.*;
@@ -59,6 +58,15 @@ public class RobotService {
                     "(\\d{1,2})(月|[-/])" +
                     "(\\d{1,2})(日|[-/]?)", Pattern.DOTALL);
 
+    private static final Pattern NUMBER_PATTERN = Pattern.compile(
+            // 科学计数法：如1.30E+10、9.30E+10（支持正负指数、大小写E）
+            "[+-]?\\d+(?:\\.\\d+)?[eE][+-]?\\d+" +
+                    "|" +
+                    // 普通数字：整数（含千分位）或完整小数（含千分位），排除单独的小数点或"4."这类
+                    "[+-]?\\d{1,3}(?:,\\d{3})*(?:\\.\\d+)?|" +  // 带千分位（如7,211,402,631.78）
+                    "[+-]?\\d+(?:\\.\\d+)?"                     // 不带千分位（如0、123.45）
+    );
+
     private static final int CRITICAL_WORKDAY_NUM = 15; // 季度初第15个工作日
 
     public ProdInfoDto getInfo(String code) {
@@ -72,7 +80,8 @@ public class RobotService {
         List<BrProductSummary> brProductSummaries = brProductSummaryMapper.selectList(queryWrapper1);
 
         LambdaQueryWrapper<BrProduct> queryWrapper2 = new LambdaQueryWrapper<BrProduct>()
-                .eq(BrProduct::getFundCode, code);
+                .eq(BrProduct::getFundCode, code)
+                .orderByDesc(BrProduct::getIndbDate);
         List<BrProduct> brProducts = brProductMapper.selectList(queryWrapper2);
 
         BrProductReport report = new BrProductReport();
@@ -143,11 +152,11 @@ public class RobotService {
         return String.valueOf(divide);
     }
 
-    public Map<String, List<String>> getMap() {
-        Map<String, List<String>> map = new HashMap<>();
-        List<BrProductReport> brProductReports = brProductReportMapper.selectList(new LambdaQueryWrapper<BrProductReport>());
-        for (BrProductReport report : brProductReports) {
-            map.put(report.getFundCode(), List.of(report.getFundFnm(), report.getProdtSname()));
+    public Map<String, String> getMap() {
+        Map<String, String> map = new HashMap<>();
+        List<BrProduct> brProductReports = brProductMapper.selectList(new LambdaQueryWrapper<BrProduct>());
+        for (BrProduct report : brProductReports) {
+            map.put(report.getFundCode(), report.getFundProdtFullNm());
         }
         return map;
     }
@@ -167,9 +176,144 @@ public class RobotService {
      * @param period
      * @return
      */
-    public List<MarketRankDto> selectMarketReportByTimeAndFundType(String finBondType, String period) {
+    public List<MarketRankESBDto> selectMarketReportByTimeAndFundType(String finBondType, String period) {
         LambdaQueryWrapper<BrMarketProductReport> queryWrapper = new LambdaQueryWrapper<BrMarketProductReport>();
-        return selectMarketReportByTimeAndFundType(finBondType, period, queryWrapper);
+        List<MarketRankDto> marketRankDtos = selectMarketReportByTimeAndFundType(finBondType, period, queryWrapper);
+        List<MarketRankESBDto> marketRankESBDtoList = new ArrayList<>();
+        if (marketRankDtos != null && marketRankDtos.size() > 0) {
+            for (MarketRankDto m : marketRankDtos) {
+                MarketRankESBDto marketRankESBDto = new MarketRankESBDto();
+                BeanUtils.copyProperties(m, marketRankESBDto);
+                marketRankESBDto.setFundCode(m.getFundCode());
+                marketRankESBDto.setFinBondType(m.getFinBondType());
+                //季度信息排名信息
+                marketRankESBDto.setQuarterYieldRateInfoDtoList(dealQuarterYieldRateInfoDtos(m));
+                //各时间排名信息
+                marketRankESBDto.setYieldRateInfoDtoList(dealYieldRateInfoDtos(m));
+                marketRankESBDtoList.add(marketRankESBDto);
+            }
+
+        }
+
+        return marketRankESBDtoList;
+    }
+
+    /**
+     * 处理各季度排名
+     *
+     * @param m
+     * @return
+     */
+    private List<QuarterYieldRateInfoDto> dealQuarterYieldRateInfoDtos(MarketRankDto m) {
+        //最新季度
+        String quarterRule = m.getQuarterRule();
+        int currentYear = Integer.parseInt(quarterRule.substring(0, 4));
+        int currentQuarter = Integer.parseInt(quarterRule.substring(5));
+        List<QuarterYieldRateInfoDto> quarterYieldRateInfoDtos = new ArrayList<>();
+        // j=0 → 当前季度-3（最早），j=1 → 当前季度-2，j=2 → 当前季度-1，j=3 → 当前季度（最晚）
+        for (int j = 3; j >= 0; j--) { // 调整循环变量：从3递减到0
+            int targetQuarter = currentQuarter - j;
+            int targetYear = currentYear;
+            // 处理跨年份（如2025Q1 - 3 = 2024Q2）
+            while (targetQuarter < 1) {
+                targetQuarter += 4;
+                targetYear -= 1;
+            }
+            // 生成年份季度字符串（如2024Q2）
+            String yearQuarter = targetYear + "Q" + targetQuarter;
+            // 匹配对应季度的收益率和排名
+            String yieldRate = getYieldRateByQuarter(m, targetQuarter);
+            int rank = getRankByQuarter(m, targetQuarter);
+            // 直接按顺序添加到列表（天然升序）
+            quarterYieldRateInfoDtos.add(new QuarterYieldRateInfoDto(yieldRate, rank, yearQuarter));
+        }
+        return quarterYieldRateInfoDtos;
+    }
+
+    // 按季度获取收益率（不变）
+    private String getYieldRateByQuarter(MarketRankDto m, int quarter) {
+        switch (quarter) {
+            case 1:
+                return m.getLastYrlyPftrt();
+            case 2:
+                return m.getNmm6CombProfrat();
+            case 3:
+                return m.getNmm3YrlyPftrt();
+            case 4:
+                return m.getNmm1YearlyProfrat();
+            default:
+                return null;
+        }
+    }
+
+    // 按季度获取排名（不变）
+    private int getRankByQuarter(MarketRankDto m, int quarter) {
+        switch (quarter) {
+            case 1:
+                return m.getCustRaiseRateRankNo();
+            case 2:
+                return m.getDetainRateRankNo();
+            case 3:
+                return m.getTmPontAsetRaiseTotRanknum();
+            case 4:
+                return m.getAddRepPurcProTotnumRankno();
+            default:
+                return 0;
+        }
+    }
+
+    /**
+     * 处理各时间排名
+     *
+     * @param m
+     * @return
+     */
+    private List<YieldRateInfoDto> dealYieldRateInfoDtos(MarketRankDto m) {
+        List<YieldRateInfoDto> yieldRateInfoDtos = new ArrayList<>();
+        for (int j = 0; j < 5; j++) {
+            String yieldRate = null;
+            int yieldRateRank = 0;
+            int yieldRateRankYes = 0;
+            int yieldRateRankChange = 0;
+            String yieldWdwrt = null;
+            String timeRules = null;
+            if (j == 0) {
+                timeRules = "近1周";
+                yieldRate = m.getNwk1CombProfrat();
+                yieldRateRank = m.getIndsRankSeqNo();
+                yieldRateRankYes = m.getTxamtRankNo();
+                yieldRateRankChange = m.getCurdayBalChgTotalAccnum();
+                yieldWdwrt = m.getStyoMaxWdwDesc();
+            } else if (j == 1) {
+                timeRules = "近1月";
+                yieldRate = m.getNmm1CombProfrat();
+                yieldRateRank = m.getLblmRank();
+                yieldRateRankYes = m.getBusicmLmRank();
+                yieldRateRankChange = m.getCurdayBalChgAccnum();
+                yieldWdwrt = m.getMaxWdwrt();
+            } else if (j == 2) {
+                timeRules = "近3月";
+                yieldRate = m.getNmm3CombProfrat();
+                yieldRateRank = m.getRankScopeLowLmtVal();
+                yieldRateRankYes = m.getIntglRankSeqNo();
+                yieldRateRankChange = m.getSupptranBalChgTotalAccnum();
+                yieldWdwrt = m.getFundstgMaxWdwrt();
+            } else if (j == 3) {
+                timeRules = "近1年";
+                yieldRate = m.getNyy1Profrat();
+                yieldRateRank = m.getReachStRankSeqNo();
+                yieldRateRankYes = m.getChremMgrIntglRankSeqNo();
+                yieldRateRankChange = m.getCenterCfmCurdayChgTnum();
+                yieldWdwrt = m.getNyy1Wdwrt();
+            } else if (j == 4) {
+                timeRules = "今年以来";
+                yieldRate = m.getDrtPftrtTval();
+                yieldRateRank = m.getRtnRtRank();
+            }
+            YieldRateInfoDto yieldRateInfoDto = new YieldRateInfoDto(yieldRate, yieldRateRank, yieldRateRankYes, yieldRateRankChange, yieldWdwrt, timeRules);
+            yieldRateInfoDtos.add(yieldRateInfoDto);
+        }
+        return yieldRateInfoDtos;
     }
 
     /**
@@ -227,11 +371,16 @@ public class RobotService {
 
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
         LocalDateTime now = LocalDateTime.now();
+        String formatCurDate = now.format(dateTimeFormatter);
+        String quarterRule = dealDldFlnm(LocalDate.now());
+        String fileName = "全市场" + BondFundType.getBondFundTypeDesc(finBondType).getDesc() + "排名" + quarterRule;
         rankDtos.stream().forEach(rankDto -> {
+            String fundCode = rankDto.getFundCode();
+            log.info("市场排名报告-处理基金代码：fundCode{}", fundCode);
             //当前日期
-            rankDto.setCurDate(now.format(dateTimeFormatter));
-            //TODO下载文件名
-            rankDto.setDldFlnm("全市场" + BondFundType.getBondFundTypeDesc(finBondType).getDesc() + "排名" + dealDldFlnm(LocalDate.now()));
+            rankDto.setCurDate(formatCurDate);
+            //下载文件名
+            rankDto.setDldFlnm(fileName);
             //基金成立日
             rankDto.setContractEffDate(dealContractEffDate(rankDto.getContractEffDate()));
             //存续天数
@@ -243,18 +392,91 @@ public class RobotService {
             rankDto.setUnitNetVal(brNetvaluesMap.get(rankDto.getFundCode()));
             //基金规模
             rankDto.setAssetNval(dealAssetNval(rankDto.getAssetNval()));
+            //支持查询的最新季度
+            rankDto.setQuarterRule(quarterRule);
         });
         return rankDtos;
     }
 
+    /**
+     * 处理基金规模
+     * 支持下面示例：
+     * String str1 = "4.期末基金    7,211,402,631.78   91,402,631.78  ";
+     * String str2 = "91,402,631.78  ";
+     * String str3 = "0";
+     * String str4 = "1.30E+10";
+     * String str5 = "4.期末基金    9.30E+10 8.30E+10 ";
+     * String str6 = "";
+     * String str7 = "8.02904294441E9";
+     *
+     * @param assetNval
+     * @return
+     */
     public String dealAssetNval(String assetNval) {
-        double number = Double.parseDouble(assetNval);
-        if (number == 0) {
-            return "0";
-        } else {
-            double inBillions = number / 100_000_000;
-            return String.format("%.2f", inBillions) + "亿";
+        String assetNvalFinal = "0.00";
+        try {
+            assetNvalFinal = extractAndConvertNumbers(assetNval);
+        } catch (Exception e) {
+            log.error("处理基金规模失败，assetNval{}", assetNval, e);
         }
+        return assetNvalFinal;
+    }
+
+    /**
+     * 提取字符串中的有效数字，转换为非科学计数法字符串，强制保留两位小数
+     * 规则：多个数字返回第2个；仅1个返回第1个；无数字返回"0.00"（统一两位小数格式）
+     *
+     * @param input 输入字符串
+     * @return 保留两位小数的数字字符串
+     */
+    public static String extractAndConvertNumbers(String input) {
+        List<String> result = new ArrayList<>();
+        if (input == null || input.isEmpty()) {
+            return "0.00"; // 空输入返回两位小数格式
+        }
+
+        Matcher matcher = NUMBER_PATTERN.matcher(input);
+        while (matcher.find()) {
+            String match = matcher.group().trim();
+            // 过滤无效数据（如"4."、"."、空字符串）
+            if (isInvalidNumber(match)) {
+                continue;
+            }
+
+            // 处理千分位逗号
+            String numberStr = match.replaceAll(",", "");
+            // 转换为非科学计数法，强制保留两位小数
+            String converted = convertToTwoDecimalPlaces(numberStr);
+            result.add(converted);
+        }
+
+        // 按需求返回：多个数字返回第2个，单个返回第1个，无则返回"0.00"
+        if (result.size() >= 2) {
+            return result.get(1);
+        } else if (result.size() == 1) {
+            return result.get(0);
+        } else {
+            return "0.00";
+        }
+    }
+
+    /**
+     * 判断是否为无效数字（如"4."、"."、空字符串）
+     */
+    private static boolean isInvalidNumber(String str) {
+        return str.isEmpty() || str.equals(".") || str.matches("\\d+\\.");
+    }
+
+    /**
+     * 转换为非科学计数法，强制保留两位小数（四舍五入）
+     */
+    private static String convertToTwoDecimalPlaces(String numberStr) {
+        // 使用BigDecimal避免精度丢失，支持科学计数法和普通数字
+        BigDecimal bigDecimal = new BigDecimal(numberStr);
+        // 强制保留两位小数，四舍五入（若原始小数位不足则补零，多余则四舍五入）
+        BigDecimal twoDecimal = bigDecimal.setScale(2, RoundingMode.HALF_UP);
+        // 转为普通字符串（非科学计数法）
+        return twoDecimal.toPlainString();
     }
 
     /**
@@ -310,13 +532,12 @@ public class RobotService {
      *
      * @return
      */
-    @DS("db1")
     public String dealDldFlnm(LocalDate localDate) {
         LambdaQueryWrapper<FdHoliday> queryWrapper = new LambdaQueryWrapper<FdHoliday>();
         String year = Year.now().getValue() + "";
-        queryWrapper.like(FdHoliday::getThedate, year);
-        queryWrapper.eq(FdHoliday::getFundworkday, "1");
-        List<FdHoliday> fdHolidays = fdHolidayMapper.selectList(queryWrapper);
+//        queryWrapper.like(FdHoliday::getThedate, year);
+//        queryWrapper.eq(FdHoliday::getFundworkday, "1");
+        List<FdHoliday> fdHolidays = fdHolidayMapper.selectList("%" + year + "%");
         String DldFlnm = generateReportName(fdHolidays, localDate);
         return DldFlnm;
     }
@@ -442,6 +663,12 @@ public class RobotService {
             return "0";
         }
         return netValues.get(0).getStgyD7YearlyProfrat();
+    }
+
+    public void updateValidFlag() {
+        BrProduct brProduct = new BrProduct();
+        brProduct.setValidFlag("1");//是否解析标志 0-未上架 1-已上架
+        brProductMapper.update(brProduct, new LambdaQueryWrapper<BrProduct>());
     }
 
 

@@ -5,18 +5,16 @@ import com.alibaba.cloud.ai.graph.KeyStrategyFactory;
 import com.alibaba.cloud.ai.graph.StateGraph;
 import com.alibaba.cloud.ai.graph.exception.GraphRunnerException;
 import com.alibaba.cloud.ai.graph.exception.GraphStateException;
+import com.dahuaboke.mpda.bot.scenes.product.information.RagNode;
 import com.dahuaboke.mpda.bot.scenes.product.information.code.edge.InformationByIdDispatcher;
-import com.dahuaboke.mpda.bot.scenes.product.marketRanking.MarketRankingScene;
 import com.dahuaboke.mpda.core.agent.graph.AbstractGraph;
 import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
 import com.dahuaboke.mpda.core.context.consts.Constants;
 import com.dahuaboke.mpda.core.exception.MpdaGraphException;
 import com.dahuaboke.mpda.core.exception.MpdaRuntimeException;
-import com.dahuaboke.mpda.core.memory.MemoryMerge;
-import com.dahuaboke.mpda.core.node.*;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.dahuaboke.mpda.core.node.LlmNode;
+import com.dahuaboke.mpda.core.node.StreamLlmNode;
+import com.dahuaboke.mpda.core.node.ToolNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -40,9 +38,6 @@ public class InformationByNameGraph extends AbstractGraph {
 
     @Autowired
     private StreamLlmNode streamLlmNode;
-
-    @Autowired
-    private HumanNode humanNode;
 
     @Autowired
     private ToolNode toolNode;
@@ -69,17 +64,16 @@ public class InformationByNameGraph extends AbstractGraph {
                     .addEdge(StateGraph.START, "llm")
                     .addEdge("llm", "rag")
                     .addEdge("rag", StateGraph.END);
+
             StateGraph afterGraph = new StateGraph(keyStrategyFactory)
                     .addNode("llm", node_async(llmNode))
                     .addNode("streamLlm", node_async(streamLlmNode))
-                    .addNode("human", node_async(humanNode))
                     .addNode("tool", node_async(toolNode))
 
                     .addEdge(StateGraph.START, "llm")
                     .addConditionalEdges("llm", edge_async(informationByIdDispatcher),
-                            Map.of("go_human", "human", "go_tool", "tool"))
+                            Map.of("go_human", "streamLlm", "go_tool", "tool"))
                     .addEdge("tool", "streamLlm")
-                    .addEdge("human", StateGraph.END)
                     .addEdge("streamLlm", StateGraph.END);
             return Map.of("before", beforeGraph, "after", afterGraph);
         } catch (GraphStateException e) {
@@ -88,37 +82,28 @@ public class InformationByNameGraph extends AbstractGraph {
     }
 
     @Override
-    @MemoryMerge(MarketRankingScene.class)
     public SceneResponse execute(Map<String, Object> attribute) throws MpdaRuntimeException {
         try {
             attribute.put(Constants.PROMPT, informationPrompt.changePrompt("before"));
             String output = response(attribute, "before").output();
-            Map<String, String> map = objectMapper.readValue(
-                    output,
-                    new TypeReference<>() {
-                    }
-            );
-            informationPrompt.buildGuide(map);
+            informationPrompt.buildGuide(output);
             attribute.put(Constants.TOOLS, List.of("informationByIdTool"));
             attribute.put(Constants.PROMPT, informationPrompt.description());
             return response(attribute, "after");
         } catch (GraphRunnerException e) {
             throw new MpdaRuntimeException(e);
-        } catch (JsonMappingException e) {
-            throw new RuntimeException(e);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
         }
     }
 
     @Override
-    @MemoryMerge(MarketRankingScene.class)
     public Flux<SceneResponse> executeAsync(Map<String, Object> attribute) throws MpdaRuntimeException {
-        informationPrompt.changePrompt("guide");
-        attribute.put(Constants.TOOLS, List.of("informationByIdTool"));
-        attribute.put(Constants.PROMPT, informationPrompt.description());
         try {
-            return streamResponse(attribute, "default");
+            attribute.put(Constants.PROMPT, informationPrompt.changePrompt("before"));
+            String output = response(attribute, "before").output();
+            informationPrompt.buildGuide(output);
+            attribute.put(Constants.TOOLS, List.of("informationByIdTool"));
+            attribute.put(Constants.PROMPT, informationPrompt.description());
+            return streamResponse(attribute, "after");
         } catch (GraphRunnerException e) {
             throw new MpdaRuntimeException(e);
         }

@@ -2,6 +2,7 @@ package com.dahuaboke.mpda.bot.scenes.resolution;
 
 
 import com.dahuaboke.mpda.core.agent.prompt.AgentPrompt;
+import com.dahuaboke.mpda.core.utils.List2MdUtil;
 import com.dahuaboke.mpda.core.utils.Map2MdUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,7 +25,7 @@ public class ResolutionAgentPrompt implements AgentPrompt {
                 1.根据上下文和用户的问题，判断用户的聊天意向。
                 2.用户的聊天意向分为以下几类：
                     {scenes}
-                3.关键！ 必须返回{ids}的其中之一,注意不要添加任何其他符号,切勿返回其余内容影响后续流程
+                3.关键！ 必须返回{ids}的其中之一,注意不要添加任何其他符号,切勿返回其余内容影响后续流程。
                 4.示例：
                     数据：
                         abcdefg: 问候聊天
@@ -47,9 +48,9 @@ public class ResolutionAgentPrompt implements AgentPrompt {
             Set<Map.Entry<String, String>> set = params.entrySet();
             List<String> keys = set.stream().map(Map.Entry::getKey).toList();
             promptTemplate.add("scenes", Map2MdUtil.convert(params));
-            promptTemplate.add("ids", objectMapper.writeValueAsString(String.join("\n", keys)));
+            promptTemplate.add("ids", List2MdUtil.convert(keys));
             this.description = promptTemplate.create().getContents();
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
             e.printStackTrace();//TODO
         }
     }

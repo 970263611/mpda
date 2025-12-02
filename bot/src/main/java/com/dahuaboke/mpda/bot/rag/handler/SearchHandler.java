@@ -22,38 +22,15 @@ public class SearchHandler {
         this.vectorStore = vectorStore;
     }
 
-    public List<Document> requestKey(SearchRequest searchRequest, List<String> keys) {
+    public List<Document> requestKey(SearchRequest searchRequest, List<String> keys, String fileType) {
         SearchRequest request = SearchRequest.builder()
                 .query(searchRequest.getQuery())
                 .topK(searchRequest.getTopK())
                 .filterExpression(new Filter.Expression(
-                        Filter.ExpressionType.EQ, new Filter.Key("excerpt_keywords"), new Filter.Value(keys.get(0))
-                ))
-                .similarityThreshold(searchRequest.getSimilarityThreshold())
-                .build();
-        return vectorStore.similaritySearch(request);
-    }
 
-    public List<Document> requestProduct(SearchRequest searchRequest, List<String> matchers, int topK) {
-        SearchRequest request = SearchRequest.builder()
-                .query(searchRequest.getQuery())
-                .topK(topK)
-                .filterExpression(new Filter.Expression(
-                        Filter.ExpressionType.EQ, new Filter.Key("file_name_keywords"), new Filter.Value(matchers.get(0))
-                ))
-                .similarityThreshold(searchRequest.getSimilarityThreshold())
-                .build();
-        return vectorStore.similaritySearch(request);
-    }
-
-    public List<Document> requestProductAndKey(SearchRequest searchRequest, List<String> matchers, List<String> keys) {
-        SearchRequest request = SearchRequest.builder()
-                .query(searchRequest.getQuery())
-                .topK(searchRequest.getTopK())
-                .filterExpression(new Filter.Expression(
                         Filter.ExpressionType.AND,
                         new Filter.Expression(
-                                Filter.ExpressionType.EQ, new Filter.Key("file_name_keywords"), new Filter.Value(matchers.get(0))
+                                Filter.ExpressionType.EQ, new Filter.Key("file_type"), new Filter.Value(fileType)
                         ),
                         new Filter.Expression(
                                 Filter.ExpressionType.EQ, new Filter.Key("excerpt_keywords"), new Filter.Value(keys.get(0))
@@ -63,4 +40,48 @@ public class SearchHandler {
                 .build();
         return vectorStore.similaritySearch(request);
     }
+
+    public List<Document> requestProduct(SearchRequest searchRequest, List<String> matchers, int topK, String fileType) {
+        SearchRequest request = SearchRequest.builder()
+                .query(searchRequest.getQuery())
+                .topK(topK)
+                .filterExpression(new Filter.Expression(
+
+                        Filter.ExpressionType.AND,
+                        new Filter.Expression(
+                                Filter.ExpressionType.EQ, new Filter.Key("file_type"), new Filter.Value(fileType)
+                        ),
+                        new Filter.Expression(
+                                Filter.ExpressionType.EQ, new Filter.Key("file_name_keywords"), new Filter.Value(matchers.get(0))
+                        )
+                ))
+                .similarityThreshold(searchRequest.getSimilarityThreshold())
+                .build();
+        return vectorStore.similaritySearch(request);
+    }
+
+    public List<Document> requestProductAndKey(SearchRequest searchRequest, List<String> matchers, List<String> keys, String fileType) {
+        SearchRequest request = SearchRequest.builder()
+                .query(searchRequest.getQuery())
+                .topK(searchRequest.getTopK())
+                .filterExpression(new Filter.Expression(
+                        Filter.ExpressionType.AND,
+                        new Filter.Expression(
+                                Filter.ExpressionType.AND,
+                                new Filter.Expression(
+                                        Filter.ExpressionType.EQ, new Filter.Key("file_name_keywords"), new Filter.Value(matchers.get(0))
+                                ),
+                                new Filter.Expression(
+                                        Filter.ExpressionType.EQ, new Filter.Key("excerpt_keywords"), new Filter.Value(keys.get(0))
+                                )
+                        ),
+                        new Filter.Expression(
+                            Filter.ExpressionType.EQ, new Filter.Key("file_type"), new Filter.Value(fileType)
+                        )
+                ))
+                .similarityThreshold(searchRequest.getSimilarityThreshold())
+                .build();
+        return vectorStore.similaritySearch(request);
+    }
+
 }

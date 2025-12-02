@@ -20,7 +20,7 @@ public abstract class AbstractProductAgentPrompt implements AgentPrompt {
                      | 英文字段 | 中文描述 | 同义词 / 常用词 |
                      | :--- | :--- | :--- |
                      | fundCode | 基金代码 | 基金编码、产品代码、基金编号 |
-                     | prodtClsCode | 基金类型 | 基金大类、基金品种类型、基金种类、基金属于哪一类 |
+                     | prodtClsCode | 基金类型 1-股票型基金，2-混合型基金，3-债券型基金，4-货币式基金，5-QDII，6-商品型基金，7-短期理财债券型基金，8-基础设施基金，9-基金中基金(FOF) | 基金大类、基金品种类型、基金种类、基金属于哪一类 |
                      | fundFnm | 基金全称 | 基金名称、基金完整名称、产品全称（基金）、基金全名、基金的完整名字 |
                      | prodtSname | 基金简称 | 基金缩写名称、产品简称（基金）、基金简称、基金短名 |
                      | investMgrName | 基金经理名字 | 基金经理姓名、管理人姓名、负责该基金的经理名字、基金经理是谁 |
@@ -40,12 +40,12 @@ public abstract class AbstractProductAgentPrompt implements AgentPrompt {
                      | bondiDtl | 报告期末按公允价值占基金资产净值比例大小排序的前五名债券投资明细 | 前五大债券持仓、债券投资前 5 名明细、债券持仓 Top5、前 5 大债券投资详情 |
                      | assetInfo | 报告期末按公允价值占基金资产净值比例大小排序的前十名股票投资明细 | 前十大股票持仓、股票投资前 10 名明细、股票持仓 Top10、前 10 大股票投资详情 |
                      | fundstgSumProfrat | 本报告期基金份额净值增长率及其与同期业绩比较基准收益率的比较 |
-                     | assetNval | 期末基金资产净值 | 基金规模 |
+                     | assetNval | 基金规模 | 期末基金资产净值、期末净值、报告期末基金资产净值、季末净值、基金期末资产价值、规模、资产规模 |
                      | projTotLimt | 报告期期末基金份额总额 |
                      | fundMgrName | 基金管理人 | 管理机构、基金管理公司、管理人、负责管理的公司 |
                      | trusteePersName | 基金托管人 | 托管机构、基金托管银行 / 公司、托管方、负责托管的银行 / 公司 |
                      | fundOprModeCd | 运作方式 | 运作模式、基金运行方式、基金怎么运作的、运作类型、基金是开放式还是封闭式 |
-                     | exgRateUpdFreq | 开放频率 |
+                     | exgRateUpdFreq | 开放频率 | 
                      | contractEffDate | 基金合同生效日 | 合同生效日期、基金成立生效日、基金合同开始日期、基金正式生效日 |
                      | investTargetCode | 投资目标 | 投资宗旨、基金投资目的、基金的投资方向目标 |
                      | ivstStgyName | 主要投资策略 | 核心投资方法、基金投资策略、怎么投资的、投资思路、基金策略 |
@@ -61,8 +61,10 @@ public abstract class AbstractProductAgentPrompt implements AgentPrompt {
                      | afadjOthfe | 基金运作相关费用其他费用 | 其他运作费用、运作杂费、杂项费用、除管理费托管费外的运作费用 |
                      | psbcChremCphsFert | 基金运作综合费率（年化） | 年化综合费率、基金总运作成本率（年化）、年化总费率、一年的总运作费用率 |  
                      | maxWithDrawal | 近3月最大回撤 |
-                     | yearRita | 近一年收益率 |
+                     | yearRita | 近1月收益率 | 近1月年化收益率
                      | year3MRita | 近3月收益率 | 近3月年化收益率
+                     | year1YRita | 近1年收益率 | 近1年化收益率
+                     | year7DRita | 7日年化收益率 | 7日收益率
                     \n
             """;
     String recommendationTranslatePrompt = """
@@ -71,14 +73,14 @@ public abstract class AbstractProductAgentPrompt implements AgentPrompt {
                      | 英文字段 | 中文描述 | 同义词 / 常用词 |
                      | :--- | :--- | :--- |
                      | fundCode | 基金代码 | 基金编码、产品代码、基金编号 |
-                     | prodtClsCode | 基金类型 | 基金大类、基金品种类型、基金种类、基金属于哪一类 |
+                     | prodtClsCode | 基金类型 1-股票型基金，2-混合型基金，3-债券型基金，4-货币式基金，5-QDII，6-商品型基金，7-短期理财债券型基金，8-基础设施基金，9-基金中基金(FOF) | 基金大类、基金品种类型、基金种类、基金属于哪一类 |
                      | fundFnm | 基金全称 | 基金名称、基金完整名称、产品全称（基金）、基金全名、基金的完整名字 |
                      | ivstStgyName | 主要投资策略 | 核心投资方法、基金投资策略、怎么投资的、投资思路、基金策略 |
                      | fundOprModeCd | 运作方式 | 运作模式、基金运行方式、基金怎么运作的、运作类型、基金是开放式还是封闭式 |
                      | performCmpBmkTxtDesc | 业绩比较基准 | 业绩基准、基金业绩对比基准、对比的业绩标准、业绩参考基准 |
                      | investTargetCode | 投资目标 | 投资宗旨、基金投资目的、基金的投资方向目标 |
                      | investScope | 投资范围 | 投资领域、基金可投资品种范围、基金能投什么、投资的品种/领域限制 |      
-                     | assetNval | 期末基金资产净值 | 期末净值、报告期末基金资产净值、季末净值、基金期末资产价值、基金规模、规模、资产规模 | 
+                     | assetNval | 基金规模 | 期末基金资产净值、期末净值、报告期末基金资产净值、季末净值、基金期末资产价值、规模、资产规模 |
                      | psbcChremCphsFert | 基金运作综合费率（年化） | 年化综合费率、基金总运作成本率（年化）、年化总费率、一年的总运作费用率 |
                      | infdclNppSumm | 基金运作相关费用信息披露费 | 信息披露费用、运作信息公开费、信息披露成本、基金信息发布费用 |
                      | saleServFee | 基金运作相关费用销售服务费 | 销售服务费、运作销售费用、销售服务成本、给销售渠道的服务费 |
@@ -109,15 +111,15 @@ public abstract class AbstractProductAgentPrompt implements AgentPrompt {
                     | 英文字段 | 中文描述 | 同义词 / 常用词 |
                     | :--- | :--- | :--- |
                     | fundFnm | 基金全称 | 基金完整名称、产品全称（基金）、基金全名、基金的完整名字 |
-                    | assetNval | 期末基金资产净值 | 期末净值、报告期末基金资产净值、季末净值、基金期末资产价值、基金规模、规模、资产规模 |\s
+                    | assetNval | 基金规模 | 期末基金资产净值、期末净值、报告期末基金资产净值、季末净值、基金期末资产价值、规模、资产规模 |
                     | fundMgrName | 基金管理人 | 管理机构、基金管理公司、管理人、负责管理的公司 |
                     | contractEffDate | 基金合同生效日 | 合同生效日期、基金成立生效日、基金合同开始日期、基金正式生效日 |
                     | investMgrName | 基金经理名字 | 基金经理姓名、管理人姓名、负责该基金的经理名字、基金经理是谁 |
                     | curRenewDt | 存续天数 |
                     | unitNetVal | 单位净值 |
                     | fundCode | 基金代码 | 基金编码、产品代码、基金编号 |
-                    | prodtClsCode | 基金类型 | 基金大类、基金品种类型、基金种类、基金属于哪一类 |
-                    | finBondType | 债券基金类型	1-信用债-指数型，2-信用债主动-开放式，3-利率债主动-开放式，4-利率债指数1-3年，5-利率债指数3-5年，6-利率债指数1-5年 
+                    | prodtClsCode | 基金类型 1-股票型基金，2-混合型基金，3-债券型基金，4-货币式基金，5-QDII，6-商品型基金，7-短期理财债券型基金，8-基础设施基金，9-基金中基金(FOF) | 基金大类、基金品种类型、基金种类、基金属于哪一类 |
+                    | finBondType | 债券基金类型	1-信用债-指数型，2-信用债主动-开放式，3-利率债主动-开放式，4-利率债指数1-3年，5-利率债指数3-5年，6-利率债指数1-5年 |
                     | nwk1CombProfrat | 近1周年化收益率 | 近1周收益率、 近1周年化收益 |
                     | indsRankSeqNo | 近一周收益率排名 |
                     | txamtRankNo | 近一周收益率昨日排名 |

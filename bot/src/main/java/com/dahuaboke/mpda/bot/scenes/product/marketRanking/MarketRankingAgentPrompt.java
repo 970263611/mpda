@@ -16,7 +16,6 @@ public class MarketRankingAgentPrompt extends AbstractProductAgentPrompt {
 
     public MarketRankingAgentPrompt() {
         int currentYear = Year.now().getValue();
-        int currentQuarter = getCurrentQuarter();
         LocalDate today = LocalDate.now();
         LocalDate oneYearAgo = today.minusYears(1);
 
@@ -45,7 +44,6 @@ public class MarketRankingAgentPrompt extends AbstractProductAgentPrompt {
                 1. 如果用户明确指定了时间范围（近一周、近一月、近三个月、近一年[滚动12个月]、今年、季度等），则只返回相关的时间段字段
                 2. 如果用户没有指定时间范围，则默认返回：
                    - 今年（%d年）相关字段
-                   - 当前季度（第%d季度）相关字段
                                             
                 **可用时间范围字段**：
                 - 近一年[滚动12个月]收益率(nyy1Profrat)、排名(reachStRankSeqNo)、昨日排名(chremMgrIntglRankSeqNo)、排名变动(centerCfmCurdayChgTnum)、最大回撤(nyy1Wdwrt)
@@ -53,29 +51,26 @@ public class MarketRankingAgentPrompt extends AbstractProductAgentPrompt {
                 - 近一周收益率(nwk1CombProfrat)、排名(indsRankSeqNo)、昨日排名(txamtRankNo)、排名变动(curdayBalChgTotalAccnum)、最大回撤(styoMaxWdwDesc)
                 - 近一月收益率(nmm1CombProfrat)、排名(lblmRank)、昨日排名(busicmLmRank)、排名变动(curdayBalChgAccnum)、最大回撤(maxWdwrt)
                 - 近三个月收益率(nmm3CombProfrat)、排名(rankScopeLowLmtVal)、昨日排名(intglRankSeqNo)、排名变动(supptranBalChgTotalAccnum)、最大回撤(fundstgMaxWdwrt)
-                - %d年第1季度收益率(lastYrlyPftrt)、排名(custRaiseRateRankNo)
-                - %d年第2季度收益率(nmm6CombProfrat)、排名(detainRateRankNo)
-                - %d年第3季度收益率(nmm3YrlyPftrt)、排名(tmPontAsetRaiseTotRanknum)
-                - %d年第4季度收益率(nmm1YearlyProfrat)、排名(addRepPurcProTotnumRankno)
+                - 第1季度收益率(lastYrlyPftrt)、排名(custRaiseRateRankNo)
+                - 第2季度收益率(nmm6CombProfrat)、排名(detainRateRankNo)
+                - 第3季度收益率(nmm3YrlyPftrt)、排名(tmPontAsetRaiseTotRanknum)
+                - 第4季度收益率(nmm1YearlyProfrat)、排名(addRepPurcProTotnumRankno)、
                                             
-                **年份处理规则**：
+                **年份、季度处理规则**：
                 - 所有"今年"字样必须替换为实际年份：%d年
-                - 季度字段也要使用实际年份：%d年第%d季度
                                             
                 **输出要求**：
+                - 如果工具返回包含“未查询到满足条件的数据，请换条件进行查询呢~”：直接返回提示“未查询到满足条件的数据，请换条件进行查询呢~”，禁止做其他操作，禁止构建空的无实际数据的表格
+                - 如果工具返回包含“您查询的时间不在可查询时间范围内~”：直接返回提示“您查询的时间不在可查询时间范围内，请换条件进行查询呢~”，禁止做其他操作，禁止构建空的无实际数据的表格
+                - 如果工具返回正确结果，展示返回的10条数据，无值的位置用空字符串表示
                 - 所有时间字段必须保留标识（如近一年[滚动12个月]、今年[%d年]）
                 - 完全引用字段的实际内容，不要推测
-                - 用markdown表格格式返回
-                - 如果用户未指定时间范围，在结果开头说明："为您展示默认的排名数据"
-                - 展示返回的10条数据，无值的位置用空字符串表示              
+                - 用markdown表格格式返回                                                           
                 """.formatted(today, oneYearAgo, today,
                 currentYear, today,
                 currentYear,
-                currentQuarter,
                 currentYear,
-                currentYear, currentYear, currentYear, currentYear,
                 currentYear,
-                currentYear, currentQuarter,
                 currentYear
         );
 
@@ -102,11 +97,4 @@ public class MarketRankingAgentPrompt extends AbstractProductAgentPrompt {
         this.description = promptMap.get("guide");
     }
 
-    /**
-     * 获取当前季度
-     */
-    private int getCurrentQuarter() {
-        int month = java.time.LocalDate.now().getMonthValue();
-        return (month - 1) / 3 + 1;
-    }
 }

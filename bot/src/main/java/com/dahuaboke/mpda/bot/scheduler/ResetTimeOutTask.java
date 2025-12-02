@@ -15,7 +15,7 @@ public class ResetTimeOutTask {
     @Autowired
     BrProductService brProductService;
 
-    @Scheduled(fixedRate = 1000 * 60 * 60 * 12)
+    @Scheduled(initialDelay = 20 * 1000, fixedRate = 1000 * 60 * 60 * 12)
     public void ragSearchJob() {
         log.info("开始执行超时扫描任务...........");
         int number = brProductService.resetTimeout();

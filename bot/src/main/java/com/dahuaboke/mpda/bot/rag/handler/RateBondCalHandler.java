@@ -42,7 +42,6 @@ public class RateBondCalHandler {
             return false;
         }
         Double assetNval = FundClassifierUtil.findDouble(report.getAssetNval());
-        report.setAssetNval(assetNval.toString());
         log.info("{}该基金期末资产净值是{}", fundCode, assetNval);
 
         if (assetNval < MIN_NVAL) {

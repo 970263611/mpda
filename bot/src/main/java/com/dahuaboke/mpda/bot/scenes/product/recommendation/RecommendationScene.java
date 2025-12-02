@@ -5,6 +5,8 @@ import com.dahuaboke.mpda.bot.scenes.resolution.ResolutionScene;
 import com.dahuaboke.mpda.core.agent.graph.Graph;
 import com.dahuaboke.mpda.core.agent.prompt.AgentPrompt;
 import com.dahuaboke.mpda.core.agent.scene.Scene;
+import com.dahuaboke.mpda.core.memory.MemoryExclude;
+import org.springframework.ai.chat.messages.ToolResponseMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +26,7 @@ public class RecommendationScene implements Scene {
     @Override
     public String description() {
         return """
+                    定制资产品质方案
                     根据基金类型/年化利率/最大回撤指标 为用户推荐产品
                     根据基金类型/年化利率/最大回撤指标 为用户配置产品
                 """;

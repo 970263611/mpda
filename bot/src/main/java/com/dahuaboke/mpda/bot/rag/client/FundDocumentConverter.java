@@ -52,7 +52,7 @@ public class FundDocumentConverter implements DocumentConverter<FundEntity> {
                     .id(fundEntity.getId())
                     .text(fundEntity.getContent())
                     .metadata(Map.of("file_name", fundEntity.getFile_name(), "page_number", (double) fundEntity.getPage_number(), "excerpt_keywords", fundEntity.getExcerpt_keywords(),
-                            "file_name_keywords", fundEntity.getFile_name_keywords()
+                            "file_name_keywords", fundEntity.getFile_name_keywords(),"file_type",fundEntity.getFile_type()
                     ))
                     .score(fundEntity.getScore().doubleValue())
                     .build();

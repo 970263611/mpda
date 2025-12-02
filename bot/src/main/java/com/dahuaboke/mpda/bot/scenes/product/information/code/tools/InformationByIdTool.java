@@ -38,29 +38,48 @@ public class InformationByIdTool extends ProductTool<InformationByIdTool.Input> 
         try {
             String productNo = input.productNo();
             ProdInfoDto prodInfoDto = productToolHandler.selectProdInfo(new NetValReq(productNo));
-            if(StringUtils.isEmpty(prodInfoDto.getFundCode())){
+            if (StringUtils.isEmpty(prodInfoDto.getFundCode())) {
                 return ToolResult.success("查询成功", "未查询到任何消息,请确认产品编号.");
             }
             //翻译
             String prodtClsCode = prodInfoDto.getProdtClsCode();
-            if(StringUtils.isNotBlank(prodtClsCode)){
+            if (StringUtils.isNotBlank(prodtClsCode)) {
                 String desc = FundType.getFundTypeDesc(prodtClsCode).getDesc();
                 prodInfoDto.setProdtClsCode(desc);
             }
             Map converted = objectMapper.convertValue(prodInfoDto, Map.class);
             if (converted != null) {
+                //近三月最大回撤
                 converted.put("maxWithDrawal", getMaxWithDrawal(productNo));
+                //近一月收益率
                 converted.put("yearRita", getYearRita(productNo));
+                //近三月收益率
                 LocalDateTime now = LocalDateTime.now();
                 LocalDateTime nowAnd3 = now.plusMonths(-3);
                 converted.put("year3MRita", getYearRita(productNo, nowAnd3, now));
+                //近一年收益率
+                LocalDateTime nowAnd1Y = now.plusMonths(-12);
+                converted.put("year1YRita", getYearRita(productNo, nowAnd1Y, now));
+                //货基
+                if(FundType.MONET_MARKET_FUND.getCode().equals(prodtClsCode)){
+                    //7日年化
+                    NetValReq netValReq = new NetValReq();
+                    netValReq.setProdtCode(productNo);
+                    String sevenDayYearlyProfrat = productToolHandler.sevenDayYearlyProfrat(netValReq);
+                    double value = Double.parseDouble(sevenDayYearlyProfrat);
+                    converted.put("year7DRita", value);
+                    //TODO 万份收益
+
+
+                }
+
             }
-            return ToolResult.success("查询成功", converted);
+            return ToolResult.success("查询成功", Map.of("prodtClsCode", prodtClsCode, "result", converted));
         } catch (RestClientException e) {
             return ToolResult.error("查询失败");
         }
     }
 
-    public record Input(@JsonPropertyDescription("产品编号") String productNo) {
+    public record Input(@JsonPropertyDescription("产品编号(6位数字)") String productNo) {
     }
 }

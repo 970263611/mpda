@@ -11,6 +11,8 @@ public class FundConstant {
 
     public static final String INDEX_NAME = "pdf_inner_rule_index";
 
+    public static final String CODE_INDEX_NAME = "fund_code_index";
+
     public static final String EMBEDDING = "embedding";
 
 

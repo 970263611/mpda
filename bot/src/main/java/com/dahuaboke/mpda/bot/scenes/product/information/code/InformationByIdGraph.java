@@ -91,7 +91,6 @@ public class InformationByIdGraph extends AbstractGraph {
     @Override
     @MemoryMerge({MarketRankingScene.class, InformationByNameScene.class})
     public Flux<SceneResponse> executeAsync(Map<String, Object> attribute) throws MpdaRuntimeException {
-        System.out.println("进来查询产品编号场景。。。。");
 
         attribute.put(Constants.TOOLS, List.of("informationByIdTool"));
         informationPrompt.changePrompt("guide");

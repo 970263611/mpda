@@ -51,7 +51,7 @@ public class CalculatedRateBondTask {
     private  Set<String> marketProductCode;
 
 
-    @Scheduled(cron = "0 0 01 * * ?")
+    @Scheduled(cron = "0 0 21 * * ?")
     public void calculatedRateBondJob() {
         log.info("开始计算利率债任务...........");
         init();

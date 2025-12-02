@@ -48,12 +48,22 @@ public class RecommendProductDto {
     private Double rate;
 
     /**
+     * 收益率时间周期
+     */
+    private String rateTimePeriod;
+
+    /**
      * 最大回撤
      */
     private Double maxWithDraw;
 
+    /**
+     * 最大回撤时间周期
+     */
+    private String drawTimePeriod;
 
-    public RecommendProductDto(String fundCode, String prodtClsCode, String fundFnm, String investMgrName, String offcDt, String engageYearNum, String engagePersonDesc, String assetNval, String projTotLimt, String fundMgrName, String trusteePersName, String performCmpBmkTxtDesc, String riskProfitCoeff,  String psbcChremCphsFert, Double rate, Double maxWithDraw) {
+
+    public RecommendProductDto(String fundCode, String prodtClsCode, String fundFnm, String investMgrName, String assetNval, String fundMgrName, String trusteePersName, String riskProfitCoeff, Double rate, String rateTimePeriod, Double maxWithDraw, String drawTimePeriod) {
         this.fundCode = fundCode;
         this.prodtClsCode = prodtClsCode;
         this.fundFnm = fundFnm;
@@ -63,7 +73,9 @@ public class RecommendProductDto {
         this.trusteePersName = trusteePersName;
         this.riskProfitCoeff = riskProfitCoeff;
         this.rate = rate;
+        this.rateTimePeriod = rateTimePeriod;
         this.maxWithDraw = maxWithDraw;
+        this.drawTimePeriod = drawTimePeriod;
     }
 
     public RecommendProductDto() {
@@ -81,7 +93,9 @@ public class RecommendProductDto {
                 ", trusteePersName='" + trusteePersName + '\'' +
                 ", riskProfitCoeff='" + riskProfitCoeff + '\'' +
                 ", rate=" + rate +
+                ", rateTimePeriod='" + rateTimePeriod + '\'' +
                 ", maxWithDraw=" + maxWithDraw +
+                ", drawTimePeriod='" + drawTimePeriod + '\'' +
                 '}';
     }
 
@@ -163,6 +177,22 @@ public class RecommendProductDto {
 
     public void setMaxWithDraw(Double maxWithDraw) {
         this.maxWithDraw = maxWithDraw;
+    }
+
+    public String getRateTimePeriod() {
+        return rateTimePeriod;
+    }
+
+    public void setRateTimePeriod(String rateTimePeriod) {
+        this.rateTimePeriod = rateTimePeriod;
+    }
+
+    public String getDrawTimePeriod() {
+        return drawTimePeriod;
+    }
+
+    public void setDrawTimePeriod(String drawTimePeriod) {
+        this.drawTimePeriod = drawTimePeriod;
     }
 
 }
