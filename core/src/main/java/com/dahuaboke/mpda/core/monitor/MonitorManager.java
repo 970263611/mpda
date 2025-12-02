@@ -19,7 +19,7 @@ import java.time.Duration;
 public class MonitorManager implements Listener {
 
     private static final Logger logger = LoggerFactory.getLogger(MonitorManager.class);
-    private final Sinks.Many<Event> sink = Sinks.many().multicast().directAllOrNothing();
+    private final Sinks.Many<Event> sink = Sinks.many().multicast().onBackpressureBuffer();
 
     @Override
     public void onEvent(Event event) {
