@@ -30,10 +30,6 @@ public class ChatClientManager {
     private final ChatClient chatClient;
     private final MemoryManager memoryManager;
 
-    public ChatClient getChatClient() {
-        return chatClient;
-    }
-
     public ChatClientManager(ChatModel chatModel, SystemAgentPrompt commonPrompt, MemoryManager memoryManager, ToolCallbackProvider tools) {
         this.memoryManager = memoryManager;
         this.chatClient = ChatClient.builder(chatModel)
@@ -41,6 +37,10 @@ public class ChatClientManager {
                 .defaultToolCallbacks(tools)
                 .defaultAdvisors(new SimpleLoggerAdvisor())
                 .build();
+    }
+
+    public ChatClient getChatClient() {
+        return chatClient;
     }
 
     public LlmResponse call(String conversationId, String sceneId, String prompt, Object query, List<ToolCallback> tools,

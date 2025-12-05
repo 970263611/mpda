@@ -41,6 +41,20 @@ public class MemoryManager implements SmartLifecycle {
 
     private Map<String, Long> memoryTimer = new HashMap<>();
 
+    private static Stream<Message> getMessageStream(Set<Class<? extends Message>> memoryExclude, List<Message> finalMessages) {
+        Stream<Message> stream = finalMessages.stream().sorted((m1, m2) -> {
+            if (m1 instanceof MessageWrapper w1 && m2 instanceof MessageWrapper w2) {
+                return Long.valueOf(w1.getTime() - w2.getTime()).intValue();
+            }
+            return 0;
+        });
+        if (!memoryExclude.isEmpty()) {
+            stream = stream.filter(
+                    m3 -> !memoryExclude.stream().anyMatch(me -> me.isAssignableFrom(m3.getClass())));
+        }
+        return stream;
+    }
+
     public void addMemory(Message message) {
         String conversationId = cacheManager.getContext().getConversationId();
         String sceneId = cacheManager.getContext().getSceneId();
@@ -99,20 +113,6 @@ public class MemoryManager implements SmartLifecycle {
             return getMessageStream(memoryExclude, finalMessages).limit(maxMemory).toList();
         }
         return List.of();
-    }
-
-    private static Stream<Message> getMessageStream(Set<Class<? extends Message>> memoryExclude, List<Message> finalMessages) {
-        Stream<Message> stream = finalMessages.stream().sorted((m1, m2) -> {
-            if (m1 instanceof MessageWrapper w1 && m2 instanceof MessageWrapper w2) {
-                return Long.valueOf(w1.getTime() - w2.getTime()).intValue();
-            }
-            return 0;
-        });
-        if (!memoryExclude.isEmpty()) {
-            stream = stream.filter(
-                    m3 -> !memoryExclude.stream().anyMatch(me -> me.isAssignableFrom(m3.getClass())));
-        }
-        return stream;
     }
 
     public void removeMemory(String conversationId) {

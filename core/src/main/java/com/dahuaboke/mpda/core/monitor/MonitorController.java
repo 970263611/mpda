@@ -1,7 +1,5 @@
 package com.dahuaboke.mpda.core.monitor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -41,7 +39,7 @@ public class MonitorController implements WebMvcConfigurer {
     public void addViewControllers(ViewControllerRegistry registry) {
         registry.addViewController("/monitor")
                 .setViewName("forward:/views/monitor.html");
-         registry.addViewController("/monitor.html")
-                 .setViewName("forward:/views/monitor.html");
+        registry.addViewController("/monitor.html")
+                .setViewName("forward:/views/monitor.html");
     }
 }

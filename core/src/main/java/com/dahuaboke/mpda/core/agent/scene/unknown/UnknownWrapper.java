@@ -11,11 +11,11 @@ import reactor.core.publisher.Flux;
  * @date: 2025/10/28
  */
 public abstract class UnknownWrapper extends SceneWrapper {
-    abstract public String reply();
-
     protected UnknownWrapper() {
         super(null, null);
     }
+
+    abstract public String reply();
 
     @Override
     public Flux<SceneResponse> applyAsync(CoreContext context) throws MpdaException {

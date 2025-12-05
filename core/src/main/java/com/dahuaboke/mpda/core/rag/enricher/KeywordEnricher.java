@@ -38,7 +38,7 @@ public class KeywordEnricher implements DocumentTransformer {
             Prompt text = new Prompt(document.getText() + keyWordTemplate);
             String content = chatModel.call(text).getResult().getOutput().getText();
             String keys = "";
-            if(content.contains(prefix) && content.contains(suffix)){
+            if (content.contains(prefix) && content.contains(suffix)) {
                 keys = content.split(prefix)[1].split(suffix)[0].trim();
             }
             document.getMetadata().putAll(Map.of(EXCERPT_KEYWORDS_METADATA_KEY, commaSeparatedToKeywords(keys)));

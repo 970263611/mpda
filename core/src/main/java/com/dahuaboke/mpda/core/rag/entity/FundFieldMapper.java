@@ -61,8 +61,8 @@ public class FundFieldMapper {
         return questionKeyWordMap;
     }
 
-    public Map<String,String> getQuestionByName (Class<?> clazz) {
-        Map<String,String> map = new HashMap<>();
+    public Map<String, String> getQuestionByName(Class<?> clazz) {
+        Map<String, String> map = new HashMap<>();
         // 初始化时构建注释到字段的映射
         Arrays.stream(clazz.getDeclaredFields())
                 .filter(f -> f.isAnnotationPresent(FieldComment.class))
@@ -74,5 +74,5 @@ public class FundFieldMapper {
                 });
         return map;
     }
-    
+
 }

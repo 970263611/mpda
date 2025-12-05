@@ -46,13 +46,13 @@ public class PdfDocumentConvert implements DocumentConvert {
         int bottomMargin;
         int topTextLinesToDelete;
         int bottomTextLinesToDelete;
-        log.debug("os name is{}",System.getProperty("os.name").toLowerCase());
+        log.debug("os name is{}", System.getProperty("os.name").toLowerCase());
         if (System.getProperty("os.name").toLowerCase().contains("win")) {
             pageMargin = PAGE_MARGIN;
             bottomMargin = BOTTOM_MARGIN;
             topTextLinesToDelete = TOP_TEXT_LINES_TO_DELETE;
             bottomTextLinesToDelete = BOTTOM_TEXT_LINES_TO_DELETE;
-        }else {
+        } else {
             pageMargin = LINUX_PAGE_MARGIN;
             bottomMargin = LINUX_BOTTOM_MARGIN;
             topTextLinesToDelete = LINUX_TOP_TEXT_LINES_TO_DELETE;
@@ -79,7 +79,6 @@ public class PdfDocumentConvert implements DocumentConvert {
             return documents;
         }
     }
-
 
 
 }

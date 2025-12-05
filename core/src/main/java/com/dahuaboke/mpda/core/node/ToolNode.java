@@ -7,7 +7,6 @@ import com.dahuaboke.mpda.core.agent.tools.ToolResult;
 import com.dahuaboke.mpda.core.agent.tools.ToolUtil;
 import com.dahuaboke.mpda.core.client.entity.LlmResponse;
 import com.dahuaboke.mpda.core.context.consts.Constants;
-import com.dahuaboke.mpda.core.exception.MpdaRuntimeException;
 import com.dahuaboke.mpda.core.memory.AssistantMessageWrapper;
 import com.dahuaboke.mpda.core.memory.MemoryManager;
 import com.dahuaboke.mpda.core.memory.ToolResponseMessageWrapper;
@@ -34,17 +33,13 @@ import java.util.Map;
 @Component
 public class ToolNode implements NodeAction {
 
+    private static final Logger log = LoggerFactory.getLogger(ToolNode.class);
     @Autowired
     private ToolUtil toolUtil;
-
     @Autowired
     private MemoryManager memoryManager;
-
     @Autowired
     private ObjectMapper objectMapper;
-
-    private static final Logger log = LoggerFactory.getLogger(ToolNode.class);
-
 
     @Override
     public Map<String, Object> apply(OverAllState state) throws Exception {
@@ -58,7 +53,7 @@ public class ToolNode implements NodeAction {
             toolResponseMessage = executeTool(chatResponse);
             responses = toolResponseMessage.getResponses();
         } catch (Exception e) {
-            log.error("toolNode process fail,execute tool is fail",e);
+            log.error("toolNode process fail,execute tool is fail", e);
             ToolResult toolResult = ToolResult.error("工具调用失败,工具内部异常,勿再重复调用");
             responses = new ArrayList<>();
             for (AssistantMessage.ToolCall toolCall : toolCalls) {

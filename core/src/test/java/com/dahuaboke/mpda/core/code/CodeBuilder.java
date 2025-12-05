@@ -117,49 +117,49 @@ public class CodeBuilder {
         String template =
                 """
                         package com.dahuaboke.mpda.{0}.scenes.{1}.{2};
-                                                
-                                                
+                        
+                        
                         import com.dahuaboke.mpda.{3}.scenes.resolution.ResolutionScene;
                         import com.dahuaboke.mpda.core.agent.graph.Graph;
                         import com.dahuaboke.mpda.core.agent.prompt.AgentPrompt;
                         import com.dahuaboke.mpda.core.agent.scene.Scene;
                         import org.springframework.beans.factory.annotation.Autowired;
                         import org.springframework.stereotype.Component;
-                                                
+                        
                         /**
                          * auth: dahua
                          * time: {4}
                          */
                         @Component
                         public class {5}Scene implements Scene {
-                                                
+                        
                             @Autowired
                             private {6}Graph {7}Graph;
-                                                
+                        
                             @Autowired
                             private {8}AgentPrompt {9}AgentPrompt;
-                                                
+                        
                             @Override
                             public String description() {
                                 return {10};
                             }
-                                                
+                        
                             @Override
                             public Graph graph() {
                                 return {11}Graph;
                             }
-                                                
+                        
                             @Override
                             public AgentPrompt prompt() {
                                 return {12}AgentPrompt;
                             }
-                                                
+                        
                             @Override
                             public Class<? extends Scene> parent() {
                                 return ResolutionScene.class;
                             }
                         }
-                                                
+                        
                         """;
         return replacePlaceholders(template, projectName, packageName, firstToLower(scene), projectName, now,
                 scene, scene, firstToLower(scene), scene, firstToLower(scene), description, firstToLower(scene), firstToLower(scene));
@@ -171,32 +171,32 @@ public class CodeBuilder {
         String template =
                 """
                         package com.dahuaboke.mpda.{0}.scenes.{1}.{2};
-                                                
-                                                
+                        
+                        
                         import com.dahuaboke.mpda.core.agent.prompt.AgentPrompt;
                         import org.springframework.stereotype.Component;
-                                                
+                        
                         import java.util.Map;
-                                                
+                        
                         /**
                          * auth: dahua
                          * time: {3}
                          */
                         @Component
                         public class {4}AgentPrompt implements AgentPrompt {
-                                                
+                        
                             private final String prompt = {5};
-                                                
+                        
                             @Override
                             public String description() {
                                 return this.prompt;
                             }
-                                                
+                        
                             @Override
                             public void build(Map params) {
                             }
                         }
-                                                
+                        
                         """;
         return replacePlaceholders(template, projectName, packageName, firstToLower(scene), now, scene, prompt);
     }
@@ -206,8 +206,8 @@ public class CodeBuilder {
         String now = LocalDateTime.now().format(formatter);
         String template = """
                 package com.dahuaboke.mpda.{0}.scenes.{1}.{2};
-                                
-                                
+                
+                
                 import com.alibaba.cloud.ai.graph.KeyStrategyFactory;
                 import com.alibaba.cloud.ai.graph.StateGraph;
                 import com.alibaba.cloud.ai.graph.exception.GraphRunnerException;
@@ -224,34 +224,34 @@ public class CodeBuilder {
                 import org.springframework.beans.factory.annotation.Autowired;
                 import org.springframework.stereotype.Component;
                 import reactor.core.publisher.Flux;
-                                
+                
                 import java.util.Map;
-                                
+                
                 import static com.alibaba.cloud.ai.graph.action.AsyncEdgeAction.edge_async;
                 import static com.alibaba.cloud.ai.graph.action.AsyncNodeAction.node_async;
-                                
+                
                 /**
                  * auth: dahua
                  * time: {7}
                  */
                 @Component
                 public class {8}Graph extends AbstractGraph {
-                                
+                
                     @Autowired
                     private {9}Dispatcher {10}Dispatcher;
-                                
+                
                     @Autowired
                     private LlmNode llmNode;
-                                
+                
                     @Autowired
                     private StreamLlmNode streamLlmNode;
-                                
+                
                     @Autowired
                     private HumanNode humanNode;
-                                
+                
                     @Autowired
                     private ToolNode toolNode;
-                                
+                
                     @Override
                     public Map<Object, StateGraph> buildGraph(KeyStrategyFactory keyStrategyFactory) throws MpdaGraphException {
                         try {
@@ -260,7 +260,7 @@ public class CodeBuilder {
                                     .addNode("streamLlmNode", node_async(streamLlmNode))
                                     .addNode("human", node_async(humanNode))
                                     .addNode("tool", node_async(toolNode))
-                                
+                
                                     .addEdge(StateGraph.START, "llm")
                                     .addConditionalEdges("llm", edge_async({11}Dispatcher),
                                             Map.of("go_human", "human", "go_tool", "tool"))
@@ -272,7 +272,7 @@ public class CodeBuilder {
                             throw new MpdaGraphException(e);
                         }
                     }
-                                
+                
                     @Override
                     public SceneResponse execute(Map<String, Object> attribute) throws MpdaRuntimeException {
                         try {
@@ -281,7 +281,7 @@ public class CodeBuilder {
                             throw new MpdaRuntimeException(e);
                         }
                     }
-                                
+                
                     @Override
                     public Flux<SceneResponse> executeAsync(Map<String, Object> attribute) throws MpdaRuntimeException {
                         try {
@@ -291,7 +291,7 @@ public class CodeBuilder {
                         }
                     }
                 }
-                                
+                
                 """;
         return replacePlaceholders(template, projectName, packageName, firstToLower(scene), projectName,
                 packageName, firstToLower(scene), scene, now, scene, scene, firstToLower(scene), firstToLower(scene));
@@ -302,25 +302,25 @@ public class CodeBuilder {
         String now = LocalDateTime.now().format(formatter);
         String template = """
                 package com.dahuaboke.mpda.{0}.scenes.{1}.{2}.edge;
-                                
-                                
+                
+                
                 import com.alibaba.cloud.ai.graph.OverAllState;
                 import com.alibaba.cloud.ai.graph.action.EdgeAction;
                 import org.springframework.stereotype.Component;
-                                
+                
                 /**
                  * auth: dahua
                  * time: {3}
                  */
                 @Component
                 public class {4}Dispatcher implements EdgeAction {
-                                
+                
                     @Override
                     public String apply(OverAllState state) throws Exception {
                         return "";
                     }
                 }
-                                
+                
                 """;
         return replacePlaceholders(template, projectName, packageName, firstToLower(scene), now, scene);
     }

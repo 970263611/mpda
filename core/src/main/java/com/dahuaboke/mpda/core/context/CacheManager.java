@@ -26,12 +26,6 @@ import java.util.*;
 @Component
 public class CacheManager implements BeanPostProcessor {
 
-    @Autowired
-    private ApplicationContext applicationContext;
-    /**
-     * scene
-     */
-    private SceneWrapper rootWrapper;
     private final Map<String, SceneWrapper> sceneWrappers = new HashMap<>();
     private final Map<String, SceneWrapper> sceneNameWrappers = new HashMap<>();
     private final List<Scene> scenes = new ArrayList<>();
@@ -43,6 +37,12 @@ public class CacheManager implements BeanPostProcessor {
      * trace
      */
     private final Map<String, LimitedListWrapper<TraceMessage>> traces = new LinkedHashMap();
+    @Autowired
+    private ApplicationContext applicationContext;
+    /**
+     * scene
+     */
+    private SceneWrapper rootWrapper;
     /**
      * thread local
      */
