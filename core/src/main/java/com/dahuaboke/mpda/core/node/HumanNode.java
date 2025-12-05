@@ -25,10 +25,10 @@ public class HumanNode implements NodeAction {
     public Map<String, Object> apply(OverAllState state) throws Exception {
         LlmResponse llmResponse = state.value(Constants.RESULT, LlmResponse.class).get();
         ChatResponse chatResponse = llmResponse.chatResponse();
-        return Map.of(Constants.RESULT, buildResponse(Constants.RESULT, chatResponse.getResult().getOutput().getText(), state));
+        return Map.of(Constants.RESULT, buildResponse(chatResponse.getResult().getOutput().getText(), state));
     }
 
-    private Flux<ChatResponse> buildResponse(String key, String content, OverAllState state) {
+    private Flux<ChatResponse> buildResponse(String content, OverAllState state) {
         String conversationId = state.value(Constants.CONVERSATION_ID, String.class).get();
         String sceneId = state.value(Constants.SCENE_ID, String.class).get();
         ChatResponse chatResponse = new ChatResponse(List.of(new Generation(new AssistantMessageWrapper(conversationId, sceneId, content))));
