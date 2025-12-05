@@ -19,23 +19,21 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.*;
 import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @AutoConfiguration
 @Import(RagConfiguration.class)
-@ComponentScan("com.dahuaboke.mpda.core")
+@ComponentScan(basePackages = "com.dahuaboke.mpda.core")
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 public class CoreAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public ChatClientManager chatClientManager(ChatModel chatModel, SystemAgentPrompt commonPrompt, MemoryManager memoryManager, ToolCallbackProvider tools) {
+    public ChatClientManager chatClientManager(ChatModel chatModel, SystemAgentPrompt commonPrompt,
+                                               MemoryManager memoryManager, ToolCallbackProvider tools) {
         return new ChatClientManager(chatModel, commonPrompt, memoryManager, tools);
     }
 
@@ -70,11 +68,12 @@ public class CoreAutoConfiguration {
         return objectMapper;
     }
 
-    @Bean
-    public WebClient.Builder openAiWebClientBuilder(ObjectMapper objectMapper) {
-        return WebClient.builder().codecs(configurer -> {
-            configurer.defaultCodecs().jackson2JsonEncoder(new Jackson2JsonEncoder(objectMapper));
-            configurer.defaultCodecs().jackson2JsonDecoder(new Jackson2JsonDecoder(objectMapper));
-        });
-    }
+//    @Bean
+//    @Primary
+//    public WebClient.Builder openAiWebClientBuilder(ObjectMapper objectMapper) {
+//        return WebClient.builder().codecs(configurer -> {
+//            configurer.defaultCodecs().jackson2JsonEncoder(new Jackson2JsonEncoder(objectMapper));
+//            configurer.defaultCodecs().jackson2JsonDecoder(new Jackson2JsonDecoder(objectMapper));
+//        });
+//    }
 }

@@ -1,11 +1,8 @@
 package com.dahuaboke.mpda.core.node;
 
 
-import com.alibaba.cloud.ai.graph.NodeOutput;
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.action.NodeAction;
-import com.alibaba.cloud.ai.graph.async.AsyncGenerator;
-import com.alibaba.cloud.ai.graph.streaming.StreamingChatGenerator;
 import com.dahuaboke.mpda.core.client.entity.LlmResponse;
 import com.dahuaboke.mpda.core.context.consts.Constants;
 import com.dahuaboke.mpda.core.memory.AssistantMessageWrapper;
@@ -16,7 +13,6 @@ import reactor.core.publisher.Flux;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * auth: dahua
@@ -32,16 +28,10 @@ public class HumanNode implements NodeAction {
         return Map.of(Constants.RESULT, buildResponse(Constants.RESULT, chatResponse.getResult().getOutput().getText(), state));
     }
 
-    private AsyncGenerator<? extends NodeOutput> buildResponse(String key, String content, OverAllState state) {
+    private Flux<ChatResponse> buildResponse(String key, String content, OverAllState state) {
         String conversationId = state.value(Constants.CONVERSATION_ID, String.class).get();
         String sceneId = state.value(Constants.SCENE_ID, String.class).get();
         ChatResponse chatResponse = new ChatResponse(List.of(new Generation(new AssistantMessageWrapper(conversationId, sceneId, content))));
-        Flux<ChatResponse> just = Flux.just(chatResponse);
-        return StreamingChatGenerator.builder()
-                .startingNode("humanNode")
-                .startingState(state)
-                .mapResult(
-                        response -> Map.of(key, Objects.requireNonNull(response.getResult().getOutput().getText())))
-                .build(just);
+        return Flux.just(chatResponse);
     }
 }

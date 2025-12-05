@@ -2,7 +2,6 @@ package com.dahuaboke.mpda.core.agent.graph;
 
 
 import com.alibaba.cloud.ai.graph.*;
-import com.alibaba.cloud.ai.graph.async.AsyncGenerator;
 import com.alibaba.cloud.ai.graph.exception.GraphRunnerException;
 import com.alibaba.cloud.ai.graph.exception.GraphStateException;
 import com.alibaba.cloud.ai.graph.state.strategy.ReplaceStrategy;
@@ -17,17 +16,16 @@ import com.dahuaboke.mpda.core.exception.MpdaGraphException;
 import com.dahuaboke.mpda.core.exception.MpdaIllegalArgumentException;
 import com.dahuaboke.mpda.core.exception.MpdaRuntimeException;
 import com.dahuaboke.mpda.core.memory.MemoryManager;
+import com.dahuaboke.mpda.core.serializer.CustomSpringAIJacksonStateSerializer;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Sinks;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 
 /**
  * auth: dahua
@@ -47,8 +45,16 @@ public abstract class AbstractGraph implements Graph {
         Map<Object, StateGraph> graphMap = buildGraph(keyStrategyFactory);
         graphMap.forEach((k, v) -> {
             try {
+                Class<? extends StateGraph> graphClass = v.getClass();
+                Field stateSerializer = graphClass.getDeclaredField("stateSerializer");
+                stateSerializer.setAccessible(true);
+                stateSerializer.set(v, new CustomSpringAIJacksonStateSerializer(OverAllState::new));
                 graphs.put(k, v.compile());
             } catch (GraphStateException e) {
+                throw new MpdaRuntimeException("Compiled graph failed.", e);
+            } catch (NoSuchFieldException e) {
+                throw new MpdaRuntimeException("Compiled graph failed.", e);
+            } catch (IllegalAccessException e) {
                 throw new MpdaRuntimeException("Compiled graph failed.", e);
             }
         });
@@ -74,28 +80,6 @@ public abstract class AbstractGraph implements Graph {
 
     abstract public Map<Object, StateGraph> buildGraph(KeyStrategyFactory keyStrategyFactory) throws MpdaGraphException;
 
-    private Flux<String> changeFlux(AsyncGenerator<NodeOutput> generator) {
-        Sinks.Many<String> sink = Sinks.many().multicast().onBackpressureBuffer();
-        CompletableFuture.runAsync(() -> generator.forEachAsync(output -> {
-            try {
-                if (output instanceof StreamingOutput streamingOutput) {
-                    sink.tryEmitNext(streamingOutput.chunk());
-                } else {
-                    OverAllState state = output.state();
-
-                }
-            } catch (Exception e) {
-                throw new CompletionException(e);
-            }
-        }).thenRun(() -> sink.tryEmitComplete()).exceptionally(ex -> {
-            sink.tryEmitError(ex);
-            return null;
-        }));
-        return sink.asFlux() // TODO
-                .doOnCancel(() -> System.out.println("Client disconnected from stream"))
-                .doOnError(e -> System.err.println("Error occurred during streaming: " + e));
-    }
-
     private CompiledGraph getGraph(Object key) {
         CompiledGraph compiledGraph = graphs.get(key);
         if (compiledGraph == null) {
@@ -120,33 +104,19 @@ public abstract class AbstractGraph implements Graph {
     }
 
     protected Flux<SceneResponse> streamResponse(Map<String, Object> attribute, String graphKey) throws GraphRunnerException {
-        AsyncGenerator<NodeOutput> generator = getGraph(graphKey).stream(attribute,
-                RunnableConfig.builder().threadId(cacheManager.getContext().getSceneId()).build());
-        Sinks.Many<SceneResponse> sink = Sinks.many().multicast().onBackpressureBuffer();
-        CompletableFuture.runAsync(() -> generator.forEachAsync(output -> {
-            try {
-                if (output instanceof StreamingOutput streamingOutput) {
-                    sink.tryEmitNext(new SceneResponse(streamingOutput.chunk(), null));
-                } else {
-                    OverAllState overAllState = output.state();
-                    List<Object> toolExtend = overAllState.value(Constants.EXTEND, List.class).orElse(null);
-                    sink.tryEmitNext(new SceneResponse("", buildExtend(toolExtend)));
-                }
-            } catch (Exception e) {
-                throw new CompletionException(e);
-            }
-        }).thenRun(() -> sink.tryEmitComplete()).exceptionally(ex -> {
-            sink.tryEmitError(ex);
-            return null;
-        }));
-        return sink.asFlux() // TODO
-                .doOnCancel(() -> System.out.println("Client disconnected from stream"))
-                .doOnError(e -> System.err.println("Error occurred during streaming: " + e));
+        return getGraph(graphKey).stream(attribute)
+                .map(output -> {
+                    if (output instanceof StreamingOutput<?> streamingOutput) {
+                        return new SceneResponse(streamingOutput.chunk(), null);
+                    } else {
+                        OverAllState overAllState = output.state();
+                        List<Object> toolExtend = overAllState.value(Constants.EXTEND, List.class).orElse(null);
+                        return new SceneResponse("", buildExtend(toolExtend));
+                    }
+                });
     }
 
     public SceneExtend buildExtend(List<Object> toolExtend) {
         return new SceneExtend(toolExtend);
     }
-
-    ;
 }

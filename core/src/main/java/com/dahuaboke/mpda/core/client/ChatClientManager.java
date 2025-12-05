@@ -1,13 +1,8 @@
 package com.dahuaboke.mpda.core.client;
 
 
-import com.alibaba.cloud.ai.graph.NodeOutput;
-import com.alibaba.cloud.ai.graph.OverAllState;
-import com.alibaba.cloud.ai.graph.async.AsyncGenerator;
-import com.alibaba.cloud.ai.graph.streaming.StreamingChatGenerator;
 import com.dahuaboke.mpda.core.agent.prompt.SystemAgentPrompt;
 import com.dahuaboke.mpda.core.client.entity.LlmResponse;
-import com.dahuaboke.mpda.core.client.entity.StreamLlmResponse;
 import com.dahuaboke.mpda.core.memory.MemoryManager;
 import com.dahuaboke.mpda.core.memory.ToolResponseMessageWrapper;
 import com.dahuaboke.mpda.core.memory.UserMessageWrapper;
@@ -22,7 +17,9 @@ import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import reactor.core.publisher.Flux;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * auth: dahua
@@ -53,18 +50,9 @@ public class ChatClientManager {
         return new LlmResponse(chatResponse);
     }
 
-    public StreamLlmResponse stream(String conversationId, String sceneId, String prompt, Object query, String key
-            , OverAllState state, String nodeName, List<String> sceneMerge, Boolean isToolQuery, Set<Class<? extends Message>> memoryExclude) {
+    public Flux<ChatResponse> stream(String conversationId, String sceneId, String prompt, Object query, List<String> sceneMerge, Boolean isToolQuery, Set<Class<? extends Message>> memoryExclude) {
         ChatClient.ChatClientRequestSpec spec = buildChatClientRequestSpec(conversationId, sceneId, prompt, query, null, sceneMerge, isToolQuery, memoryExclude);
-        Flux<ChatResponse> chatResponseFlux = spec.stream().chatResponse();
-
-        AsyncGenerator<? extends NodeOutput> output = StreamingChatGenerator.builder()
-                .startingNode(nodeName)
-                .startingState(state)
-                .mapResult(response -> Map.of(key, Objects.requireNonNull(response.getResult().getOutput().getText())))
-                .build(chatResponseFlux);
-
-        return new StreamLlmResponse(output);
+        return spec.stream().chatResponse();
     }
 
     private ChatClient.ChatClientRequestSpec buildChatClientRequestSpec(String conversationId, String sceneId, String prompt
@@ -81,14 +69,14 @@ public class ChatClientManager {
             message = UserMessageWrapper.builder().text((String) query).conversationId(conversationId).sceneId(sceneId).build();
         }
         List<Message> finalMessages = new ArrayList<>(messages);
-        if(!messages.isEmpty()){
+        if (!messages.isEmpty()) {
             Message lastMessage = messages.get(messages.size() - 1);
             boolean isUserMessage = lastMessage instanceof UserMessageWrapper;
             boolean shouldAdd = isUserMessage ? !lastMessage.getText().equals(query) : lastMessage != message;
-            if(shouldAdd){
+            if (shouldAdd) {
                 finalMessages.add(message);
             }
-        }else {
+        } else {
             finalMessages.add(message);
         }
         finalMessages.add(new UserMessage(prompt));

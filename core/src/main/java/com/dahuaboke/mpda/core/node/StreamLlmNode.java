@@ -33,7 +33,7 @@ public class StreamLlmNode implements NodeAction {
         List<String> sceneMerge = state.value(Constants.SCENE_MERGE, List.class).orElse(List.of());
         Boolean isToolQuery = state.value(Constants.IS_TOOL_QUERY, Boolean.class).orElse(false);
         Set<Class<? extends Message>> memoryExclude = state.value(Constants.MEMORY_EXCLUDE, Set.class).get();
-        return Map.of(key, chatClientManager.stream(conversationId, sceneId, prompt, query, key, state, "streamLlmNode", sceneMerge, isToolQuery, memoryExclude)
+        return Map.of(key, chatClientManager.stream(conversationId, sceneId, prompt, query, sceneMerge, isToolQuery, memoryExclude)
                 , Constants.IS_TOOL_QUERY, false);
     }
 }

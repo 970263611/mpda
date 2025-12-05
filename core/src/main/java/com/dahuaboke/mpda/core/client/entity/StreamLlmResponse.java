@@ -1,16 +1,12 @@
 package com.dahuaboke.mpda.core.client.entity;
 
 
-import com.alibaba.cloud.ai.graph.async.AsyncGenerator;
+import org.springframework.ai.chat.model.ChatResponse;
+import reactor.core.publisher.Flux;
 
 /**
  * auth: dahua
  * time: 2025/8/21 10:37
  */
-public record StreamLlmResponse(AsyncGenerator response) implements AsyncGenerator {
-
-    @Override
-    public Data next() {
-        return response.next();
-    }
+public record StreamLlmResponse(Flux<ChatResponse> response) {
 }

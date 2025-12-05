@@ -3,7 +3,6 @@ package com.dahuaboke.mpda.core.memory;
 import com.dahuaboke.mpda.core.agent.scene.Scene;
 import com.dahuaboke.mpda.core.context.CacheManager;
 import com.dahuaboke.mpda.core.context.consts.Constants;
-import org.apache.commons.lang3.ArrayUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -37,7 +36,7 @@ public class MemoryMergeAspect {
         Method method = signature.getMethod();
         MemoryMerge memoryMerge = method.getAnnotation(MemoryMerge.class);
         Class<? extends Scene>[] value = memoryMerge.value();
-        if (!ArrayUtils.isEmpty(value)) {
+        if (value != null && value.length > 0) {
             List<String> sceneIds = Arrays.stream(value).map(clz -> cacheManager.getSceneIdBySceneClass(clz)).toList();
             cacheManager.getAttribute().put(Constants.SCENE_MERGE, sceneIds);
         }
