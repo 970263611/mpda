@@ -11,6 +11,8 @@ import com.dahuaboke.mpda.core.exception.MpdaGraphException;
 import com.dahuaboke.mpda.core.exception.MpdaRuntimeException;
 import com.dahuaboke.mpda.core.memory.AssistantMessageWrapper;
 import com.dahuaboke.mpda.core.memory.UserMessageWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.messages.Message;
 import reactor.core.publisher.Flux;
 
@@ -24,6 +26,7 @@ import java.util.Set;
  */
 public abstract class AbstractChain implements Chain {
 
+    private static final Logger logger = LoggerFactory.getLogger(AbstractChain.class);
     protected final Graph graph;
     protected final AgentPrompt agentPrompt;
     protected final CacheManager cacheManager;
@@ -73,7 +76,7 @@ public abstract class AbstractChain implements Chain {
         StringBuilder replyMessage = new StringBuilder();
         reply.subscribe(replyTemp -> replyMessage.append(replyTemp.output())
                 , error -> {
-                    // TODO
+                    logger.error("Add memory exception", error);
                 }
                 , () -> graph.addMemory(conversationId, sceneId, new AssistantMessageWrapper(context.getConversationId(), context.getSceneId(), replyMessage.toString())));
         return reply;

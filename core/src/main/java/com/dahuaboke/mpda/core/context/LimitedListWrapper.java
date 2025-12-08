@@ -1,13 +1,16 @@
 package com.dahuaboke.mpda.core.context;
 
-import com.dahuaboke.mpda.core.event.*;
+import com.dahuaboke.mpda.core.event.Event;
+import com.dahuaboke.mpda.core.event.EventPublisher;
+import com.dahuaboke.mpda.core.event.MessageChangeEvent;
+import com.dahuaboke.mpda.core.event.TraceChangeEvent;
 import com.dahuaboke.mpda.core.exception.MpdaIllegalArgumentException;
 import com.dahuaboke.mpda.core.memory.MessageWrapper;
 import com.dahuaboke.mpda.core.trace.TraceMessage;
 import com.dahuaboke.mpda.core.utils.SpringUtil;
 
-import static com.dahuaboke.mpda.core.event.ChangeEvent.Type.ADDED;
-import static com.dahuaboke.mpda.core.event.ChangeEvent.Type.REMOVED;
+import static com.dahuaboke.mpda.core.event.Event.Type.ADDED;
+import static com.dahuaboke.mpda.core.event.Event.Type.REMOVED;
 
 /**
  * auth: dahua
@@ -36,7 +39,7 @@ public class LimitedListWrapper<L> extends LimitedList<L> {
         return null;
     }
 
-    private void publishEvent(L l, ChangeEvent.Type changeEventType) {
+    private void publishEvent(L l, Event.Type changeEventType) {
         EventPublisher publisher = SpringUtil.getBean(EventPublisher.class);
         Event event;
         if (l instanceof TraceMessage traceMessage) {

@@ -20,7 +20,7 @@ public abstract class AbstractFindSceneStrategy implements FindSceneStrategy {
     protected CacheManager cacheManager;
     @Autowired
     protected UnknownWrapper unknownWrapper;
-    @Value("${mpda.scene.retry:3}")
+    @Value("${mpda.scene.retry:1}")
     protected int sceneRetry;
     protected volatile boolean isInit = false;
 

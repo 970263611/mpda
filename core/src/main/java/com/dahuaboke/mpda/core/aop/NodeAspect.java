@@ -4,7 +4,7 @@ package com.dahuaboke.mpda.core.aop;
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.action.NodeAction;
 import com.dahuaboke.mpda.core.context.consts.Constants;
-import com.dahuaboke.mpda.core.event.ChangeEvent;
+import com.dahuaboke.mpda.core.event.Event;
 import com.dahuaboke.mpda.core.event.EventPublisher;
 import com.dahuaboke.mpda.core.event.MessageChangeEvent;
 import com.dahuaboke.mpda.core.memory.UserMessageWrapper;
@@ -52,7 +52,7 @@ public class NodeAspect {
             conversationId = "unknow";
             String query = state.value(Constants.QUERY, String.class).orElse("");
             UserMessageWrapper userMessageWrapper = new UserMessageWrapper(conversationId, "", query);
-            eventPublisher.publish(new MessageChangeEvent(userMessageWrapper, ChangeEvent.Type.ADDED));
+            eventPublisher.publish(new MessageChangeEvent(userMessageWrapper, Event.Type.ADDED));
         } else {
             conversationId = value.get();
         }
@@ -75,7 +75,7 @@ public class NodeAspect {
             conversationId = "unknow";
             String query = state.value(Constants.QUERY, String.class).orElse("");
             UserMessageWrapper userMessageWrapper = new UserMessageWrapper(conversationId, "", query);
-            eventPublisher.publish(new MessageChangeEvent(userMessageWrapper, ChangeEvent.Type.ADDED));
+            eventPublisher.publish(new MessageChangeEvent(userMessageWrapper, Event.Type.ADDED));
         } else {
             conversationId = value.get();
         }
@@ -98,7 +98,7 @@ public class NodeAspect {
             conversationId = "unknow";
             String query = state.value(Constants.QUERY, String.class).orElse("");
             UserMessageWrapper userMessageWrapper = new UserMessageWrapper(conversationId, "", query);
-            eventPublisher.publish(new MessageChangeEvent(userMessageWrapper, ChangeEvent.Type.ADDED));
+            eventPublisher.publish(new MessageChangeEvent(userMessageWrapper, Event.Type.ADDED));
         } else {
             conversationId = value.get();
         }

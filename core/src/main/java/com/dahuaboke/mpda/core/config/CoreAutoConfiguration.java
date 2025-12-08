@@ -8,6 +8,7 @@ import com.dahuaboke.mpda.core.agent.scene.unknown.DefaultUnknownWrapper;
 import com.dahuaboke.mpda.core.agent.scene.unknown.UnknownWrapper;
 import com.dahuaboke.mpda.core.client.ChatClientManager;
 import com.dahuaboke.mpda.core.client.RerankerClientManager;
+import com.dahuaboke.mpda.core.event.EventPublisher;
 import com.dahuaboke.mpda.core.exception.MpdaIllegalArgumentException;
 import com.dahuaboke.mpda.core.memory.MemoryManager;
 import com.dahuaboke.mpda.core.rag.config.RagConfiguration;
@@ -33,8 +34,8 @@ public class CoreAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public ChatClientManager chatClientManager(ChatModel chatModel, SystemAgentPrompt commonPrompt,
-                                               MemoryManager memoryManager, ToolCallbackProvider tools) {
-        return new ChatClientManager(chatModel, commonPrompt, memoryManager, tools);
+                                               MemoryManager memoryManager, ToolCallbackProvider tools, EventPublisher eventPublisher) {
+        return new ChatClientManager(chatModel, commonPrompt, memoryManager, tools, eventPublisher);
     }
 
     @Bean

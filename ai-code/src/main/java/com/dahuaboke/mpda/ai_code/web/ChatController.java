@@ -77,7 +77,7 @@ public class ChatController {
 
         StateGraph stateGraph = new StateGraph(keyStrategyFactory)
                 .addNode("streaming_node", AsyncNodeAction.node_async(state -> {
-                    return Map.of("a", Flux.interval(Duration.ofMillis(100)).map(l ->
+                    return Map.of("a", Flux.interval(Duration.ofMillis(100)).take(10).map(l ->
                             new ChatResponse(List.of(new Generation(new AssistantMessage(String.valueOf(l)))))));
                 }))
                 .addEdge(START, "streaming_node")

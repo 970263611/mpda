@@ -12,9 +12,12 @@ import com.dahuaboke.mpda.bot.scenes.product.marketRanking.MarketRankingScene;
 import com.dahuaboke.mpda.bot.scenes.product.recommendation.RecommendationScene;
 import com.dahuaboke.mpda.core.agent.graph.AbstractGraph;
 import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
+import com.dahuaboke.mpda.core.event.EventPublisher;
+import com.dahuaboke.mpda.core.event.MessageChangeEvent;
 import com.dahuaboke.mpda.core.exception.MpdaGraphException;
 import com.dahuaboke.mpda.core.exception.MpdaRuntimeException;
 import com.dahuaboke.mpda.core.memory.MemoryMerge;
+import com.dahuaboke.mpda.core.memory.MessageWrapper;
 import com.dahuaboke.mpda.core.node.LlmNode;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +27,7 @@ import reactor.core.publisher.Flux;
 import java.util.Map;
 
 import static com.alibaba.cloud.ai.graph.action.AsyncNodeAction.node_async;
+import static com.dahuaboke.mpda.core.event.Event.Type.ADDED;
 
 /**
  * auth: dahua
@@ -34,6 +38,8 @@ public class ResolutionGraph extends AbstractGraph {
 
     @Autowired
     private LlmNode llmNode;
+    @Autowired
+    private EventPublisher eventPublisher;
 
     public Map<Object, StateGraph> buildGraph(KeyStrategyFactory keyStrategyFactory) throws MpdaGraphException {
         try {
@@ -70,6 +76,9 @@ public class ResolutionGraph extends AbstractGraph {
 
     @Override
     public void addMemory(Message message) {
+        if (message instanceof MessageWrapper messageWrapper) {
+            eventPublisher.publish(new MessageChangeEvent(messageWrapper, ADDED));
+        }
     }
 
     @Override

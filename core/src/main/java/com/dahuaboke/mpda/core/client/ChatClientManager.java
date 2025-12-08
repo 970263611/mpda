@@ -3,7 +3,11 @@ package com.dahuaboke.mpda.core.client;
 
 import com.dahuaboke.mpda.core.agent.prompt.SystemAgentPrompt;
 import com.dahuaboke.mpda.core.client.entity.LlmResponse;
+import com.dahuaboke.mpda.core.event.Event;
+import com.dahuaboke.mpda.core.event.EventPublisher;
+import com.dahuaboke.mpda.core.event.MemoryAppendEvent;
 import com.dahuaboke.mpda.core.memory.MemoryManager;
+import com.dahuaboke.mpda.core.memory.MemoryWrapper;
 import com.dahuaboke.mpda.core.memory.ToolResponseMessageWrapper;
 import com.dahuaboke.mpda.core.memory.UserMessageWrapper;
 import org.apache.commons.collections4.CollectionUtils;
@@ -29,9 +33,11 @@ public class ChatClientManager {
 
     private final ChatClient chatClient;
     private final MemoryManager memoryManager;
+    private final EventPublisher eventPublisher;
 
-    public ChatClientManager(ChatModel chatModel, SystemAgentPrompt commonPrompt, MemoryManager memoryManager, ToolCallbackProvider tools) {
+    public ChatClientManager(ChatModel chatModel, SystemAgentPrompt commonPrompt, MemoryManager memoryManager, ToolCallbackProvider tools, EventPublisher eventPublisher) {
         this.memoryManager = memoryManager;
+        this.eventPublisher = eventPublisher;
         this.chatClient = ChatClient.builder(chatModel)
                 .defaultSystem(commonPrompt.system())
                 .defaultToolCallbacks(tools)
@@ -80,6 +86,7 @@ public class ChatClientManager {
             finalMessages.add(message);
         }
         finalMessages.add(new UserMessage(prompt));
+        eventPublisher.publish(new MemoryAppendEvent(new MemoryWrapper(conversationId, sceneId, finalMessages), Event.Type.ADDED));
         spec.messages(finalMessages);
         if (!CollectionUtils.isEmpty(tools)) {
             spec.toolCallbacks(tools);

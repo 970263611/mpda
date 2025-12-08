@@ -6,4 +6,8 @@ package com.dahuaboke.mpda.core.event;
  */
 public interface Event {
 
+    enum Type {
+        ADDED,
+        REMOVED,
+    }
 }

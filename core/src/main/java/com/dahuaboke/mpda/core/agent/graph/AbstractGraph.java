@@ -113,7 +113,7 @@ public abstract class AbstractGraph implements Graph {
                         List<Object> toolExtend = overAllState.value(Constants.EXTEND, List.class).orElse(null);
                         return new SceneResponse("", buildExtend(toolExtend));
                     }
-                });
+                }).share();
     }
 
     public SceneExtend buildExtend(List<Object> toolExtend) {
