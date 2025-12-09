@@ -56,12 +56,14 @@ public abstract class AbstractChain implements Chain {
     @Override
     public SceneResponse slide(CoreContext context) throws MpdaRuntimeException {
         prepare(context);
+        Long time = System.currentTimeMillis();
+        SceneResponse reply = executeGraph();
         graph.addMemory(UserMessageWrapper.builder()
                 .text(context.getQuery())
                 .conversationId(context.getConversationId())
                 .sceneId(context.getSceneId())
+                .time(time)
                 .build());
-        SceneResponse reply = executeGraph();
         graph.addMemory(new AssistantMessageWrapper(context.getConversationId(), context.getSceneId(), reply.output()));
         return reply;
     }
@@ -70,15 +72,17 @@ public abstract class AbstractChain implements Chain {
     public Flux<SceneResponse> slideAsync(CoreContext context) throws MpdaRuntimeException {
         String conversationId = context.getConversationId();
         String sceneId = context.getSceneId();
+        Long time = System.currentTimeMillis();
         prepare(context);
-        graph.addMemory(UserMessageWrapper.builder().text(context.getQuery()).conversationId(conversationId).sceneId(sceneId).build());
         Flux<SceneResponse> reply = executeGraphAsync();
         StringBuilder replyMessage = new StringBuilder();
         reply.subscribe(replyTemp -> replyMessage.append(replyTemp.output())
-                , error -> {
-                    logger.error("Add memory exception", error);
-                }
-                , () -> graph.addMemory(conversationId, sceneId, new AssistantMessageWrapper(context.getConversationId(), context.getSceneId(), replyMessage.toString())));
+                , error -> logger.error("Add memory exception", error)
+                , () -> {
+                    graph.addMemory(conversationId, sceneId,
+                            UserMessageWrapper.builder().text(context.getQuery()).conversationId(conversationId).sceneId(sceneId).time(time).build());
+                    graph.addMemory(conversationId, sceneId, new AssistantMessageWrapper(conversationId, sceneId, replyMessage.toString()));
+                });
         return reply;
     }
 

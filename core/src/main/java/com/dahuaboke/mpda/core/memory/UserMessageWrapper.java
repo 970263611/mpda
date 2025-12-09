@@ -9,10 +9,15 @@ import java.util.Map;
 public class UserMessageWrapper extends AbstractMessage implements MessageWrapper {
 
     public UserMessageWrapper(String conversationId, String sceneId, String content) {
+        this(conversationId, sceneId, content, null);
+    }
+
+    public UserMessageWrapper(String conversationId, String sceneId, String content, Long time) {
         super(MessageType.USER, content, Map.of());
+        time = time == null ? System.currentTimeMillis() : time;
         this.metadata.put("conversationId", conversationId);
         this.metadata.put("sceneId", sceneId);
-        this.metadata.put("time", System.currentTimeMillis());
+        this.metadata.put("time", time);
     }
 
     public static Builder builder() {
@@ -38,6 +43,7 @@ public class UserMessageWrapper extends AbstractMessage implements MessageWrappe
         private String content;
         private String conversationId;
         private String sceneId;
+        private Long time;
 
         public Builder text(String content) {
             this.content = content;
@@ -54,11 +60,16 @@ public class UserMessageWrapper extends AbstractMessage implements MessageWrappe
             return this;
         }
 
+        public Builder time(Long time) {
+            this.time = time;
+            return this;
+        }
+
         public UserMessageWrapper build() {
             Assert.notNull(content, "Content can not null");
             Assert.notNull(conversationId, "ConversationId can not null");
             Assert.notNull(sceneId, "SceneId can not null");
-            return new UserMessageWrapper(conversationId, sceneId, content);
+            return new UserMessageWrapper(conversationId, sceneId, content, time);
         }
     }
 }
