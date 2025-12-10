@@ -1,94 +1,87 @@
-package com.dahuaboke.mpda.bot.monitor;
+package com.dahuaboke.mpda.core.monitor.persistence;
+
 
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.serializer.plain_text.jackson.SpringAIJacksonStateSerializer;
-import com.dahuaboke.mpda.bot.monitor.entity.MonitorEventEntity;
-import com.dahuaboke.mpda.bot.monitor.mapper.BrMonitorMapper;
-import com.dahuaboke.mpda.core.event.*;
+import com.dahuaboke.mpda.core.event.Event;
+import com.dahuaboke.mpda.core.event.Listener;
+import com.dahuaboke.mpda.core.event.monitor.MemoryAppendEvent;
+import com.dahuaboke.mpda.core.event.monitor.MessageChangeEvent;
+import com.dahuaboke.mpda.core.event.monitor.MonitorEvent;
+import com.dahuaboke.mpda.core.event.monitor.TraceChangeEvent;
 import com.dahuaboke.mpda.core.memory.*;
 import com.dahuaboke.mpda.core.monitor.ConnectionEvent;
+import com.dahuaboke.mpda.core.monitor.entity.MonitorEventEntity;
 import com.dahuaboke.mpda.core.trace.TraceMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.ibatis.cursor.Cursor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.ToolResponseMessage;
 import org.springframework.ai.chat.messages.UserMessage;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
-@Service
-public class MonitorService implements Listener {
+/**
+ * auth: dahua
+ * time: 2025/12/10 10:27
+ */
+public class PersistenceManager implements Listener<MonitorEvent> {
 
-    private static final Logger logger = LoggerFactory.getLogger(MonitorService.class);
-    @Autowired
+    private static final Logger logger = LoggerFactory.getLogger(PersistenceManager.class);
     private ObjectMapper objectMapper;
-    @Autowired
-    private BrMonitorMapper brMonitorMapper;
+    private PersistenceHandler persistenceHandler;
+
+    public PersistenceManager(ObjectMapper objectMapper, PersistenceHandler persistenceHandler) {
+        this.objectMapper = objectMapper;
+        this.persistenceHandler = persistenceHandler;
+    }
 
     @Override
-    public void onEvent(Event event) {
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+    public void onEvent(MonitorEvent event) {
         try {
+            Long time = System.currentTimeMillis();
             MonitorEventEntity monitorEventEntity = null;
             if (event instanceof MessageChangeEvent messageChangeEvent) {
-                LocalDateTime now = LocalDateTime.now();
                 MessageWrapper messageWrapper = messageChangeEvent.messageWrapper();
                 monitorEventEntity = new MonitorEventEntity(
                         messageWrapper.getConversationId(), objectMapper.writeValueAsString(messageWrapper)
-                        , messageChangeEvent.eventType().toString(), now.format(dateTimeFormatter));
+                        , messageChangeEvent.eventType(), time);
             }
             if (event instanceof TraceChangeEvent traceChangeEvent) {
-                LocalDateTime now = LocalDateTime.now();
                 TraceMessage traceMessage = traceChangeEvent.traceMessage();
                 monitorEventEntity = new MonitorEventEntity(
                         traceMessage.getConversationId(), objectMapper.writeValueAsString(traceMessage)
-                        , traceChangeEvent.eventType().toString(), now.format(dateTimeFormatter));
+                        , traceChangeEvent.eventType(), time);
             }
             if (event instanceof MemoryAppendEvent memoryAppendEvent) {
-                LocalDateTime now = LocalDateTime.now();
                 MemoryWrapper memoryWrapper = memoryAppendEvent.memoryWrapper();
                 monitorEventEntity = new MonitorEventEntity(
                         memoryWrapper.getConversationId(), objectMapper.writeValueAsString(memoryWrapper)
-                        , memoryAppendEvent.eventType().toString(), now.format(dateTimeFormatter));
+                        , memoryAppendEvent.eventType(), time);
             }
             if (monitorEventEntity != null) {
-                brMonitorMapper.insert(monitorEventEntity);
+                persistenceHandler.save(monitorEventEntity);
             }
         } catch (JsonProcessingException e) {
         }
     }
 
-    @Transactional
-    public Flux<Event> getMonitorEvent(String begin, String end) {
+    public Flux<Event> monitorStream(Long begin, Long end) {
         Sinks.Many<Event> sink = Sinks.many().unicast().onBackpressureBuffer();
         try {
-            Cursor<MonitorEventEntity> monitorEventEntities = brMonitorMapper.streamMonitorEvent(begin, end);
-            monitorEventEntities.forEach(monitorEventEntity -> {
+            Flux<MonitorEventEntity> stream = persistenceHandler.stream(begin, end);
+            stream.doOnNext(monitorEventEntity -> {
                 try {
                     Event event;
-                    Event.Type type;
-                    String eventTypeName = monitorEventEntity.getEventTypeName();
-                    if ("ADDED".equals(eventTypeName)) {
-                        type = Event.Type.ADDED;
-                    } else if ("REMOVED".equals(eventTypeName)) {
-                        type = Event.Type.REMOVED;
-                    } else {
-                        type = null;
-                    }
+                    Event.Type type = monitorEventEntity.getEventType();
                     ObjectMapper newObjectMapper = new SpringAIJacksonStateSerializer(OverAllState::new).objectMapper();
-                    Map eventMap = objectMapper.readValue(monitorEventEntity.getBusiData(), Map.class);
+                    Map eventMap = objectMapper.readValue(monitorEventEntity.getData(), Map.class);
                     if (eventMap.containsKey("messages")) {
                         var memoryWrapper = objectMapper.convertValue(eventMap, MemoryWrapper.class);
                         event = new MemoryAppendEvent(memoryWrapper, type);

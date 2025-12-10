@@ -5,7 +5,7 @@ import com.dahuaboke.mpda.core.agent.prompt.SystemAgentPrompt;
 import com.dahuaboke.mpda.core.client.entity.LlmResponse;
 import com.dahuaboke.mpda.core.event.Event;
 import com.dahuaboke.mpda.core.event.EventPublisher;
-import com.dahuaboke.mpda.core.event.MemoryAppendEvent;
+import com.dahuaboke.mpda.core.event.monitor.MemoryAppendEvent;
 import com.dahuaboke.mpda.core.memory.MemoryManager;
 import com.dahuaboke.mpda.core.memory.MemoryWrapper;
 import com.dahuaboke.mpda.core.memory.ToolResponseMessageWrapper;

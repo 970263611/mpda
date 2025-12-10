@@ -13,7 +13,7 @@ import com.dahuaboke.mpda.bot.scenes.product.recommendation.RecommendationScene;
 import com.dahuaboke.mpda.core.agent.graph.AbstractGraph;
 import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
 import com.dahuaboke.mpda.core.event.EventPublisher;
-import com.dahuaboke.mpda.core.event.MessageChangeEvent;
+import com.dahuaboke.mpda.core.event.monitor.MessageChangeEvent;
 import com.dahuaboke.mpda.core.exception.MpdaGraphException;
 import com.dahuaboke.mpda.core.exception.MpdaRuntimeException;
 import com.dahuaboke.mpda.core.memory.MemoryMerge;

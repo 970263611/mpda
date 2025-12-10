@@ -6,7 +6,7 @@ import com.alibaba.cloud.ai.graph.action.NodeAction;
 import com.dahuaboke.mpda.core.context.consts.Constants;
 import com.dahuaboke.mpda.core.event.Event;
 import com.dahuaboke.mpda.core.event.EventPublisher;
-import com.dahuaboke.mpda.core.event.MessageChangeEvent;
+import com.dahuaboke.mpda.core.event.monitor.MessageChangeEvent;
 import com.dahuaboke.mpda.core.memory.UserMessageWrapper;
 import com.dahuaboke.mpda.core.trace.TraceManager;
 import com.dahuaboke.mpda.core.trace.TraceMessage;

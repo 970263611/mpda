@@ -1,4 +1,4 @@
-package com.dahuaboke.mpda.bot.web;
+package com.dahuaboke.mpda.ai_code.web;
 
 
 import com.dahuaboke.mpda.core.event.Event;
@@ -15,7 +15,7 @@ import reactor.core.publisher.Flux;
  * auth: dahua
  * time: 2025/12/9 11:13
  */
-@RestController("botMonitorController")
+@RestController("aiCodeMonitorController")
 @CrossOrigin
 public class MonitorController {
 

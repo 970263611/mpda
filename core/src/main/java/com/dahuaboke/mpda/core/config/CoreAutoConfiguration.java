@@ -11,6 +11,8 @@ import com.dahuaboke.mpda.core.client.RerankerClientManager;
 import com.dahuaboke.mpda.core.event.EventPublisher;
 import com.dahuaboke.mpda.core.exception.MpdaIllegalArgumentException;
 import com.dahuaboke.mpda.core.memory.MemoryManager;
+import com.dahuaboke.mpda.core.monitor.persistence.PersistenceHandler;
+import com.dahuaboke.mpda.core.monitor.persistence.PersistenceManager;
 import com.dahuaboke.mpda.core.rag.config.RagConfiguration;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -77,4 +79,10 @@ public class CoreAutoConfiguration {
 //            configurer.defaultCodecs().jackson2JsonDecoder(new Jackson2JsonDecoder(objectMapper));
 //        });
 //    }
+
+    @Bean
+    @ConditionalOnProperty(value = "mpda.monitor.persistence.enabled", havingValue = "true")
+    public PersistenceManager persistenceManager(ObjectMapper objectMapper, PersistenceHandler persistenceHandler) {
+        return new PersistenceManager(objectMapper, persistenceHandler);
+    }
 }

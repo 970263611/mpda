@@ -17,4 +17,9 @@ mybatis-plus:
 #  configuration:
 #    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
+mpda:
+  monitor:
+    persistence:
+      enabled: true
+
 
