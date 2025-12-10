@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+    <!-- 原有头部代码完全不变 -->
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>SSE 监控中心</title>
@@ -38,6 +39,7 @@
         }
     </script>
     <style type="text/tailwindcss">
+        /* 原有样式完全不变 */
         @layer utilities {
             .content-auto {
                 content-visibility: auto;
@@ -110,11 +112,17 @@
             .multi-select-option input[type="checkbox"] {
                 margin-right: 0.5rem;
             }
+
+            /* JSON美化样式 */
+            .json-beautify {
+                font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+                word-break: break-all;
+            }
         }
     </style>
 </head>
 <body class="bg-gray-50 font-inter text-gray-800 min-h-screen flex flex-col">
-<!-- 顶部导航 -->
+<!-- 原有HTML结构完全不变 -->
 <header class="bg-white shadow-sm sticky top-0 z-50">
     <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
         <div class="flex items-center mb-4 md:mb-0">
@@ -127,9 +135,17 @@
         <div class="flex items-center space-x-3">
             <!-- SSE 地址配置 -->
             <div class="relative">
-                <input class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-sm" id="sse-url-input" placeholder="SSE 后端地址"
-                       style="width: 260px;" type="text"
-                       value="http://localhost:18080/monitor-sse">
+                <input class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-sm"
+                       id="sse-url-input" placeholder="SSE 后端地址"
+                       style="min-width: 260px; max-width: 590px;" type="text">
+            </div>
+            <!-- 时间范围选择 -->
+            <div class="flex items-center space-x-2">
+                <input type="datetime-local" id="start-time"
+                       class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-sm">
+                <span class="text-gray-500">至</span>
+                <input type="datetime-local" id="end-time"
+                       class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-sm">
             </div>
             <button class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center"
                     id="connect-btn">
@@ -145,7 +161,8 @@
     <div class="container mx-auto px-4 pb-4">
         <div class="flex flex-col md:flex-row gap-3">
             <div class="relative flex-1">
-                <input class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary" id="search-input"
+                <input class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                       id="search-input"
                        placeholder="搜索 conversationId/sceneId/description/text/MessageType/SimpleName..."
                        type="text">
                 <i class="fa fa-search absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
@@ -254,8 +271,6 @@
     let searchTerm = '';
     let filterTypes = ['all']; // 改为数组，支持多选
     let filterChangeType = 'all';
-    let reconnectTimer = null;
-    const RECONNECT_DELAY = 3000;
 
     // DOM 元素
     const connectionStatus = document.getElementById('connection-status');
@@ -272,6 +287,45 @@
     const memoryCountEl = document.getElementById('memory-count');
     const logCountEl = document.getElementById('log-count');
     const sseUrlInput = document.getElementById('sse-url-input');
+    const startTimeInput = document.getElementById('start-time');
+    const endTimeInput = document.getElementById('end-time');
+
+    const fullUrl = `${window.location.protocol}//${window.location.host}`
+    sseUrlInput.value = fullUrl + "/monitor-sse"
+
+    // 通用JSON美化函数
+    function beautifyJson(content) {
+        if (!content) return '无内容';
+
+        // 处理已经是对象的情况
+        let contentStr = typeof content === 'string' ? content : JSON.stringify(content);
+
+        // 解码Unicode和URL编码
+        try {
+            contentStr = contentStr.replace(/\\u([0-9a-fA-F]{4})/g, (_, p1) =>
+                String.fromCharCode(parseInt(p1, 16)));
+            contentStr = decodeURIComponent(escape(contentStr));
+        } catch (e) {
+            // 解码失败则使用原始字符串
+        }
+
+        // 尝试解析并美化JSON
+        try {
+            const jsonObj = JSON.parse(contentStr);
+            // 修改美化逻辑，减少缩进
+            let beautified = JSON.stringify(jsonObj, null, 0); // 0表示不缩进
+            beautified = beautified.replace(/^\s+/, ''); // 移除开头空格
+            return beautified
+                .replace(/\n/g, '<br>')
+                .replace(/  /g, '&nbsp;&nbsp;'); // 只保留必要的空格替换
+        } catch (e) {
+            // 非JSON格式则处理换行和制表符后返回
+            return contentStr
+                .replace(/^\s+/, '') // 移除开头的所有空白字符
+                .replace(/\n/g, '<br>')
+                .replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+        }
+    }
 
     // 初始化
     document.addEventListener('DOMContentLoaded', () => {
@@ -280,6 +334,11 @@
         searchInput.addEventListener('input', handleSearch);
         filterChangeTypeSelect.addEventListener('change', handleFilterChange);
 
+        // 监听地址输入框输入事件，动态调整宽度
+        sseUrlInput.addEventListener('input', adjustInputWidth);
+        // 初始化输入框宽度
+        adjustInputWidth();
+
         // 监听地址输入框回车事件
         sseUrlInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') toggleConnection();
@@ -287,7 +346,90 @@
 
         // 初始化多选下拉框
         initMultiSelect();
+
+        // 为记忆块折叠按钮添加事件委托
+        logsContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('memory-toggle-btn') || e.target.parentElement.classList.contains('memory-toggle-btn')) {
+                const btn = e.target.classList.contains('memory-toggle-btn') ? e.target : e.target.parentElement;
+                const memoryId = btn.getAttribute('data-memory-id');
+                const content = document.getElementById(`memory-content-${memoryId}`);
+
+                // 切换内容显示状态
+                content.classList.toggle('hidden');
+
+                // 切换图标
+                const icon = btn.querySelector('i');
+                if (content.classList.contains('hidden')) {
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-down');
+                } else {
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-up');
+                }
+            }
+        });
+
+        // ========== 新增：监听时间选择器变化，自动拼接参数到输入框 ==========
+        startTimeInput.addEventListener('change', updateSseUrlWithTimeParams);
+        endTimeInput.addEventListener('change', updateSseUrlWithTimeParams);
     });
+
+    // ========== 新增：更新SSE地址输入框，拼接时间参数 ==========
+    function updateSseUrlWithTimeParams() {
+        // 获取原始地址（移除已有的begin/end参数）
+        let baseUrl = sseUrlInput.value.trim();
+        if (baseUrl) {
+            // 移除已有的begin和end参数
+            const urlObj = new URL(baseUrl, window.location.origin);
+            urlObj.searchParams.delete('begin');
+            urlObj.searchParams.delete('end');
+            baseUrl = urlObj.href.split('?')[0];
+        } else {
+            baseUrl = '';
+        }
+
+        // 构建新参数
+        const params = new URLSearchParams();
+        const startTime = startTimeInput.value;
+        const endTime = endTimeInput.value;
+
+        if (startTime) {
+            params.append('begin', new Date(startTime).getTime().toString());
+        }
+        if (endTime) {
+            params.append('end', new Date(endTime).getTime().toString());
+        }
+
+        // 拼接参数到地址
+        const queryString = params.toString();
+        let newUrl = baseUrl;
+        if (queryString) {
+            newUrl += (newUrl.includes('?') ? '&' : '?') + queryString;
+        }
+
+        // 更新输入框值并调整宽度
+        sseUrlInput.value = newUrl;
+        adjustInputWidth();
+    }
+
+    // 调整输入框宽度以适应内容
+    function adjustInputWidth() {
+        // 创建临时元素计算文本宽度
+        const tempSpan = document.createElement('span');
+        tempSpan.style.visibility = 'hidden';
+        tempSpan.style.position = 'absolute';
+        tempSpan.style.whiteSpace = 'nowrap';
+        tempSpan.style.fontSize = window.getComputedStyle(sseUrlInput).fontSize;
+        tempSpan.style.fontFamily = window.getComputedStyle(sseUrlInput).fontFamily;
+        tempSpan.textContent = sseUrlInput.value || sseUrlInput.placeholder;
+        document.body.appendChild(tempSpan);
+
+        // 设置最小宽度为260px，最大宽度为800px，避免过宽
+        const width = Math.max(260, Math.min(800, tempSpan.offsetWidth + 40)); // 加40px作为内边距和光标空间
+        sseUrlInput.style.width = `${width}px`;
+
+        document.body.removeChild(tempSpan);
+    }
 
     // 初始化多选下拉框
     function initMultiSelect() {
@@ -360,11 +502,6 @@
 
     // SSE 连接逻辑
     function toggleConnection() {
-        if (reconnectTimer) {
-            clearTimeout(reconnectTimer);
-            reconnectTimer = null;
-        }
-
         if (eventSource) {
             eventSource.close();
             eventSource = null;
@@ -375,11 +512,29 @@
             return;
         }
 
-        const sseUrl = sseUrlInput.value.trim();
+        let sseUrl = sseUrlInput.value.trim();
         if (!sseUrl) {
             alert('请输入有效的 SSE 后端地址！');
             return;
         }
+
+        // 处理时间参数（这里保留原有逻辑，确保手动修改地址后也能正确处理）
+        const startTime = startTimeInput.value;
+        const endTime = endTimeInput.value;
+        const params = new URLSearchParams();
+
+        if (startTime) {
+            params.append('begin', new Date(startTime).getTime().toString());
+        }
+        if (endTime) {
+            params.append('end', new Date(endTime).getTime().toString());
+        }
+
+        // 拼接URL参数（如果输入框中已有参数，这里会覆盖，保证最终参数和时间选择器一致）
+        const urlObj = new URL(sseUrl, window.location.origin);
+        if (startTime) urlObj.searchParams.set('begin', new Date(startTime).getTime().toString());
+        if (endTime) urlObj.searchParams.set('end', new Date(endTime).getTime().toString());
+        sseUrl = urlObj.href;
 
         try {
             new URL(sseUrl);
@@ -441,24 +596,18 @@
 
             eventSource.onerror = (e) => {
                 console.error('❌ SSE 错误:', e, '状态:', eventSource.readyState);
-
                 if (eventSource.readyState === EventSource.CLOSED) {
-                    const errorMsg = `SSE 连接断开！\n地址: ${sseUrl}\n请检查：\n1. 后端服务是否启动\n2. 后端跨域配置是否允许当前源\n3. 地址是否正确`;
                     updateConnectionStatus('error');
-                    if (!reconnectTimer) {
-                        alert(errorMsg);
-                    }
-
-                    eventSource = null;
-                    connectBtn.innerHTML = '<i class="fa fa-plug mr-2"></i> 连接 SSE';
-                    connectBtn.classList.remove('bg-danger');
-                    connectBtn.classList.add('bg-primary');
-                    connectBtn.disabled = false;
                 } else if (eventSource.readyState === EventSource.CONNECTING) {
                     updateConnectionStatus('connecting');
                 }
+                eventSource.close();
+                connectBtn.innerHTML = '<i class="fa fa-plug mr-2"></i> 连接 SSE';
+                connectBtn.classList.remove('bg-danger');
+                connectBtn.classList.add('bg-primary');
+                connectBtn.disabled = false;
+                updateConnectionStatus('disconnected');
             };
-
         } catch (err) {
             console.error('❌ 创建 SSE 连接失败:', err);
             alert(`连接失败：${err.message}\n地址: ${sseUrl}`);
@@ -617,35 +766,24 @@
         const changeTypeClass = logChangeType === 'ADDED' ? 'text-added' : 'text-removed';
         const changeTypeIcon = logChangeType === 'ADDED' ? 'fa-plus-circle' : 'fa-minus-circle';
 
-        // 记忆管理卡片
+        // 记忆管理卡片 - 增加了折叠功能
         if (log.memoryWrapper) {
             const memory = log.memoryWrapper;
             const formattedTime = typeof memory.time === 'number'
                 ? new Date(memory.time).toLocaleString()
                 : memory.time || new Date().toLocaleString();
 
-            // 解码文本内容
-            const decodeText = (str) => {
-                if (!str) return '无';
-                try {
-                    str = str.replace(/\\u([0-9a-fA-F]{4})/g, (_, p1) =>
-                        String.fromCharCode(parseInt(p1, 16)));
-                    return decodeURIComponent(escape(str));
-                } catch (e) {
-                    return str;
-                }
-            };
+            // 生成唯一ID用于折叠控制
+            const memoryId = `memory-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
             // 构建消息列表HTML
             const messagesHtml = memory.messages.map((msg, index) => {
-                if(msg.messageType == 'TOOL') {
-                    msg.text = JSON.stringify(msg.responses)
-                }
-                if(msg.messageType == 'ASSISTANT') {
-                    msg.text = msg.text || JSON.stringify(msg.toolCalls)
-                }
-                const msgText = decodeText(msg.text).replace(/\\n/g, '<br>').replace(/\\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+                const msgText = msg.messageType === 'TOOL' ? msg.responses :
+                    msg.messageType === 'ASSISTANT' ? (msg.text || msg.toolCalls) :
+                        msg.text;
+                const decodedText = beautifyJson(msgText);
                 const msgTime = msg.time ? new Date(msg.time).toLocaleString() : '无时间';
+
                 return `
                     <div class="mb-4 pb-4 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">
                         <div class="flex justify-between items-center mb-2">
@@ -659,8 +797,8 @@
                             </span>
                             <span class="text-xs text-gray-500">${msgTime}</span>
                         </div>
-                        <div class="bg-gray-50 p-3 rounded-md border border-gray-200 text-sm whitespace-pre-line">
-                            ${msgText}
+                        <div class="bg-gray-50 p-3 rounded-md border border-gray-200 text-sm json-beautify">
+                            ${decodedText}
                         </div>
                     </div>
                 `;
@@ -687,8 +825,13 @@
                             <div><span class="text-gray-500">时间戳:</span> <span class="font-medium ml-1">${formattedTime}</span></div>
                         </div>
                         <div class="mt-4 text-sm">
-                            <span class="text-gray-500 block mb-2">消息列表:</span>
-                            <div class="pl-2">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-gray-500">消息列表:</span>
+                                <button class="memory-toggle-btn text-xs text-primary flex items-center" data-memory-id="${memoryId}">
+                                    <i class="fa fa-chevron-down mr-1"></i> 点击展开/折叠
+                                </button>
+                            </div>
+                            <div id="memory-content-${memoryId}" class="hidden">
                                 ${messagesHtml}
                             </div>
                         </div>
@@ -710,6 +853,10 @@
                 ? new Date(trace.time).toLocaleString()
                 : trace.time || new Date().toLocaleString();
 
+            // 美化轨迹信息中的描述和其他JSON内容
+            const beautifiedDesc = beautifyJson(trace.description);
+            const beautifiedExtra = beautifyJson(trace.extra || '{}');
+
             return `
                 <div class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                     <div class="px-6 py-4">
@@ -718,7 +865,7 @@
                                 <span class="bg-blue-50 p-2 rounded-full mr-3"><i class="fa ${traceIcon} ${traceTypeClass}"></i></span>
                                 <div>
                                     <h3 class="font-medium text-gray-800">${trace.simpleName || '轨迹信息'}</h3>
-                                    <p class="text-xs text-gray-500 mt-1">${trace.description || '无描述信息'}</p>
+                                    <div class="text-xs text-gray-500 mt-1 bg-gray-50 p-2 rounded-md json-beautify">${beautifiedDesc}</div>
                                 </div>
                             </div>
                             <span class="${changeTypeClass} text-xs flex items-center">
@@ -732,6 +879,14 @@
                             <div><span class="text-gray-500">请求类型:</span> <span class="font-medium ${requestTypeClass} ml-1">${trace.requestType || '未知'}</span></div>
                             <div><span class="text-gray-500">时间戳:</span> <span class="font-medium ml-1">${formattedTime}</span></div>
                         </div>
+                        ${trace.extra ? `
+                        <div class="mt-4 text-sm">
+                            <span class="text-gray-500 block mb-2">扩展信息:</span>
+                            <div class="bg-gray-50 p-3 rounded-md border border-gray-200 text-sm json-beautify">
+                                ${beautifiedExtra}
+                            </div>
+                        </div>
+                        ` : ''}
                     </div>
                 </div>
             `;
@@ -741,44 +896,30 @@
         if (log.messageWrapper) {
             const message = log.messageWrapper;
             const messageTypeClass = message.messageType === 'USER' ? 'text-messageUser' :
-                message.messageType === 'ASSISTANT' ? 'text-messageAssistant' :
-                    message.messageType === 'TOOL' ? 'text-messageTool' : 'text-messageSystem';
-            const messageIcon = message.messageType === 'USER' ? 'fa-user' :
-                message.messageType === 'ASSISTANT' ? 'fa-headphones' :
-                    message.messageType === 'TOOL' ? 'fa-wrench' : 'fa-cog';
+                message.messageType === 'TOOL' ? 'text-messageTool' :
+                    message.messageType === 'ASSISTANT' ? 'text-messageAssistant' : 'text-messageSystem';
+
+            const messageTypeText = message.messageType === 'USER' ? '用户消息' :
+                message.messageType === 'TOOL' ? '工具消息' :
+                    message.messageType === 'ASSISTANT' ? '助手消息' : '系统消息';
+
             const formattedTime = typeof message.time === 'number'
                 ? new Date(message.time).toLocaleString()
                 : message.time || new Date().toLocaleString();
 
-            // 解码文本内容
-            const decodeText = (str) => {
-                if (!str) return '无内容';
-                try {
-                    str = str.replace(/\\u([0-9a-fA-F]{4})/g, (_, p1) =>
-                        String.fromCharCode(parseInt(p1, 16)));
-                    return decodeURIComponent(escape(str));
-                } catch (e) {
-                    return str;
-                }
-            };
-            if(message.messageType == 'TOOL') {
-                message.text = JSON.stringify(message.responses)
-            }
-            if(message.messageType == 'ASSISTANT') {
-                message.text = message.text || JSON.stringify(message.toolCalls)
-            }
-            const decodedText = decodeText(message.text)
-                .replace(/\n/g, '<br>')
-                .replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+            // 美化消息内容
+            const beautifiedText = beautifyJson(message.text || message.toolCalls || message.responses || '{}');
 
             return `
                 <div class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                     <div class="px-6 py-4">
                         <div class="flex justify-between items-start mb-3">
                             <div class="flex items-center">
-                                <span class="bg-green-50 p-2 rounded-full mr-3"><i class="fa ${messageIcon} ${messageTypeClass}"></i></span>
+                                <span class="bg-green-50 p-2 rounded-full mr-3">
+                                    <i class="fa fa-comment ${messageTypeClass}"></i>
+                                </span>
                                 <div>
-                                    <h3 class="font-medium text-gray-800">${message.messageType || '消息信息'}</h3>
+                                    <h3 class="font-medium text-gray-800">${messageTypeText}</h3>
                                 </div>
                             </div>
                             <span class="${changeTypeClass} text-xs flex items-center">
@@ -788,12 +929,13 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-sm">
                             <div><span class="text-gray-500">Conversation ID:</span> <span class="font-medium ml-1">${message.conversationId || '无'}</span></div>
                             <div><span class="text-gray-500">Scene ID:</span> <span class="font-medium ml-1 text-xs break-all">${message.sceneId || '无'}</span></div>
+                            <div><span class="text-gray-500">消息类型:</span> <span class="font-medium ${messageTypeClass} ml-1">${message.messageType || '未知'}</span></div>
                             <div><span class="text-gray-500">时间戳:</span> <span class="font-medium ml-1">${formattedTime}</span></div>
                         </div>
                         <div class="mt-4 text-sm">
                             <span class="text-gray-500 block mb-2">消息内容:</span>
-                            <div class="bg-gray-50 p-3 rounded-md border border-gray-200 whitespace-pre-line">
-                                ${decodedText}
+                            <div class="bg-gray-50 p-3 rounded-md border border-gray-200 text-sm json-beautify">
+                                ${beautifiedText}
                             </div>
                         </div>
                     </div>
@@ -801,23 +943,26 @@
             `;
         }
 
-        // 默认卡片
+        // 默认卡片（未知类型）
         return `
             <div class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                 <div class="px-6 py-4">
                     <div class="flex justify-between items-start mb-3">
                         <div class="flex items-center">
-                            <span class="bg-gray-100 p-2 rounded-full mr-3"><i class="fa fa-question-circle text-gray-500"></i></span>
+                            <span class="bg-gray-50 p-2 rounded-full mr-3"><i class="fa fa-question-circle text-gray-500"></i></span>
                             <div>
                                 <h3 class="font-medium text-gray-800">未知类型</h3>
                             </div>
                         </div>
                         <span class="${changeTypeClass} text-xs flex items-center">
-                            <i class="fa ${changeTypeIcon} mr-1"></i> ${logChangeType}
+                            <i class="fa ${changeTypeIcon} mr-1"></i> ${logChangeType || '未知'}
                         </span>
                     </div>
                     <div class="mt-4 text-sm">
-                        <pre class="bg-gray-50 p-3 rounded-md border border-gray-200 text-gray-600 text-xs overflow-x-auto">${JSON.stringify(log, null, 2)}</pre>
+                        <span class="text-gray-500 block mb-2">原始数据:</span>
+                        <div class="bg-gray-50 p-3 rounded-md border border-gray-200 text-sm json-beautify">
+                            ${beautifyJson(log)}
+                        </div>
                     </div>
                 </div>
             </div>

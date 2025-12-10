@@ -41,4 +41,20 @@ public class MemoryWrapper {
     public Long getTime() {
         return time;
     }
+
+    public void setConversationId(String conversationId) {
+        this.conversationId = conversationId;
+    }
+
+    public void setSceneId(String sceneId) {
+        this.sceneId = sceneId;
+    }
+
+    public void setMessages(List<Message> messages) {
+        this.messages = messages;
+    }
+
+    public void setTime(Long time) {
+        this.time = time;
+    }
 }

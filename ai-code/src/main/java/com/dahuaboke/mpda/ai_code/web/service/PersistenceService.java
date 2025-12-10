@@ -5,7 +5,6 @@ import com.dahuaboke.mpda.core.monitor.entity.MonitorEventEntity;
 import com.dahuaboke.mpda.core.monitor.persistence.PersistenceHandler;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Sinks;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,15 +25,10 @@ public class PersistenceService implements PersistenceHandler {
 
     @Override
     public Flux<MonitorEventEntity> stream(Long beginTime, Long endTime) {
-        Sinks.Many<MonitorEventEntity> sink = Sinks.many().unicast().onBackpressureBuffer();
-        monitorEventEntities.stream()
+        return Flux.fromIterable(monitorEventEntities)
                 .filter(entity -> {
                     Long createTime = entity.getCreateTime();
                     return createTime >= beginTime && createTime <= endTime;
-                })
-                .forEach(entity -> {
-                    sink.tryEmitNext(entity);
                 });
-        return sink.asFlux();
     }
 }
