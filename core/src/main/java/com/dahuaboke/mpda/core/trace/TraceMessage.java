@@ -9,6 +9,9 @@ public class TraceMessage {
     private TraceType traceType;
     private long time;
 
+    public TraceMessage() {
+    }
+
     public TraceMessage(String conversationId, String simpleName, String description, RequestType requestType, TraceType traceType) {
         this.conversationId = conversationId;
         this.simpleName = simpleName;

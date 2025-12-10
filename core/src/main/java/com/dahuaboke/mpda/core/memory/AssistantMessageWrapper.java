@@ -36,6 +36,13 @@ public class AssistantMessageWrapper extends AssistantMessage implements Message
         this.metadata.put("time", System.currentTimeMillis());
     }
 
+    public AssistantMessageWrapper(String conversationId, String sceneId, String content, Map<String, Object> properties, List<ToolCall> toolCalls, List<Media> media, Long time) {
+        super(content, properties, toolCalls, media);
+        this.metadata.put("conversationId", conversationId);
+        this.metadata.put("sceneId", sceneId);
+        this.metadata.put("time", time);
+    }
+
     @Override
     public long getTime() {
         return (long) this.metadata.get("time");

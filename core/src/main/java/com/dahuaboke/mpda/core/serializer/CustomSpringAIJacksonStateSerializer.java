@@ -4,6 +4,7 @@ package com.dahuaboke.mpda.core.serializer;
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.serializer.plain_text.jackson.SpringAIJacksonStateSerializer;
 import com.alibaba.cloud.ai.graph.state.AgentStateFactory;
+import com.dahuaboke.mpda.core.memory.ToolResponseMessageWrapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.ai.chat.metadata.ChatResponseMetadata;
@@ -27,6 +28,7 @@ public class CustomSpringAIJacksonStateSerializer extends SpringAIJacksonStateSe
         module.addDeserializer(ChatResponseMetadata.class, new JacksonChatResponseMetadataDeserializer());
         module.addDeserializer(OpenAiRateLimit.class, new JacksonOpenAiRateLimitDeserializer());
         module.addDeserializer(DefaultUsage.class, new JacksonDefaultUsageDeserializer());
+        module.addDeserializer(ToolResponseMessageWrapper.class, new JacksonToolResponseMessageWrapperDeserializer());
         objectMapper.registerModule(module);
         objectMapper.registerModule(new JavaTimeModule());
     }

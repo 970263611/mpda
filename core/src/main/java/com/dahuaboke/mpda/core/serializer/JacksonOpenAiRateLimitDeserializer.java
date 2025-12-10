@@ -34,8 +34,16 @@ public class JacksonOpenAiRateLimitDeserializer extends StdDeserializer<OpenAiRa
         Long requestsRemaining = requestsRemainingNode == null || "null".equals(requestsRemainingNode) ? null : Long.parseLong(requestsRemainingNode);
         Long tokensLimit = tokensLimitNode == null || "null".equals(tokensLimitNode) ? null : Long.parseLong(tokensLimitNode);
         Long tokensRemaining = tokensRemainingNode == null || "null".equals(tokensRemainingNode) ? null : Long.parseLong(tokensRemainingNode);
-        Duration requestsReset = requestsResetNode == null || "null".equals(requestsResetNode) ? null : Duration.parse(requestsResetNode);
-        Duration tokensReset = tokensResetNode == null || "null".equals(tokensResetNode) ? null : Duration.parse(tokensResetNode);
+        Duration requestsReset = null;
+        try {
+            requestsReset = requestsResetNode == null || "null".equals(requestsResetNode) ? null : Duration.parse(requestsResetNode);
+        } catch (Exception e) {
+        }
+        Duration tokensReset = null;
+        try {
+            tokensReset = tokensResetNode == null || "null".equals(tokensResetNode) ? null : Duration.parse(tokensResetNode);
+        } catch (Exception e) {
+        }
         return new OpenAiRateLimit(requestsLimit, requestsRemaining, requestsReset, tokensLimit, tokensRemaining, tokensReset);
     }
 }

@@ -16,6 +16,9 @@ public class MemoryWrapper {
     private List<Message> messages;
     private Long time;
 
+    public MemoryWrapper() {
+    }
+
     public MemoryWrapper(String conversationId, String sceneId, List<Message> messages) {
         this.conversationId = conversationId;
         this.sceneId = sceneId;

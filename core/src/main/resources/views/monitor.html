@@ -638,6 +638,12 @@
 
             // 构建消息列表HTML
             const messagesHtml = memory.messages.map((msg, index) => {
+                if(msg.messageType == 'TOOL') {
+                    msg.text = JSON.stringify(msg.responses)
+                }
+                if(msg.messageType == 'ASSISTANT') {
+                    msg.text = msg.text || JSON.stringify(msg.toolCalls)
+                }
                 const msgText = decodeText(msg.text).replace(/\\n/g, '<br>').replace(/\\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
                 const msgTime = msg.time ? new Date(msg.time).toLocaleString() : '无时间';
                 return `
@@ -755,7 +761,12 @@
                     return str;
                 }
             };
-
+            if(message.messageType == 'TOOL') {
+                message.text = JSON.stringify(message.responses)
+            }
+            if(message.messageType == 'ASSISTANT') {
+                message.text = message.text || JSON.stringify(message.toolCalls)
+            }
             const decodedText = decodeText(message.text)
                 .replace(/\n/g, '<br>')
                 .replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
