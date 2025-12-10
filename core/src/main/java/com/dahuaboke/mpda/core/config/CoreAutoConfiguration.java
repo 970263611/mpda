@@ -13,6 +13,7 @@ import com.dahuaboke.mpda.core.exception.MpdaIllegalArgumentException;
 import com.dahuaboke.mpda.core.memory.MemoryManager;
 import com.dahuaboke.mpda.core.monitor.persistence.PersistenceHandler;
 import com.dahuaboke.mpda.core.monitor.persistence.PersistenceManager;
+import com.dahuaboke.mpda.core.monitor.persistence.PersistenceService;
 import com.dahuaboke.mpda.core.rag.config.RagConfiguration;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -84,5 +85,11 @@ public class CoreAutoConfiguration {
     @ConditionalOnProperty(value = "mpda.monitor.persistence.enabled", havingValue = "true")
     public PersistenceManager persistenceManager(ObjectMapper objectMapper, PersistenceHandler persistenceHandler) {
         return new PersistenceManager(objectMapper, persistenceHandler);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public PersistenceHandler persistenceHandler(@Value("${mpda.monitor.persistence.max:10000}") int persistenceSize) {
+        return new PersistenceService(persistenceSize);
     }
 }
