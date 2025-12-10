@@ -1,6 +1,5 @@
 package com.dahuaboke.mpda.client;
 
-import com.alibaba.fastjson.JSONObject;
 import com.dahuaboke.mpda.client.constants.RagConstant;
 import com.dahuaboke.mpda.client.entity.CommonReq;
 import com.dahuaboke.mpda.client.entity.CommonResp;
@@ -11,7 +10,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
-import org.glassfish.hk2.utilities.reflection.ParameterizedTypeImpl;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +21,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.function.Predicate;
@@ -64,7 +63,22 @@ public class CustomClient {
             @NotNull
             @Override
             public Type getType() {
-                return new ParameterizedTypeImpl(CommonResp.class, dataTypeClass);
+                return new ParameterizedType() {
+                    @Override
+                    public Type[] getActualTypeArguments() {
+                        return new Type[]{dataTypeClass};
+                    }
+
+                    @Override
+                    public Type getRawType() {
+                        return CommonResp.class;
+                    }
+
+                    @Override
+                    public Type getOwnerType() {
+                        return null;
+                    }
+                };
             }
         };
         CommonResp<R> resp = request(url, commonReq, typeReference);
@@ -88,7 +102,7 @@ public class CustomClient {
                     resp.getTxHeader().getServRespCd(),
                     resp.getTxHeader().getServRespDescInfo()
             );
-            throw new MpdaRuntimeException(resp.getTxHeader().getServRespCd()+":"+resp.getTxHeader().getServRespDescInfo());
+            throw new MpdaRuntimeException(resp.getTxHeader().getServRespCd() + ":" + resp.getTxHeader().getServRespDescInfo());
         }
         if (resp.getTxBody() == null || resp.getTxBody().getTxEntity() == null) {
             log.error("{} txBody is null, req is {} , due to: {}:{}",
@@ -97,7 +111,7 @@ public class CustomClient {
                     resp.getTxHeader().getServRespCd(),
                     resp.getTxHeader().getServRespDescInfo()
             );
-            throw new MpdaRuntimeException(resp.getTxHeader().getServRespCd()+":"+resp.getTxHeader().getServRespDescInfo());
+            throw new MpdaRuntimeException(resp.getTxHeader().getServRespCd() + ":" + resp.getTxHeader().getServRespDescInfo());
         }
         return resp;
     }
