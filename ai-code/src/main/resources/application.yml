@@ -67,6 +67,11 @@ spring:
 #                REDIS_PWD: ""
 #                REDIS_CLUSTER_MODE: False
 
+mpda:
+  monitor:
+    persistence:
+      enabled: true
+
 logging:
   level:
     root: info
