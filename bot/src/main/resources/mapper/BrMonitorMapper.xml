@@ -6,12 +6,12 @@
         select *
         from br_monitor
         where
-            DATE (TO_TIMESTAMP(createTime
-            , 'YYYY-MM-DD HH24:MI:SS.MS'))
-            BETWEEN
-            DATE (#{begin})
-          AND
-            DATE (#{end})
+        TO_TIMESTAMP(create_time
+        , 'YYYY-MM-DD HH24:MI:SS.MS')
+        BETWEEN
+        TO_TIMESTAMP (#{begin},'YYYYMMDDHH24MI')
+        AND
+        TO_TIMESTAMP (#{end},'YYYYMMDDHH24MI')
     </select>
 
 </mapper>

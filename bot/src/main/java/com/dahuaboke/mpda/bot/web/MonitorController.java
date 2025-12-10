@@ -15,7 +15,7 @@ import reactor.core.publisher.Flux;
  * auth: dahua
  * time: 2025/12/9 11:13
  */
-@RestController
+@RestController("botMonitorController")
 @CrossOrigin
 public class MonitorController {
 
