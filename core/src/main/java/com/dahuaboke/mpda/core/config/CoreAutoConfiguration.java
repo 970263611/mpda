@@ -1,15 +1,13 @@
 package com.dahuaboke.mpda.core.config;
 
 import com.dahuaboke.mpda.core.agent.prompt.SystemAgentPrompt;
-import com.dahuaboke.mpda.core.agent.scene.strategy.FindSceneStrategy;
-import com.dahuaboke.mpda.core.agent.scene.strategy.PlanStrategy;
-import com.dahuaboke.mpda.core.agent.scene.strategy.RouteStrategy;
+import com.dahuaboke.mpda.core.agent.scene.strategy.SceneFinderStrategy;
+import com.dahuaboke.mpda.core.agent.scene.strategy.PlanFinderStrategy;
+import com.dahuaboke.mpda.core.agent.scene.strategy.RouteFinderStrategy;
 import com.dahuaboke.mpda.core.agent.scene.unknown.DefaultUnknownWrapper;
 import com.dahuaboke.mpda.core.agent.scene.unknown.UnknownWrapper;
 import com.dahuaboke.mpda.core.client.ChatClientManager;
-import com.dahuaboke.mpda.core.client.RerankerClientManager;
 import com.dahuaboke.mpda.core.event.EventPublisher;
-import com.dahuaboke.mpda.core.exception.MpdaIllegalArgumentException;
 import com.dahuaboke.mpda.core.memory.MemoryManager;
 import com.dahuaboke.mpda.core.monitor.persistence.PersistenceHandler;
 import com.dahuaboke.mpda.core.monitor.persistence.PersistenceManager;
@@ -19,18 +17,23 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.tool.ToolCallbackProvider;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
 
+import static com.dahuaboke.mpda.core.config.MpdaMonitorProperties.PERSISTENCE_ENABLE;
+import static com.dahuaboke.mpda.core.config.MpdaMonitorProperties.PERSISTENCE_ENABLE_VALUE;
+
 @AutoConfiguration
 @Import(RagConfiguration.class)
 @ComponentScan(basePackages = "com.dahuaboke.mpda.core")
+@EnableConfigurationProperties({
+        MpdaMemoryProperties.class, MpdaMonitorProperties.class, MpdaRerankProperties.class, MpdaSceneProperties.class, MpdaTraceProperties.class})
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 public class CoreAutoConfiguration {
 
@@ -43,26 +46,8 @@ public class CoreAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnProperty(name = "mpda.rerank.enabled", havingValue = "true")
-    public RerankerClientManager rerankerClientManager() {
-        return new RerankerClientManager();
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
     public UnknownWrapper unknownWrapper() {
         return new DefaultUnknownWrapper();
-    }
-
-    @Bean
-    public FindSceneStrategy findSceneStrategy(@Value("${mpda.scene.strategy:route}") String strategy) {
-        switch (strategy) {
-            case "plan":
-                return new PlanStrategy();
-            case "route":
-                return new RouteStrategy();
-        }
-        throw new MpdaIllegalArgumentException("Unknown find scene strategy: " + strategy);
     }
 
     @Bean
@@ -82,14 +67,14 @@ public class CoreAutoConfiguration {
 //    }
 
     @Bean
-    @ConditionalOnProperty(value = "mpda.monitor.persistence.enabled", havingValue = "true")
+    @ConditionalOnProperty(value = PERSISTENCE_ENABLE, havingValue = PERSISTENCE_ENABLE_VALUE)
     public PersistenceManager persistenceManager(ObjectMapper objectMapper, PersistenceHandler persistenceHandler) {
         return new PersistenceManager(objectMapper, persistenceHandler);
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public PersistenceHandler persistenceHandler(@Value("${mpda.monitor.persistence.max:10000}") int persistenceSize) {
-        return new PersistenceService(persistenceSize);
+    public PersistenceHandler persistenceHandler(MpdaMonitorProperties properties) {
+        return new PersistenceService(properties.getPersistence().getMax());
     }
 }

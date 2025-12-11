@@ -4,6 +4,7 @@ import com.dahuaboke.mpda.core.agent.scene.SceneWrapper;
 import com.dahuaboke.mpda.core.context.CoreContext;
 import com.dahuaboke.mpda.core.exception.MpdaException;
 import com.dahuaboke.mpda.core.exception.MpdaGraphException;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -11,7 +12,8 @@ import java.util.List;
  * auth: dahua
  * time: 2025/11/1 19:50
  */
-public class PlanStrategy extends AbstractFindSceneStrategy {
+@Component
+public class PlanFinderStrategy extends AbstractSceneFinderStrategy {
 
     @Override
     public List<SceneWrapper> findScene(CoreContext context) throws MpdaException {
@@ -23,5 +25,10 @@ public class PlanStrategy extends AbstractFindSceneStrategy {
 
     private void lazyInit() throws MpdaGraphException {
         cacheManager.getRootWrapper().init();
+    }
+
+    @Override
+    public String name() {
+        return "plan";
     }
 }

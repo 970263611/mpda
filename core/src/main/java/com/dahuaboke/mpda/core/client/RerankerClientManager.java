@@ -6,15 +6,16 @@ import com.alibaba.cloud.ai.model.RerankRequest;
 import com.alibaba.cloud.ai.model.RerankResponse;
 import com.dahuaboke.mpda.core.client.entity.RerankerRequest;
 import com.dahuaboke.mpda.core.client.entity.RerankerResponse;
+import com.dahuaboke.mpda.core.config.MpdaRerankProperties;
 import jakarta.annotation.PostConstruct;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.retry.RetryUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.support.RetryTemplate;
+import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestClient;
 
@@ -27,19 +28,23 @@ import java.util.function.Consumer;
  * auth: dahua
  * time: 2025/8/27 10:27
  */
+@Component
 public class RerankerClientManager {
 
-    @Value("${mpda.rerank.base-url}")
     private String baseUrl;
-    @Value("${mpda.rerank.api-key}")
     private String apiKey;
-    @Value("${mpda.rerank.rerankPath}")
     private String rerankPath;
-    @Value("${mpda.rerank.model}")
     private String model;
 
     private RetryTemplate retryTemplate;
     private RestClient restClient;
+
+    public RerankerClientManager(MpdaRerankProperties properties) {
+        this.baseUrl = properties.getBaseUrl();
+        this.apiKey = properties.getApiKey();
+        this.rerankPath = properties.getRerankPath();
+        this.model = properties.getModel();
+    }
 
     @PostConstruct
     public void init() {

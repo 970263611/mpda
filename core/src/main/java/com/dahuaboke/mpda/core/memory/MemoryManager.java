@@ -1,12 +1,11 @@
 package com.dahuaboke.mpda.core.memory;
 
 
+import com.dahuaboke.mpda.core.config.MpdaMemoryProperties;
 import com.dahuaboke.mpda.core.context.CacheManager;
 import com.dahuaboke.mpda.core.context.LimitedListWrapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.ai.chat.messages.Message;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Component;
 
@@ -24,18 +23,17 @@ import java.util.stream.Stream;
 public class MemoryManager implements SmartLifecycle {
 
     private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-
-    @Value("${mpda.memory.max:10}")
     private int maxMemory;
-
-    @Value("${mpda.memory.timeout:30}") // minute
     private int memoryTimeout;
-
-    @Value("${mpda.memory.check:30}") // second
     private int memoryCheck;
-
-    @Autowired
     private CacheManager cacheManager;
+
+    public MemoryManager(CacheManager cacheManager, MpdaMemoryProperties properties) {
+        this.cacheManager = cacheManager;
+        this.maxMemory = properties.getMax();
+        this.memoryTimeout = properties.getTimeout();
+        this.memoryCheck = properties.getCheck();
+    }
 
     private volatile boolean isRunning;
 

@@ -7,6 +7,7 @@ import com.dahuaboke.mpda.core.context.CoreContext;
 import com.dahuaboke.mpda.core.exception.MpdaException;
 import com.dahuaboke.mpda.core.exception.MpdaGraphException;
 import com.dahuaboke.mpda.core.utils.SpringUtil;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
@@ -17,7 +18,8 @@ import java.util.Set;
  * auth: dahua
  * time: 2025/11/1 19:50
  */
-public class RouteStrategy extends AbstractFindSceneStrategy {
+@Component
+public class RouteFinderStrategy extends AbstractSceneFinderStrategy {
 
     @Override
     public List<SceneWrapper> findScene(CoreContext context) throws MpdaException {
@@ -82,5 +84,10 @@ public class RouteStrategy extends AbstractFindSceneStrategy {
             }
         });
         isInit = true;
+    }
+
+    @Override
+    public String name() {
+        return "route";
     }
 }

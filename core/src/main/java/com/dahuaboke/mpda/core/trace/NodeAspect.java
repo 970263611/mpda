@@ -1,4 +1,4 @@
-package com.dahuaboke.mpda.core.aop;
+package com.dahuaboke.mpda.core.trace;
 
 
 import com.alibaba.cloud.ai.graph.OverAllState;
@@ -8,8 +8,6 @@ import com.dahuaboke.mpda.core.event.Event;
 import com.dahuaboke.mpda.core.event.EventPublisher;
 import com.dahuaboke.mpda.core.event.monitor.MessageChangeEvent;
 import com.dahuaboke.mpda.core.memory.UserMessageWrapper;
-import com.dahuaboke.mpda.core.trace.TraceManager;
-import com.dahuaboke.mpda.core.trace.TraceMessage;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.slf4j.Logger;

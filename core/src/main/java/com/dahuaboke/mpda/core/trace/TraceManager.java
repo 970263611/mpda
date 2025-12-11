@@ -1,10 +1,9 @@
 package com.dahuaboke.mpda.core.trace;
 
 
+import com.dahuaboke.mpda.core.config.MpdaTraceProperties;
 import com.dahuaboke.mpda.core.context.CacheManager;
 import com.dahuaboke.mpda.core.context.LimitedListWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Component;
 
@@ -24,16 +23,19 @@ import java.util.concurrent.TimeUnit;
 public class TraceManager implements SmartLifecycle {
 
     private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-    @Value("${mpda.trace.max:50}")
     private int maxTrace;
-    @Value("${mpda.trace.timeout:5}") // minute
     private int traceTimeout;
-    @Value("${mpda.trace.check:30}") // second
     private int traceCheck;
-    @Autowired
     private CacheManager cacheManager;
     private volatile boolean isRunning;
     private Map<String, Long> traceTimer = new HashMap<>();
+
+    public TraceManager(CacheManager cacheManager, MpdaTraceProperties properties) {
+        this.cacheManager = cacheManager;
+        this.maxTrace = properties.getMax();
+        this.traceTimeout = properties.getTimeout();
+        this.traceCheck = properties.getCheck();
+    }
 
     public void addTrace(TraceMessage traceMessage) {
         Map<String, LimitedListWrapper<TraceMessage>> traces = cacheManager.getTraces();

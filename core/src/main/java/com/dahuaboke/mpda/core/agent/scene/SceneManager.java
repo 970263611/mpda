@@ -2,7 +2,7 @@ package com.dahuaboke.mpda.core.agent.scene;
 
 
 import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
-import com.dahuaboke.mpda.core.agent.scene.strategy.FindSceneStrategy;
+import com.dahuaboke.mpda.core.agent.scene.strategy.SceneFinderStrategy;
 import com.dahuaboke.mpda.core.context.CacheManager;
 import com.dahuaboke.mpda.core.context.CoreContext;
 import com.dahuaboke.mpda.core.exception.MpdaException;
@@ -20,7 +20,7 @@ import java.util.List;
 public class SceneManager {
 
     @Autowired
-    private FindSceneStrategy findSceneStrategy;
+    private SceneFinderStrategy sceneFinderStrategy;
     @Autowired
     private CacheManager cacheManager;
 
@@ -53,6 +53,6 @@ public class SceneManager {
     }
 
     private List<SceneWrapper> find(CoreContext context) throws MpdaException {
-        return findSceneStrategy.find(context);
+        return sceneFinderStrategy.find(context);
     }
 }
