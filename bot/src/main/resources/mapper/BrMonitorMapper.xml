@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.dahuaboke.mpda.bot.monitor.mapper.BrMonitorMapper">
 
-    <select id="streamMonitorEvent" resultType="com.dahuaboke.mpda.bot.monitor.entity.MonitorEventEntity">
+    <select id="streamMonitorEvent" fetchSize="10" resultType="com.dahuaboke.mpda.bot.monitor.entity.MonitorEventEntity">
         select *
         from br_monitor
         where
