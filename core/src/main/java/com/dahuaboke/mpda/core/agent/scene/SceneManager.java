@@ -8,6 +8,7 @@ import com.dahuaboke.mpda.core.context.CacheManager;
 import com.dahuaboke.mpda.core.context.CoreContext;
 import com.dahuaboke.mpda.core.exception.MpdaException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
@@ -21,6 +22,7 @@ import java.util.List;
 public class SceneManager {
 
     @Autowired
+    @Qualifier("routeFinderStrategy")
     private RouteFinderStrategy defaultSceneFinderStrategy;
     @Autowired
     private CacheManager cacheManager;

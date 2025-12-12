@@ -25,6 +25,12 @@ public class CoreContext {
         this.conversationId = conversationId;
     }
 
+    public CoreContext(String query, String conversationId, SceneFinderStrategy findStrategy) {
+        this.query = query;
+        this.conversationId = conversationId;
+        this.findStrategy = findStrategy;
+    }
+
     public CoreContext() {
     }
 

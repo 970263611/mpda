@@ -38,7 +38,7 @@ public class RouteFinderStrategy extends AbstractSceneFinderStrategy {
         return List.of(next(context));
     }
 
-    private SceneWrapper next(CoreContext context) throws MpdaException {
+    protected SceneWrapper next(CoreContext context) throws MpdaException {
         SceneWrapper runtimeWrapper = cacheManager.getRootWrapper();
         while (!runtimeWrapper.isEnd()) {
             try {
@@ -52,11 +52,11 @@ public class RouteFinderStrategy extends AbstractSceneFinderStrategy {
         return runtimeWrapper;
     }
 
-    private SceneWrapper next(CoreContext context, SceneWrapper runtimeWrapper) throws MpdaException {
+    protected SceneWrapper next(CoreContext context, SceneWrapper runtimeWrapper) throws MpdaException {
         return next(context, runtimeWrapper, 0);
     }
 
-    private SceneWrapper next(CoreContext context, SceneWrapper runtimeWrapper, int retry) throws MpdaException {
+    protected SceneWrapper next(CoreContext context, SceneWrapper runtimeWrapper, int retry) throws MpdaException {
         SceneResponse execute = runtimeWrapper.apply(context);
         String output = execute.output();
         if (output.startsWith("<think>")) {

@@ -8,11 +8,12 @@ import com.alibaba.cloud.ai.graph.action.AsyncNodeAction;
 import com.alibaba.cloud.ai.graph.exception.GraphStateException;
 import com.alibaba.cloud.ai.graph.state.strategy.AppendStrategy;
 import com.alibaba.cloud.ai.graph.streaming.StreamingOutput;
-import com.dahuaboke.mpda.core.serializer.CustomSpringAIJacksonStateSerializer;
 import com.dahuaboke.mpda.ai_code.web.service.ChatService;
 import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
+import com.dahuaboke.mpda.core.agent.scene.strategy.ScoreFinderStrategy;
 import com.dahuaboke.mpda.core.context.CoreContext;
 import com.dahuaboke.mpda.core.exception.MpdaException;
+import com.dahuaboke.mpda.core.serializer.CustomSpringAIJacksonStateSerializer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.ai.chat.messages.AssistantMessage;
@@ -42,11 +43,14 @@ public class ChatController {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private ScoreFinderStrategy strategy;
+
     @RequestMapping("/stream")
     public Flux<ServerSentEvent<String>> chat(
             @RequestHeader("Conversation-Id") String conversationId,
             @RequestBody String q) throws MpdaException {
-        CoreContext context = new CoreContext(q, conversationId);
+        CoreContext context = new CoreContext(q, conversationId, strategy);
         Flux<SceneResponse> response = chatService.chat(context);
         return response.map(res -> {
             Map<String, Object> delta = Map.of("role", "assistant", "content", res.output());
@@ -122,7 +126,7 @@ public class ChatController {
             return keyStrategyMap;
         };
 
-        StateGraph stateGraph = new StateGraph(keyStrategyFactory,new CustomSpringAIJacksonStateSerializer(OverAllState::new))
+        StateGraph stateGraph = new StateGraph(keyStrategyFactory, new CustomSpringAIJacksonStateSerializer(OverAllState::new))
                 .addNode("streaming_node", AsyncNodeAction.node_async(state -> {
                     return Map.of("a", new ChatResponse(List.of(new Generation(new AssistantMessage("asdfasdf")))));
                 }))
