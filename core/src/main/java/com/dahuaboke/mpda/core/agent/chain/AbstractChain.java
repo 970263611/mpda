@@ -61,17 +61,17 @@ public abstract class AbstractChain implements Chain {
         graph.addMemory(UserMessageWrapper.builder()
                 .text(context.getQuery())
                 .conversationId(context.getConversationId())
-                .sceneId(context.getSceneId())
+                .sceneName(context.getSceneName())
                 .time(time)
                 .build());
-        graph.addMemory(new AssistantMessageWrapper(context.getConversationId(), context.getSceneId(), reply.output()));
+        graph.addMemory(new AssistantMessageWrapper(context.getConversationId(), context.getSceneName(), reply.output()));
         return reply;
     }
 
     @Override
     public Flux<SceneResponse> slideAsync(CoreContext context) throws MpdaRuntimeException {
         String conversationId = context.getConversationId();
-        String sceneId = context.getSceneId();
+        String sceneName = context.getSceneName();
         Long time = System.currentTimeMillis();
         prepare(context);
         Flux<SceneResponse> reply = executeGraphAsync();
@@ -79,9 +79,9 @@ public abstract class AbstractChain implements Chain {
         reply.subscribe(replyTemp -> replyMessage.append(replyTemp.output())
                 , error -> logger.error("Add memory exception", error)
                 , () -> {
-                    graph.addMemory(conversationId, sceneId,
-                            UserMessageWrapper.builder().text(context.getQuery()).conversationId(conversationId).sceneId(sceneId).time(time).build());
-                    graph.addMemory(conversationId, sceneId, new AssistantMessageWrapper(conversationId, sceneId, replyMessage.toString()));
+                    graph.addMemory(conversationId, sceneName,
+                            UserMessageWrapper.builder().text(context.getQuery()).conversationId(conversationId).sceneName(sceneName).time(time).build());
+                    graph.addMemory(conversationId, sceneName, new AssistantMessageWrapper(conversationId, sceneName, replyMessage.toString()));
                 });
         return reply;
     }
@@ -98,7 +98,7 @@ public abstract class AbstractChain implements Chain {
         }
         attribute.put(Constants.QUERY, context.getQuery());
         attribute.put(Constants.CONVERSATION_ID, context.getConversationId());
-        attribute.put(Constants.SCENE_ID, context.getSceneId());
+        attribute.put(Constants.SCENE_NAME, context.getSceneName());
         attribute.put(Constants.EXTEND, context.getExtend());
         cacheManager.setAttribute(attribute);
     }

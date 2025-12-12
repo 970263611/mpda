@@ -10,9 +10,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "mpda.memory")
 public class MpdaMemoryProperties {
 
-    private int max;
-    private int timeout; // minute
-    private int check; // second
+    private int max = 5;
+    private int timeout = 30; // minute
+    private int check = 30; // second
 
     public int getMax() {
         return max;

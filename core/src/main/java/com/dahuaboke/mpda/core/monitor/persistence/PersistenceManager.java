@@ -108,24 +108,24 @@ public class PersistenceManager implements Listener<MonitorEvent> {
             MessageWrapper messageWrapper;
             String messageType = (String) eventMap.get("messageType");
             String conversationId = (String) eventMap.get("conversationId");
-            String sceneId = (String) eventMap.get("sceneId");
+            String sceneName = (String) eventMap.get("sceneName");
             Long time = (Long) eventMap.get("time");
             if ("ASSISTANT".equals(messageType)) {
                 eventMap.put("@class", AssistantMessage.class.getName());
                 AssistantMessage assistantMessage = newObjectMapper.readValue(
                         objectMapper.writeValueAsString(eventMap), AssistantMessage.class);
-                messageWrapper = new AssistantMessageWrapper(conversationId, sceneId, assistantMessage.getText(), assistantMessage.getMetadata()
+                messageWrapper = new AssistantMessageWrapper(conversationId, sceneName, assistantMessage.getText(), assistantMessage.getMetadata()
                         , assistantMessage.getToolCalls(), assistantMessage.getMedia(), time);
             } else if ("USER".equals(messageType)) {
                 eventMap.put("@class", UserMessage.class.getName());
                 UserMessage userMessage = newObjectMapper.readValue(
                         objectMapper.writeValueAsString(eventMap), UserMessage.class);
-                messageWrapper = new UserMessageWrapper(conversationId, sceneId, userMessage.getText(), time);
+                messageWrapper = new UserMessageWrapper(conversationId, sceneName, userMessage.getText(), time);
             } else if ("TOOL".equals(messageType)) {
                 eventMap.put("@class", ToolResponseMessage.class.getName());
                 ToolResponseMessage toolResponseMessage = newObjectMapper.readValue(
                         objectMapper.writeValueAsString(eventMap), ToolResponseMessage.class);
-                messageWrapper = new ToolResponseMessageWrapper(conversationId, sceneId, toolResponseMessage, time);
+                messageWrapper = new ToolResponseMessageWrapper(conversationId, sceneName, toolResponseMessage, time);
             } else {
                 messageWrapper = null;
             }

@@ -37,8 +37,8 @@ public class MemoryMergeAspect {
         MemoryMerge memoryMerge = method.getAnnotation(MemoryMerge.class);
         Class<? extends Scene>[] value = memoryMerge.value();
         if (value != null && value.length > 0) {
-            List<String> sceneIds = Arrays.stream(value).map(clz -> cacheManager.getSceneIdBySceneClass(clz)).toList();
-            cacheManager.getAttribute().put(Constants.SCENE_MERGE, sceneIds);
+            List<String> sceneNames = Arrays.stream(value).map(clz -> cacheManager.getSceneNameBySceneClass(clz)).toList();
+            cacheManager.getAttribute().put(Constants.SCENE_MERGE, sceneNames);
         }
     }
 }

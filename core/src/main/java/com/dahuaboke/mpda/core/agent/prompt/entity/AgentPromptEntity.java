@@ -7,18 +7,18 @@ package com.dahuaboke.mpda.core.agent.prompt.entity;
  */
 public class AgentPromptEntity {
 
-    private String name;
+    private String findStrategyName;
     private String prompt;
     private String sceneName;
 
-    public AgentPromptEntity(String name, String prompt, String sceneName) {
-        this.name = name;
+    public AgentPromptEntity(String findStrategyName, String prompt, String sceneName) {
+        this.findStrategyName = findStrategyName;
         this.prompt = prompt;
         this.sceneName = sceneName;
     }
 
-    public String getName() {
-        return name;
+    public String getFindStrategyName() {
+        return findStrategyName;
     }
 
     public String getPrompt() {

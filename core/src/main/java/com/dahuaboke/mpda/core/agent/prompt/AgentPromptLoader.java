@@ -8,10 +8,13 @@ import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * auth: dahua
@@ -45,5 +48,15 @@ public class AgentPromptLoader {
                 logger.error("Load agent prompt file failed, dir name is {}", name, e);
             }
         });
+    }
+
+    public String extractPrompt(String sceneName, String findStrategyName) {
+        Stream<AgentPromptEntity> agentPromptEntityStream = agentPrompts.stream().filter(entity ->
+                StringUtils.endsWithIgnoreCase(findStrategyName, entity.getFindStrategyName()) && StringUtils.endsWithIgnoreCase(sceneName, entity.getSceneName()));
+        Optional<AgentPromptEntity> first = agentPromptEntityStream.findFirst();
+        if (first.isPresent()) {
+            return first.get().getPrompt();
+        }
+        return null;
     }
 }

@@ -1,12 +1,12 @@
 package com.dahuaboke.mpda.core.monitor;
 
 import com.dahuaboke.mpda.core.monitor.persistence.PersistenceManager;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
@@ -29,9 +29,14 @@ public class MonitorController implements WebMvcConfigurer {
 
     @RequestMapping(value = "/monitor-sse", produces = MediaType.TEXT_EVENT_STREAM_VALUE + ";charset=gbk")
     @ResponseBody
-    public Flux monitorSse(@RequestParam("begin") Long begin, @RequestParam("end") Long end) {
+    public Flux monitorSse(HttpServletRequest request) {
+        String begin = request.getParameter("begin");
+        String end = request.getParameter("end");
         if (begin != null && end != null) {
-            return persistenceManager.monitorStream(begin, end);
+            try {
+                return persistenceManager.monitorStream(Long.parseLong(begin), Long.parseLong(end));
+            } catch (NumberFormatException e) {
+            }
         }
         return monitorManager.monitor();
     }

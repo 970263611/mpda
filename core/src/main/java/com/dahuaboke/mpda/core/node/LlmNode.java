@@ -34,11 +34,11 @@ public class LlmNode implements NodeAction {
         Object query = state.value(Constants.QUERY).get();
         List<String> toolNames = state.value(Constants.TOOLS, List.class).orElse(List.of());
         String conversationId = state.value(Constants.CONVERSATION_ID, String.class).get();
-        String sceneId = state.value(Constants.SCENE_ID, String.class).get();
+        String sceneName = state.value(Constants.SCENE_NAME, String.class).get();
         List<String> sceneMerge = state.value(Constants.SCENE_MERGE, List.class).orElse(List.of());
         Boolean isToolQuery = state.value(Constants.IS_TOOL_QUERY, Boolean.class).orElse(false);
         Set<Class<? extends Message>> memoryExclude = state.value(Constants.MEMORY_EXCLUDE, Set.class).get();
-        return Map.of(Constants.RESULT, chatClientManager.call(conversationId, sceneId, prompt, query, toolNames.stream().map(toolName ->
+        return Map.of(Constants.RESULT, chatClientManager.call(conversationId, sceneName, prompt, query, toolNames.stream().map(toolName ->
                 toolManager.getToolByName(toolName)
         ).toList(), sceneMerge, isToolQuery, memoryExclude), Constants.IS_TOOL_QUERY, false);
     }

@@ -1,7 +1,6 @@
 package com.dahuaboke.mpda.core.memory;
 
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import org.springframework.ai.chat.messages.ToolResponseMessage;
 
 /**
@@ -10,17 +9,17 @@ import org.springframework.ai.chat.messages.ToolResponseMessage;
  */
 public class ToolResponseMessageWrapper extends ToolResponseMessage implements MessageWrapper {
 
-    public ToolResponseMessageWrapper(String conversationId, String sceneId, ToolResponseMessage toolResponseMessage) {
+    public ToolResponseMessageWrapper(String conversationId, String sceneName, ToolResponseMessage toolResponseMessage) {
         super(toolResponseMessage.getResponses(), toolResponseMessage.getMetadata());
         this.metadata.put("conversationId", conversationId);
-        this.metadata.put("sceneId", sceneId);
+        this.metadata.put("sceneName", sceneName);
         this.metadata.put("time", System.currentTimeMillis());
     }
 
-    public ToolResponseMessageWrapper(String conversationId, String sceneId, ToolResponseMessage toolResponseMessage, Long time) {
+    public ToolResponseMessageWrapper(String conversationId, String sceneName, ToolResponseMessage toolResponseMessage, Long time) {
         super(toolResponseMessage.getResponses(), toolResponseMessage.getMetadata());
         this.metadata.put("conversationId", conversationId);
-        this.metadata.put("sceneId", sceneId);
+        this.metadata.put("sceneName", sceneName);
         this.metadata.put("time", time);
     }
 
@@ -35,7 +34,7 @@ public class ToolResponseMessageWrapper extends ToolResponseMessage implements M
     }
 
     @Override
-    public String getSceneId() {
-        return (String) this.metadata.get("sceneId");
+    public String getSceneName() {
+        return (String) this.metadata.get("sceneName");
     }
 }

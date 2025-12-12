@@ -24,7 +24,7 @@ public class MpdaMonitorProperties {
     }
 
     class Persistence {
-        private int max;
+        private int max = 10000;
 
         public int getMax() {
             return max;

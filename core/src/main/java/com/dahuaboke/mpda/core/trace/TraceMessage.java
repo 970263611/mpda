@@ -3,7 +3,7 @@ package com.dahuaboke.mpda.core.trace;
 public class TraceMessage {
 
     private String conversationId;
-    private String simpleName;
+    private String sceneName;
     private String description;
     private RequestType requestType;
     private TraceType traceType;
@@ -12,9 +12,9 @@ public class TraceMessage {
     public TraceMessage() {
     }
 
-    public TraceMessage(String conversationId, String simpleName, String description, RequestType requestType, TraceType traceType) {
+    public TraceMessage(String conversationId, String sceneName, String description, RequestType requestType, TraceType traceType) {
         this.conversationId = conversationId;
-        this.simpleName = simpleName;
+        this.sceneName = sceneName;
         this.description = description;
         this.requestType = requestType;
         this.traceType = traceType;
@@ -25,8 +25,8 @@ public class TraceMessage {
         return conversationId;
     }
 
-    public String getSimpleName() {
-        return simpleName;
+    public String getSceneName() {
+        return sceneName;
     }
 
     public String getDescription() {

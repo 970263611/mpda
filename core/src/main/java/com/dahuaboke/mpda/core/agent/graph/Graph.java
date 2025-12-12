@@ -24,5 +24,5 @@ public interface Graph {
 
     void addMemory(Message message);
 
-    void addMemory(String conversationId, String sceneId, Message message);
+    void addMemory(String conversationId, String sceneName, Message message);
 }

@@ -82,7 +82,7 @@ public class ResolutionGraph extends AbstractGraph {
     }
 
     @Override
-    public void addMemory(String conversationId, String sceneId, Message message) {
+    public void addMemory(String conversationId, String sceneName, Message message) {
     }
 
 }

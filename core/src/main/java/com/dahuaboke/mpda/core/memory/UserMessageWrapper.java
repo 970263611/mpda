@@ -8,15 +8,15 @@ import java.util.Map;
 
 public class UserMessageWrapper extends AbstractMessage implements MessageWrapper {
 
-    public UserMessageWrapper(String conversationId, String sceneId, String content) {
-        this(conversationId, sceneId, content, null);
+    public UserMessageWrapper(String conversationId, String sceneName, String content) {
+        this(conversationId, sceneName, content, null);
     }
 
-    public UserMessageWrapper(String conversationId, String sceneId, String content, Long time) {
+    public UserMessageWrapper(String conversationId, String sceneName, String content, Long time) {
         super(MessageType.USER, content, Map.of());
         time = time == null ? System.currentTimeMillis() : time;
         this.metadata.put("conversationId", conversationId);
-        this.metadata.put("sceneId", sceneId);
+        this.metadata.put("sceneName", sceneName);
         this.metadata.put("time", time);
     }
 
@@ -35,14 +35,14 @@ public class UserMessageWrapper extends AbstractMessage implements MessageWrappe
     }
 
     @Override
-    public String getSceneId() {
-        return (String) this.metadata.get("sceneId");
+    public String getSceneName() {
+        return (String) this.metadata.get("sceneName");
     }
 
     public static class Builder {
         private String content;
         private String conversationId;
-        private String sceneId;
+        private String sceneName;
         private Long time;
 
         public Builder text(String content) {
@@ -55,8 +55,8 @@ public class UserMessageWrapper extends AbstractMessage implements MessageWrappe
             return this;
         }
 
-        public Builder sceneId(String sceneId) {
-            this.sceneId = sceneId;
+        public Builder sceneName(String sceneName) {
+            this.sceneName = sceneName;
             return this;
         }
 
@@ -68,8 +68,8 @@ public class UserMessageWrapper extends AbstractMessage implements MessageWrappe
         public UserMessageWrapper build() {
             Assert.notNull(content, "Content can not null");
             Assert.notNull(conversationId, "ConversationId can not null");
-            Assert.notNull(sceneId, "SceneId can not null");
-            return new UserMessageWrapper(conversationId, sceneId, content, time);
+            Assert.notNull(sceneName, "SceneName can not null");
+            return new UserMessageWrapper(conversationId, sceneName, content, time);
         }
     }
 }

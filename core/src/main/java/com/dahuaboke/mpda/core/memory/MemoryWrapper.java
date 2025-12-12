@@ -12,16 +12,16 @@ import java.util.List;
 public class MemoryWrapper {
 
     private String conversationId;
-    private String sceneId;
+    private String sceneName;
     private List<Message> messages;
     private Long time;
 
     public MemoryWrapper() {
     }
 
-    public MemoryWrapper(String conversationId, String sceneId, List<Message> messages) {
+    public MemoryWrapper(String conversationId, String sceneName, List<Message> messages) {
         this.conversationId = conversationId;
-        this.sceneId = sceneId;
+        this.sceneName = sceneName;
         this.messages = messages;
         this.time = System.currentTimeMillis();
     }
@@ -30,28 +30,28 @@ public class MemoryWrapper {
         return conversationId;
     }
 
-    public String getSceneId() {
-        return sceneId;
+    public void setConversationId(String conversationId) {
+        this.conversationId = conversationId;
+    }
+
+    public String getSceneName() {
+        return sceneName;
+    }
+
+    public void setSceneName(String sceneName) {
+        this.sceneName = sceneName;
     }
 
     public List<Message> getMessages() {
         return messages;
     }
 
-    public Long getTime() {
-        return time;
-    }
-
-    public void setConversationId(String conversationId) {
-        this.conversationId = conversationId;
-    }
-
-    public void setSceneId(String sceneId) {
-        this.sceneId = sceneId;
-    }
-
     public void setMessages(List<Message> messages) {
         this.messages = messages;
+    }
+
+    public Long getTime() {
+        return time;
     }
 
     public void setTime(Long time) {

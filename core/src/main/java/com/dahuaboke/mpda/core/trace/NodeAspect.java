@@ -56,9 +56,9 @@ public class NodeAspect {
         }
         Object target = joinPoint.getTarget();
         NodeAction nodeAction = (NodeAction) target;
-        TraceMessage traceMessage = new TraceMessage(conversationId, nodeAction.getClass().getSimpleName(), null, null, IN);
+        TraceMessage traceMessage = new TraceMessage(conversationId, nodeAction.getClass().getName(), null, null, IN);
         String trace = String.format("%s >>> in >>> %s @time: %d",
-                conversationId, nodeAction.getClass().getSimpleName(), System.currentTimeMillis());
+                conversationId, nodeAction.getClass().getName(), System.currentTimeMillis());
         traceManager.addTrace(traceMessage);
         logger.debug(trace);
     }
@@ -79,9 +79,9 @@ public class NodeAspect {
         }
         Object target = joinPoint.getTarget();
         NodeAction nodeAction = (NodeAction) target;
-        TraceMessage traceMessage = new TraceMessage(conversationId, nodeAction.getClass().getSimpleName(), null, null, OUT);
+        TraceMessage traceMessage = new TraceMessage(conversationId, nodeAction.getClass().getName(), null, null, OUT);
         String trace = String.format("%s <<< out <<< %s @time: %d",
-                conversationId, nodeAction.getClass().getSimpleName(), System.currentTimeMillis());
+                conversationId, nodeAction.getClass().getName(), System.currentTimeMillis());
         traceManager.addTrace(traceMessage);
         logger.debug(trace);
     }
@@ -102,9 +102,9 @@ public class NodeAspect {
         }
         Object target = joinPoint.getTarget();
         NodeAction nodeAction = (NodeAction) target;
-        TraceMessage traceMessage = new TraceMessage(conversationId, nodeAction.getClass().getSimpleName(), null, null, EXCEPTION);
+        TraceMessage traceMessage = new TraceMessage(conversationId, nodeAction.getClass().getName(), null, null, EXCEPTION);
         String trace = String.format("%s !!! throw exception !!! %s @time: %d",
-                conversationId, nodeAction.getClass().getSimpleName(), System.currentTimeMillis(), throwable);
+                conversationId, nodeAction.getClass().getName(), System.currentTimeMillis(), throwable);
         traceManager.addTrace(traceMessage);
         logger.debug(trace);
     }

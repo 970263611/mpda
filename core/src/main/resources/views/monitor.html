@@ -141,11 +141,13 @@
             </div>
             <!-- 时间范围选择 -->
             <div class="flex items-center space-x-2">
-                <input type="datetime-local" id="start-time"
-                       class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-sm">
+                <input class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-sm"
+                       id="start-time"
+                       type="datetime-local">
                 <span class="text-gray-500">至</span>
-                <input type="datetime-local" id="end-time"
-                       class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-sm">
+                <input class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-sm"
+                       id="end-time"
+                       type="datetime-local">
             </div>
             <button class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center"
                     id="connect-btn">
@@ -163,7 +165,7 @@
             <div class="relative flex-1">
                 <input class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
                        id="search-input"
-                       placeholder="搜索 Conversation ID/Scene ID/场景描述/节点名称/消息类型/消息内容"
+                       placeholder="搜索 Conversation ID/Scene Name/场景描述/节点名称/消息类型/消息内容"
                        type="text">
                 <i class="fa fa-search absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
             </div>
@@ -178,19 +180,19 @@
                     </div>
                     <div class="multi-select-options">
                         <div class="multi-select-option">
-                            <input type="checkbox" id="type-all" value="all">
+                            <input id="type-all" type="checkbox" value="all">
                             <label for="type-all">所有类型</label>
                         </div>
                         <div class="multi-select-option">
-                            <input type="checkbox" id="type-trace" value="traceMessage">
+                            <input id="type-trace" type="checkbox" value="traceMessage">
                             <label for="type-trace">轨迹信息</label>
                         </div>
                         <div class="multi-select-option">
-                            <input type="checkbox" id="type-message" value="messageWrapper">
+                            <input id="type-message" type="checkbox" value="messageWrapper">
                             <label for="type-message">消息信息</label>
                         </div>
                         <div class="multi-select-option">
-                            <input type="checkbox" id="type-memory" value="memoryWrapper">
+                            <input id="type-memory" type="checkbox" value="memoryWrapper">
                             <label for="type-memory">记忆管理</label>
                         </div>
                     </div>
@@ -578,7 +580,7 @@
                         traceMessage: {
                             conversationId: 'parse_error',
                             description: '消息解析失败',
-                            simpleName: 'JSON Parse Error',
+                            sceneName: 'JSON Parse Error',
                             traceType: 'EXCEPTION',
                             requestType: 'UNKNOW',
                             time: Date.now()
@@ -720,15 +722,15 @@
             if (searchTerm) {
                 const searchable = [
                     log.traceMessage?.conversationId || '',
-                    log.traceMessage?.sceneId || '',
+                    log.traceMessage?.sceneName || '',
                     log.traceMessage?.description || '',
                     log.messageWrapper?.conversationId || '',
-                    log.messageWrapper?.sceneId || '',
+                    log.messageWrapper?.sceneName || '',
                     log.messageWrapper?.text || '',
                     log.memoryWrapper?.conversationId || '',
-                    log.memoryWrapper?.sceneId || '',
+                    log.memoryWrapper?.sceneName || '',
                     log.memoryWrapper?.messages.map(m => m.text).join(' ') || '',
-                    log.traceMessage?.simpleName || '',
+                    log.traceMessage?.sceneName || '',
                     (log.messageWrapper?.messageType || '').toLowerCase(),
                     // 添加变更类型到搜索范围
                     (log.eventType || '').toLowerCase()
@@ -820,7 +822,7 @@
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-sm">
                             <div><span class="text-gray-500">Conversation ID:</span> <span class="font-medium ml-1">${memory.conversationId || '无'}</span></div>
-                            <div><span class="text-gray-500">Scene ID:</span> <span class="font-medium ml-1 text-xs break-all">${memory.sceneId || '无'}</span></div>
+                            <div><span class="text-gray-500">Scene Name:</span> <span class="font-medium ml-1 text-xs break-all">${memory.sceneName || '无'}</span></div>
                             <div><span class="text-gray-500">消息数量:</span> <span class="font-medium ml-1">${memory.messages?.length || 0}</span></div>
                             <div><span class="text-gray-500">时间戳:</span> <span class="font-medium ml-1">${formattedTime}</span></div>
                         </div>
@@ -864,7 +866,7 @@
                             <div class="flex items-center">
                                 <span class="bg-blue-50 p-2 rounded-full mr-3"><i class="fa ${traceIcon} ${traceTypeClass}"></i></span>
                                 <div>
-                                    <h3 class="font-medium text-gray-800">${trace.simpleName || '轨迹信息'}</h3>
+                                    <h3 class="font-medium text-gray-800">${trace.sceneName || '轨迹信息'}</h3>
                                     <div class="text-xs text-gray-500 mt-1 bg-gray-50 p-2 rounded-md json-beautify">${beautifiedDesc}</div>
                                 </div>
                             </div>
@@ -874,7 +876,7 @@
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-sm">
                             <div><span class="text-gray-500">Conversation ID:</span> <span class="font-medium ml-1">${trace.conversationId || '无'}</span></div>
-                            <div><span class="text-gray-500">Scene ID:</span> <span class="font-medium ml-1 text-xs break-all">${trace.sceneId || '无'}</span></div>
+                            <div><span class="text-gray-500">Scene Name:</span> <span class="font-medium ml-1 text-xs break-all">${trace.sceneName || '无'}</span></div>
                             <div><span class="text-gray-500">轨迹类型:</span> <span class="font-medium ${traceTypeClass} ml-1">${trace.traceType || '未知'}</span></div>
                             <div><span class="text-gray-500">请求类型:</span> <span class="font-medium ${requestTypeClass} ml-1">${trace.requestType || '未知'}</span></div>
                             <div><span class="text-gray-500">时间戳:</span> <span class="font-medium ml-1">${formattedTime}</span></div>
@@ -928,7 +930,7 @@
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-sm">
                             <div><span class="text-gray-500">Conversation ID:</span> <span class="font-medium ml-1">${message.conversationId || '无'}</span></div>
-                            <div><span class="text-gray-500">Scene ID:</span> <span class="font-medium ml-1 text-xs break-all">${message.sceneId || '无'}</span></div>
+                            <div><span class="text-gray-500">Scene Name:</span> <span class="font-medium ml-1 text-xs break-all">${message.sceneName || '无'}</span></div>
                             <div><span class="text-gray-500">消息类型:</span> <span class="font-medium ${messageTypeClass} ml-1">${message.messageType || '未知'}</span></div>
                             <div><span class="text-gray-500">时间戳:</span> <span class="font-medium ml-1">${formattedTime}</span></div>
                         </div>

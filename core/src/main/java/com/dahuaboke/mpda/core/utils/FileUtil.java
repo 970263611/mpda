@@ -73,7 +73,7 @@ public class FileUtil {
         }
         Resource dirResource = RESOURCE_LOADER.getResource(normalizedDir);
         if (!dirResource.exists()) {
-            throw new IOException("Directory not found: " + dirPath);
+            return List.of();
         }
         List<String> filePaths = new ArrayList<>();
         try {

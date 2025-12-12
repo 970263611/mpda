@@ -30,8 +30,8 @@ public class HumanNode implements NodeAction {
 
     private Flux<ChatResponse> buildResponse(String content, OverAllState state) {
         String conversationId = state.value(Constants.CONVERSATION_ID, String.class).get();
-        String sceneId = state.value(Constants.SCENE_ID, String.class).get();
-        ChatResponse chatResponse = new ChatResponse(List.of(new Generation(new AssistantMessageWrapper(conversationId, sceneId, content))));
+        String sceneName = state.value(Constants.SCENE_NAME, String.class).get();
+        ChatResponse chatResponse = new ChatResponse(List.of(new Generation(new AssistantMessageWrapper(conversationId, sceneName, content))));
         return Flux.just(chatResponse);
     }
 }

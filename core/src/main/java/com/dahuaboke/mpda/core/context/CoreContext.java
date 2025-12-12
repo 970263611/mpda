@@ -1,6 +1,7 @@
 package com.dahuaboke.mpda.core.context;
 
 
+import com.dahuaboke.mpda.core.agent.scene.strategy.SceneFinderStrategy;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.LinkedHashMap;
@@ -14,10 +15,10 @@ public class CoreContext {
 
     private String query;
     private String conversationId;
-    private String sceneId;
+    private String sceneName;
     private Map<String, Object> extend;
     @JsonIgnore
-    private transient String sceneName;
+    private transient SceneFinderStrategy findStrategy;
 
     public CoreContext(String query, String conversationId) {
         this.query = query;
@@ -43,14 +44,6 @@ public class CoreContext {
         this.conversationId = conversationId;
     }
 
-    public String getSceneId() {
-        return sceneId;
-    }
-
-    public void setSceneId(String sceneId) {
-        this.sceneId = sceneId;
-    }
-
     public Map<String, Object> getExtend() {
         return extend;
     }
@@ -72,5 +65,13 @@ public class CoreContext {
 
     public void setSceneName(String sceneName) {
         this.sceneName = sceneName;
+    }
+
+    public SceneFinderStrategy getFindStrategy() {
+        return findStrategy;
+    }
+
+    public void setFindStrategy(SceneFinderStrategy findStrategy) {
+        this.findStrategy = findStrategy;
     }
 }

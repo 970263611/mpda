@@ -89,14 +89,14 @@ public class ToolNode implements NodeAction {
 
     protected ChatResponse chatResponse(OverAllState state) {
         String conversationId = state.value(Constants.CONVERSATION_ID, String.class).get();
-        String sceneId = state.value(Constants.SCENE_ID, String.class).get();
+        String sceneName = state.value(Constants.SCENE_NAME, String.class).get();
         LlmResponse llmResponse = state.value(Constants.RESULT, LlmResponse.class).get();
         ChatResponse chatResponse = llmResponse.chatResponse();
         AssistantMessage assistantMessage = chatResponse.getResult().getOutput();
         AssistantMessageWrapper assistantMessageWrapper =
-                new AssistantMessageWrapper(conversationId, sceneId, assistantMessage.getText(), assistantMessage.getMetadata(), assistantMessage.getToolCalls()
+                new AssistantMessageWrapper(conversationId, sceneName, assistantMessage.getText(), assistantMessage.getMetadata(), assistantMessage.getToolCalls()
                         , assistantMessage.getMedia());
-        memoryManager.addMemory(conversationId, sceneId, assistantMessageWrapper);
+        memoryManager.addMemory(conversationId, sceneName, assistantMessageWrapper);
         return chatResponse;
     }
 
@@ -106,9 +106,9 @@ public class ToolNode implements NodeAction {
 
     protected ToolResponseMessageWrapper buildToolResponseMessageWrapper(OverAllState state, ToolResponseMessage toolResponseMessage) {
         String conversationId = state.value(Constants.CONVERSATION_ID, String.class).get();
-        String sceneId = state.value(Constants.SCENE_ID, String.class).get();
-        ToolResponseMessageWrapper toolResponseMessageWrapper = new ToolResponseMessageWrapper(conversationId, sceneId, toolResponseMessage);
-        memoryManager.addMemory(conversationId, sceneId, toolResponseMessageWrapper);
+        String sceneName = state.value(Constants.SCENE_NAME, String.class).get();
+        ToolResponseMessageWrapper toolResponseMessageWrapper = new ToolResponseMessageWrapper(conversationId, sceneName, toolResponseMessage);
+        memoryManager.addMemory(conversationId, sceneName, toolResponseMessageWrapper);
         return toolResponseMessageWrapper;
     }
 

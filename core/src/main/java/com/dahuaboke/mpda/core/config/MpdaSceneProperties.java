@@ -10,7 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "mpda.scene")
 public class MpdaSceneProperties {
 
-    private int retry;
+    private int retry = 1;
 
     public int getRetry() {
         return retry;

@@ -12,5 +12,5 @@ public interface MessageWrapper extends Message {
 
     String getConversationId();
 
-    String getSceneId();
+    String getSceneName();
 }

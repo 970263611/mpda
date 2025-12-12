@@ -27,7 +27,6 @@ import java.util.*;
 public class CacheManager implements BeanPostProcessor {
 
     private final Map<String, SceneWrapper> sceneWrappers = new HashMap<>();
-    private final Map<String, SceneWrapper> sceneNameWrappers = new HashMap<>();
     private final List<Scene> scenes = new ArrayList<>();
     /**
      * memory
@@ -77,17 +76,9 @@ public class CacheManager implements BeanPostProcessor {
         attributeThreadLocal.remove();
     }
 
-    public void addScenedWrapper(String sceneId, SceneWrapper sceneWrapper) {
-        sceneWrappers.put(sceneId, sceneWrapper);
-    }
-
-    public Map<String, SceneWrapper> getSceneWrappers() {
-        return sceneWrappers;
-    }
-
-    public String getSceneIdBySceneClass(Class<? extends Scene> clz) {
+    public String getSceneNameBySceneClass(Class<? extends Scene> clz) {
         return sceneWrappers.values().stream().filter(
-                wrapper -> wrapper.getSceneClass().equals(clz)).findFirst().orElseThrow(MpdaIllegalConfigException::new).getSceneId();
+                wrapper -> wrapper.getSceneName().equals(clz)).findFirst().orElseThrow(MpdaIllegalConfigException::new).getSceneName();
     }
 
     public Map<String, Map<String, LimitedListWrapper<Message>>> getMemories() {
@@ -112,7 +103,7 @@ public class CacheManager implements BeanPostProcessor {
                 scenes.add(scene);
                 wrapper = buildWrapper(scene);
             }
-            sceneNameWrappers.put(scene.getClass().getSimpleName(), wrapper);
+            sceneWrappers.put(wrapper.getSceneName(), wrapper);
         }
         return bean;
     }
@@ -140,19 +131,23 @@ public class CacheManager implements BeanPostProcessor {
         AbstractBeanDefinition beanDefinition = BeanDefinitionBuilder.genericBeanDefinition(SceneWrapper.class).getBeanDefinition();
         beanDefinition.setScope("prototype");
         beanDefinition.setInstanceSupplier(() -> wrapper);
-        registry.registerBeanDefinition(wrapper.getSceneId(), beanDefinition);
-        return applicationContext.getBean(wrapper.getSceneId(), SceneWrapper.class);
+        registry.registerBeanDefinition(wrapper.getSceneName(), beanDefinition);
+        return applicationContext.getBean(wrapper.getSceneName(), SceneWrapper.class);
     }
 
     public SceneWrapper getRootWrapper() {
         return rootWrapper;
     }
 
-    public Map<String, SceneWrapper> getSceneNameWrappers() {
-        return sceneNameWrappers;
-    }
-
     public List<Scene> getScenes() {
         return scenes;
+    }
+
+    public Map<String, SceneWrapper> getSceneWrappers() {
+        return sceneWrappers;
+    }
+
+    public SceneWrapper getSceneWrapperByName(String sceneName) {
+        return sceneWrappers.get(sceneName);
     }
 }

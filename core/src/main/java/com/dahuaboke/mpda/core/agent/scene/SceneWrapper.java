@@ -10,7 +10,6 @@ import reactor.core.publisher.Flux;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -19,19 +18,13 @@ import java.util.stream.Collectors;
  */
 public class SceneWrapper {
 
-    private final String sceneId;
-    private final Chain chain;
     private final Scene scene;
+    private final Chain chain;
     protected Set<SceneWrapper> childrenWrapper;
 
     protected SceneWrapper(Chain chain, Scene scene) {
         this.chain = chain;
         this.scene = scene;
-        if (scene != null) {
-            this.sceneId = scene.getClass().getName();
-        } else {
-            this.sceneId = UUID.randomUUID().toString();
-        }
     }
 
     public static Builder builder() {
@@ -39,15 +32,11 @@ public class SceneWrapper {
     }
 
     public String getDescription() {
-        return scene == null ? null : scene.description();
+        return scene == null ? "unknown" : scene.description();
     }
 
-    public String getSceneId() {
-        return sceneId;
-    }
-
-    public Class<? extends Scene> getSceneClass() {
-        return scene == null ? null : scene.getClass();
+    public String getSceneName() {
+        return scene == null ? "unknown" : scene.getClass().getName();
     }
 
     public void addChildWrapper(SceneWrapper childWrapper) {
@@ -61,7 +50,7 @@ public class SceneWrapper {
         if (CollectionUtils.isNotEmpty(childrenWrapper) && scene != null && scene.prompt() != null) {
             scene.prompt().build(childrenWrapper.stream().collect(Collectors.toMap(child -> {
                 if (child != null) {
-                    return child.getSceneId();
+                    return child.getSceneName();
                 }
                 return "";
             }, child -> {

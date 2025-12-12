@@ -39,7 +39,7 @@ public class SceneAspect {
     public void beforeExecute(JoinPoint joinPoint) {
         TraceMessage traceMessage = buildTraceMessage(joinPoint, IN);
         String trace = String.format("%s >>> (%s) in >>> %s(%s) @time: %d",
-                traceMessage.getConversationId(), traceMessage.getRequestType(), traceMessage.getSimpleName(), traceMessage.getDescription(), System.currentTimeMillis());
+                traceMessage.getConversationId(), traceMessage.getRequestType(), traceMessage.getSceneName(), traceMessage.getDescription(), System.currentTimeMillis());
         traceManager.addTrace(traceMessage);
         logger.debug(trace);
     }
@@ -48,7 +48,7 @@ public class SceneAspect {
     public void afterReturnExecute(JoinPoint joinPoint) {
         TraceMessage traceMessage = buildTraceMessage(joinPoint, OUT);
         String trace = String.format("%s <<< (%s) out <<< %s(%s) @time: %d",
-                traceMessage.getConversationId(), traceMessage.getRequestType(), traceMessage.getSimpleName(), traceMessage.getDescription(), System.currentTimeMillis());
+                traceMessage.getConversationId(), traceMessage.getRequestType(), traceMessage.getSceneName(), traceMessage.getDescription(), System.currentTimeMillis());
         traceManager.addTrace(traceMessage);
         logger.debug(trace);
     }
@@ -57,7 +57,7 @@ public class SceneAspect {
     public void afterThrowingExecute(JoinPoint joinPoint, Throwable throwable) {
         TraceMessage traceMessage = buildTraceMessage(joinPoint, EXCEPTION);
         String trace = String.format("%s !!! (%s) throw exception !!! %s(%s) : %s @time: %d",
-                traceMessage.getConversationId(), traceMessage.getRequestType(), traceMessage.getSimpleName(), traceMessage.getDescription(), throwable.getMessage(), System.currentTimeMillis());
+                traceMessage.getConversationId(), traceMessage.getRequestType(), traceMessage.getSceneName(), traceMessage.getDescription(), throwable.getMessage(), System.currentTimeMillis());
         traceManager.addTrace(traceMessage);
         logger.debug(trace, throwable);
     }
@@ -76,9 +76,8 @@ public class SceneAspect {
         Object target = joinPoint.getTarget();
         SceneWrapper sceneWrapper = (SceneWrapper) target;
         String conversationId = cacheManager.getContext().getConversationId();
-        Class<? extends Scene> sceneClass = sceneWrapper.getSceneClass();
-        String simpleName = sceneClass == null ? "unknow" : sceneClass.getSimpleName();
+        String sceneName = sceneWrapper.getSceneName();
         String description = sceneWrapper.getDescription();
-        return new TraceMessage(conversationId, simpleName, description, requestType, traceType);
+        return new TraceMessage(conversationId, sceneName, description, requestType, traceType);
     }
 }

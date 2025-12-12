@@ -3,10 +3,14 @@ package com.dahuaboke.mpda.core.agent.scene.strategy;
 import com.dahuaboke.mpda.core.agent.scene.Scene;
 import com.dahuaboke.mpda.core.agent.scene.SceneWrapper;
 import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
+import com.dahuaboke.mpda.core.config.MpdaSceneProperties;
+import com.dahuaboke.mpda.core.context.CacheManager;
 import com.dahuaboke.mpda.core.context.CoreContext;
 import com.dahuaboke.mpda.core.exception.MpdaException;
 import com.dahuaboke.mpda.core.exception.MpdaGraphException;
 import com.dahuaboke.mpda.core.utils.SpringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -21,6 +25,12 @@ import java.util.Set;
 @Component
 public class RouteFinderStrategy extends AbstractSceneFinderStrategy {
 
+    private static final Logger logger = LoggerFactory.getLogger(RouteFinderStrategy.class);
+
+    public RouteFinderStrategy(MpdaSceneProperties properties, CacheManager cacheManager, SceneFinderManager sceneFinderManager) {
+        super(properties, cacheManager, sceneFinderManager);
+    }
+
     @Override
     public List<SceneWrapper> findScene(CoreContext context) throws MpdaException {
         if (!isInit) {
@@ -33,7 +43,7 @@ public class RouteFinderStrategy extends AbstractSceneFinderStrategy {
         SceneWrapper runtimeWrapper = cacheManager.getRootWrapper();
         while (!runtimeWrapper.isEnd()) {
             try {
-                context.setSceneId(runtimeWrapper.getSceneId());
+                context.setSceneName(runtimeWrapper.getSceneName());
                 cacheManager.setContext(context);
                 runtimeWrapper = next(context, runtimeWrapper);
             } finally {
@@ -55,7 +65,7 @@ public class RouteFinderStrategy extends AbstractSceneFinderStrategy {
         }
         String finalExecute = output.trim();
         Set<SceneWrapper> childrenWrapper = runtimeWrapper.getChildrenWrapper();
-        Optional<SceneWrapper> match = childrenWrapper.stream().filter(child -> child.getSceneId().equals(finalExecute)).findFirst();
+        Optional<SceneWrapper> match = childrenWrapper.stream().filter(child -> child.getSceneName().equals(finalExecute)).findFirst();
         if (match.isPresent()) {
             return match.get();
         }
@@ -67,20 +77,19 @@ public class RouteFinderStrategy extends AbstractSceneFinderStrategy {
     }
 
     public void lazyInit() {
-        Map<String, SceneWrapper> sceneNameWrappers = cacheManager.getSceneNameWrappers();
+        Map<String, SceneWrapper> sceneWrappers = cacheManager.getSceneWrappers();
         cacheManager.getScenes().stream().forEach(scene -> {
             Class<? extends Scene> parent = scene.parent();
             Scene parentScene = SpringUtil.getBean(parent);
-            SceneWrapper parentSceneWrapper = sceneNameWrappers.get(parentScene.getClass().getSimpleName());
-            SceneWrapper childSceneWrapper = sceneNameWrappers.get(scene.getClass().getSimpleName());
+            SceneWrapper parentSceneWrapper = sceneWrappers.get(parentScene.getClass().getName());
+            SceneWrapper childSceneWrapper = sceneWrappers.get(scene.getClass().getName());
             parentSceneWrapper.addChildWrapper(childSceneWrapper);
         });
-        sceneNameWrappers.values().stream().forEach(sceneWrapper -> {
+        sceneWrappers.values().stream().forEach(sceneWrapper -> {
             try {
-                cacheManager.addScenedWrapper(sceneWrapper.getSceneId(), sceneWrapper);
                 sceneWrapper.init();
             } catch (MpdaGraphException e) {
-                e.printStackTrace(); //TODO
+                logger.error("Scene init exception {}", sceneWrapper.getSceneName(), e);
             }
         });
         isInit = true;

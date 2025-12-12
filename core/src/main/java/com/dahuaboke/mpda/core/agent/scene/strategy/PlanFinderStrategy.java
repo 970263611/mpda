@@ -1,6 +1,8 @@
 package com.dahuaboke.mpda.core.agent.scene.strategy;
 
 import com.dahuaboke.mpda.core.agent.scene.SceneWrapper;
+import com.dahuaboke.mpda.core.config.MpdaSceneProperties;
+import com.dahuaboke.mpda.core.context.CacheManager;
 import com.dahuaboke.mpda.core.context.CoreContext;
 import com.dahuaboke.mpda.core.exception.MpdaException;
 import com.dahuaboke.mpda.core.exception.MpdaGraphException;
@@ -14,6 +16,10 @@ import java.util.List;
  */
 @Component
 public class PlanFinderStrategy extends AbstractSceneFinderStrategy {
+
+    public PlanFinderStrategy(MpdaSceneProperties properties, CacheManager cacheManager, SceneFinderManager sceneFinderManager) {
+        super(properties, cacheManager, sceneFinderManager);
+    }
 
     @Override
     public List<SceneWrapper> findScene(CoreContext context) throws MpdaException {

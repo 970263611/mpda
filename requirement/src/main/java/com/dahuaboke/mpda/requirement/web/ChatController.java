@@ -42,7 +42,7 @@ public class ChatController {
         }
         String q = objectMapper.writeValueAsString(fileMap);
         CoreContext context = new CoreContext(q, conversationId);
-        context.setSceneName(SplitScene.class.getSimpleName());
+        context.setSceneName(SplitScene.class.getName());
         SceneResponse response = chatService.split(context);
         return response;
     }
@@ -52,7 +52,7 @@ public class ChatController {
             @RequestHeader("Conversation-Id") String conversationId,
             @RequestBody String q) throws MpdaException, JsonProcessingException {
         CoreContext context = new CoreContext(q, conversationId);
-        context.setSceneName(AnalyzeScene.class.getSimpleName());
+        context.setSceneName(AnalyzeScene.class.getName());
         SceneResponse response = chatService.split(context);
         return response;
     }
@@ -62,7 +62,7 @@ public class ChatController {
             @RequestHeader("Conversation-Id") String conversationId,
             @RequestBody String q) throws MpdaException, JsonProcessingException {
         CoreContext context = new CoreContext(q, conversationId);
-        context.setSceneName(CheckScene.class.getSimpleName());
+        context.setSceneName(CheckScene.class.getName());
         SceneResponse response = chatService.split(context);
         return response;
     }
@@ -72,7 +72,7 @@ public class ChatController {
             @RequestHeader("Conversation-Id") String conversationId,
             @RequestBody String q) throws MpdaException, JsonProcessingException {
         CoreContext context = new CoreContext(q, conversationId);
-        context.setSceneName(ValueScene.class.getSimpleName());
+        context.setSceneName(ValueScene.class.getName());
         SceneResponse response = chatService.split(context);
         return response;
     }
@@ -82,7 +82,7 @@ public class ChatController {
             @RequestHeader("Conversation-Id") String conversationId,
             @RequestBody String q) throws MpdaException, JsonProcessingException {
         CoreContext context = new CoreContext(q, conversationId);
-        context.setSceneName(DocumentScene.class.getSimpleName());
+        context.setSceneName(DocumentScene.class.getName());
         SceneResponse response = chatService.split(context);
         return response;
     }
@@ -92,7 +92,7 @@ public class ChatController {
             @RequestHeader("Conversation-Id") String conversationId,
             @RequestBody String q) throws MpdaException, JsonProcessingException {
         CoreContext context = new CoreContext(q, conversationId);
-        context.setSceneName(OptimizeScene.class.getSimpleName());
+        context.setSceneName(OptimizeScene.class.getName());
         SceneResponse response = chatService.split(context);
         return response;
     }

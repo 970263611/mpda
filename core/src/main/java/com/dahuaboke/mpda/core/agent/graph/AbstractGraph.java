@@ -74,8 +74,8 @@ public abstract class AbstractGraph implements Graph {
     }
 
     @Override
-    public void addMemory(String conversationId, String sceneId, Message message) {
-        memoryManager.addMemory(conversationId, sceneId, message);
+    public void addMemory(String conversationId, String sceneName, Message message) {
+        memoryManager.addMemory(conversationId, sceneName, message);
     }
 
     abstract public Map<Object, StateGraph> buildGraph(KeyStrategyFactory keyStrategyFactory) throws MpdaGraphException;

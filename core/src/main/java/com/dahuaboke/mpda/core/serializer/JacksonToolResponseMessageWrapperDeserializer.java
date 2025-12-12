@@ -46,8 +46,8 @@ public class JacksonToolResponseMessageWrapperDeserializer extends StdDeserializ
         TreeNode metadataNode = treeNode.get("metadata");
         Map metadata = objectMapper.treeToValue(metadataNode, Map.class);
         String conversationId = (String) metadata.get("conversationId");
-        String sceneId = (String) metadata.get("sceneId");
+        String sceneName = (String) metadata.get("sceneName");
         Long time = (Long) ((List) metadata.get("time")).get(1);
-        return new ToolResponseMessageWrapper(conversationId, sceneId, new ToolResponseMessage(toolResponses, metadata), time);
+        return new ToolResponseMessageWrapper(conversationId, sceneName, new ToolResponseMessage(toolResponses, metadata), time);
     }
 }

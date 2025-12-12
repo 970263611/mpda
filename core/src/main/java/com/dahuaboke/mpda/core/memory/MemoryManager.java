@@ -27,6 +27,8 @@ public class MemoryManager implements SmartLifecycle {
     private int memoryTimeout;
     private int memoryCheck;
     private CacheManager cacheManager;
+    private volatile boolean isRunning;
+    private Map<String, Long> memoryTimer = new HashMap<>();
 
     public MemoryManager(CacheManager cacheManager, MpdaMemoryProperties properties) {
         this.cacheManager = cacheManager;
@@ -34,10 +36,6 @@ public class MemoryManager implements SmartLifecycle {
         this.memoryTimeout = properties.getTimeout();
         this.memoryCheck = properties.getCheck();
     }
-
-    private volatile boolean isRunning;
-
-    private Map<String, Long> memoryTimer = new HashMap<>();
 
     private static Stream<Message> getMessageStream(Set<Class<? extends Message>> memoryExclude, List<Message> finalMessages) {
         Stream<Message> stream = finalMessages.stream().sorted((m1, m2) -> {
@@ -55,24 +53,24 @@ public class MemoryManager implements SmartLifecycle {
 
     public void addMemory(Message message) {
         String conversationId = cacheManager.getContext().getConversationId();
-        String sceneId = cacheManager.getContext().getSceneId();
-        addMemory(conversationId, sceneId, message);
+        String sceneName = cacheManager.getContext().getSceneName();
+        addMemory(conversationId, sceneName, message);
     }
 
-    public void addMemory(String conversationId, String sceneId, Message message) {
+    public void addMemory(String conversationId, String sceneName, Message message) {
         Map<String, Map<String, LimitedListWrapper<Message>>> memories = cacheManager.getMemories();
         if (memories.containsKey(conversationId)) {
             Map<String, LimitedListWrapper<Message>> sceneMessages = memories.get(conversationId);
-            if (sceneMessages.containsKey(sceneId)) {
-                sceneMessages.get(sceneId).add(message);
+            if (sceneMessages.containsKey(sceneName)) {
+                sceneMessages.get(sceneName).add(message);
             } else {
-                sceneMessages.put(sceneId, new LimitedListWrapper(maxMemory) {{
+                sceneMessages.put(sceneName, new LimitedListWrapper(maxMemory) {{
                     add(message);
                 }});
             }
         } else {
             memories.put(conversationId, new LinkedHashMap<>() {{
-                put(sceneId, new LimitedListWrapper(maxMemory) {{
+                put(sceneName, new LimitedListWrapper(maxMemory) {{
                     add(message);
                 }});
             }});
@@ -81,21 +79,21 @@ public class MemoryManager implements SmartLifecycle {
     }
 
     public List<Message> getMemory() {
-        return getMemory(cacheManager.getContext().getConversationId(), cacheManager.getContext().getSceneId());
+        return getMemory(cacheManager.getContext().getConversationId(), cacheManager.getContext().getSceneName());
     }
 
-    public List<Message> getMemory(String conversationId, String sceneId) {
+    public List<Message> getMemory(String conversationId, String sceneName) {
         Map<String, Map<String, LimitedListWrapper<Message>>> memories = cacheManager.getMemories();
         if (memories.containsKey(conversationId)) {
-            return memories.get(conversationId).get(sceneId);
+            return memories.get(conversationId).get(sceneName);
         }
         return List.of();
     }
 
-    public List<Message> getMemory(String conversationId, String sceneId, List<String> sceneMerge, Set<Class<? extends Message>> memoryExclude) {
+    public List<Message> getMemory(String conversationId, String sceneName, List<String> sceneMerge, Set<Class<? extends Message>> memoryExclude) {
         Map<String, Map<String, LimitedListWrapper<Message>>> memories = cacheManager.getMemories();
         if (memories.containsKey(conversationId)) {
-            List<Message> messages = memories.get(conversationId).get(sceneId);
+            List<Message> messages = memories.get(conversationId).get(sceneName);
             if (messages == null) {
                 messages = new ArrayList<>();
             }

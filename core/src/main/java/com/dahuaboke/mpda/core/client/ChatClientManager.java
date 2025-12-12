@@ -49,22 +49,22 @@ public class ChatClientManager {
         return chatClient;
     }
 
-    public LlmResponse call(String conversationId, String sceneId, String prompt, Object query, List<ToolCallback> tools,
+    public LlmResponse call(String conversationId, String sceneName, String prompt, Object query, List<ToolCallback> tools,
                             List<String> sceneMerge, Boolean isToolQuery, Set<Class<? extends Message>> memoryExclude) {
-        ChatClient.ChatClientRequestSpec spec = buildChatClientRequestSpec(conversationId, sceneId, prompt, query, tools, sceneMerge, isToolQuery, memoryExclude);
+        ChatClient.ChatClientRequestSpec spec = buildChatClientRequestSpec(conversationId, sceneName, prompt, query, tools, sceneMerge, isToolQuery, memoryExclude);
         ChatResponse chatResponse = spec.call().chatResponse();
         return new LlmResponse(chatResponse);
     }
 
-    public Flux<ChatResponse> stream(String conversationId, String sceneId, String prompt, Object query, List<String> sceneMerge, Boolean isToolQuery, Set<Class<? extends Message>> memoryExclude) {
-        ChatClient.ChatClientRequestSpec spec = buildChatClientRequestSpec(conversationId, sceneId, prompt, query, null, sceneMerge, isToolQuery, memoryExclude);
+    public Flux<ChatResponse> stream(String conversationId, String sceneName, String prompt, Object query, List<String> sceneMerge, Boolean isToolQuery, Set<Class<? extends Message>> memoryExclude) {
+        ChatClient.ChatClientRequestSpec spec = buildChatClientRequestSpec(conversationId, sceneName, prompt, query, null, sceneMerge, isToolQuery, memoryExclude);
         return spec.stream().chatResponse();
     }
 
-    private ChatClient.ChatClientRequestSpec buildChatClientRequestSpec(String conversationId, String sceneId, String prompt
+    private ChatClient.ChatClientRequestSpec buildChatClientRequestSpec(String conversationId, String sceneName, String prompt
             , Object query, List<ToolCallback> tools, List<String> sceneMerge, Boolean isToolQuery, Set<Class<? extends Message>> memoryExclude) {
         ChatClient.ChatClientRequestSpec spec = chatClient.prompt();
-        List<Message> messages = memoryManager.getMemory(conversationId, sceneId, sceneMerge, memoryExclude);
+        List<Message> messages = memoryManager.getMemory(conversationId, sceneName, sceneMerge, memoryExclude);
         if (CollectionUtils.isEmpty(messages)) {
             messages = List.of();
         }
@@ -72,11 +72,11 @@ public class ChatClientManager {
         if (isToolQuery) {
             message = (ToolResponseMessageWrapper) query;
         } else {
-            message = UserMessageWrapper.builder().text((String) query).conversationId(conversationId).sceneId(sceneId).build();
+            message = UserMessageWrapper.builder().text((String) query).conversationId(conversationId).sceneName(sceneName).build();
         }
         List<Message> finalMessages = new ArrayList<>(messages);
         finalMessages.addAll(List.of(message, new UserMessage(prompt)));
-        eventPublisher.publish(new MemoryAppendEvent(new MemoryWrapper(conversationId, sceneId, finalMessages), Event.Type.ADDED));
+        eventPublisher.publish(new MemoryAppendEvent(new MemoryWrapper(conversationId, sceneName, finalMessages), Event.Type.ADDED));
         spec.messages(finalMessages);
         if (!CollectionUtils.isEmpty(tools)) {
             spec.toolCallbacks(tools);

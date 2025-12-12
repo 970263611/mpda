@@ -10,9 +10,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "mpda.trace")
 public class MpdaTraceProperties {
 
-    private int max;
-    private int timeout; // minute
-    private int check; // second
+    private int max = 100;
+    private int timeout = 10; // minute
+    private int check = 30; // second
 
     public int getMax() {
         return max;
