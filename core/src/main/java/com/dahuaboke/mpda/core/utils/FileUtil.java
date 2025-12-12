@@ -3,11 +3,8 @@ package com.dahuaboke.mpda.core.utils;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.util.FileCopyUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.JarURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -20,50 +17,99 @@ import java.util.jar.JarFile;
 
 public class FileUtil {
 
-    // Spring内置的资源加载器，全局唯一
+    // 资源加载器（核心，适配classpath和本地文件）
     private static final ResourceLoader RESOURCE_LOADER = new DefaultResourceLoader();
 
     /**
-     * 加载文件，返回输入流
+     * 获取文件输入流（核心方法，统一处理classpath和本地文件）
      *
-     * @param path 资源路径
+     * @param path 路径支持：
+     *             - classpath资源：config/test.txt（等价于classpath:config/test.txt）
+     *             - 本地文件：C:/test.txt 或 file:C:/test.txt 或 ./test.txt
      * @return 输入流
-     * @throws IOException 资源不存在或读取失败时抛出
+     * @throws IOException 读取失败时抛出
      */
     public static InputStream getFileInputStream(String path) throws IOException {
-        Resource resource = RESOURCE_LOADER.getResource(path);
-        // 校验资源是否存在
+        if (path == null || path.trim().isEmpty()) {
+            throw new IllegalArgumentException("File path is null or empty");
+        }
+        // 标准化路径：如果是本地绝对路径（Windows以盘符开头，Linux以/开头），自动补file:前缀
+        String standardPath = standardizePath(path);
+        // 加载资源
+        Resource resource = RESOURCE_LOADER.getResource(standardPath);
         if (!resource.exists()) {
-            throw new IOException("File not found: " + path);
+            throw new FileNotFoundException("File not found: " + path);
+        }
+        if (!resource.isReadable()) {
+            throw new IOException("File can not read: " + path);
         }
         return resource.getInputStream();
     }
 
     /**
-     * 加载文本文件，返回字符串
+     * 读取文件内容为字符串（默认UTF-8编码）
      *
-     * @param path 资源路径
-     * @return 文本内容（UTF-8编码）
+     * @param path 文件路径（同getFileInputStream）
+     * @return 文件内容字符串
      * @throws IOException 读取失败时抛出
      */
     public static String getFileAsString(String path) throws IOException {
-        try (InputStream is = getFileInputStream(path)) {
-            // Spring工具类快速将输入流转字符串，自动关闭流
-            return new String(FileCopyUtils.copyToByteArray(is), StandardCharsets.UTF_8);
+        try (InputStream inputStream = getFileInputStream(path);
+             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+            StringBuilder content = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                content.append(line).append(System.lineSeparator());
+            }
+            // 移除最后一个换行符，避免内容末尾多空行
+            if (content.length() > 0) {
+                content.deleteCharAt(content.length() - 1);
+            }
+            return content.toString();
         }
     }
 
     /**
-     * 加载文件，返回字节数组
+     * 读取文件内容为字节数组
      *
-     * @param path 资源路径
+     * @param path 文件路径（同getFileInputStream）
      * @return 字节数组
      * @throws IOException 读取失败时抛出
      */
     public static byte[] getFileAsBytes(String path) throws IOException {
-        try (InputStream is = getFileInputStream(path)) {
-            return FileCopyUtils.copyToByteArray(is);
+        try (InputStream inputStream = getFileInputStream(path);
+             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, len);
+            }
+            return outputStream.toByteArray();
         }
+    }
+
+    /**
+     * 路径标准化处理：自动为本地绝对路径补file:前缀，兼容Windows/Linux
+     *
+     * @param path 原始路径
+     * @return 标准化后的路径
+     */
+    private static String standardizePath(String path) {
+        String trimPath = path.trim();
+        // 已包含classpath:或file:前缀，直接返回
+        if (trimPath.startsWith("classpath:") || trimPath.startsWith("file:")) {
+            return trimPath;
+        }
+        // Windows绝对路径（以盘符开头，如C:/、D:\）
+        if (trimPath.matches("^[A-Za-z]:[/\\\\].*")) {
+            return "file:" + trimPath.replace("\\", "/");
+        }
+        // Linux绝对路径（以/开头）
+        if (trimPath.startsWith("/")) {
+            return "file:" + trimPath;
+        }
+        // 其他情况：视为classpath资源（相对路径）
+        return trimPath;
     }
 
     public static List<String> listAllFiles(String dirPath) throws IOException {
@@ -121,13 +167,10 @@ public class FileUtil {
         }
         for (File file : files) {
             if (file.isDirectory()) {
-                // 递归遍历子目录
                 listFileSystemFiles(file, baseDir, filePaths);
             } else {
-                // 转换为相对于resources的路径
                 String absolutePath = file.getAbsolutePath().replace("\\", "/");
-                String resourcePath = absolutePath.substring(absolutePath.indexOf(baseDir));
-                filePaths.add(resourcePath);
+                filePaths.add(absolutePath);
             }
         }
     }

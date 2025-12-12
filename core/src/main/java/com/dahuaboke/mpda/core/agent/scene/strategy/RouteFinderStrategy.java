@@ -1,5 +1,6 @@
 package com.dahuaboke.mpda.core.agent.scene.strategy;
 
+import com.dahuaboke.mpda.core.agent.prompt.AgentPromptLoader;
 import com.dahuaboke.mpda.core.agent.scene.Scene;
 import com.dahuaboke.mpda.core.agent.scene.SceneWrapper;
 import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
@@ -27,15 +28,13 @@ public class RouteFinderStrategy extends AbstractSceneFinderStrategy {
 
     private static final Logger logger = LoggerFactory.getLogger(RouteFinderStrategy.class);
 
-    public RouteFinderStrategy(MpdaSceneProperties properties, CacheManager cacheManager, SceneFinderManager sceneFinderManager) {
-        super(properties, cacheManager, sceneFinderManager);
+    public RouteFinderStrategy(MpdaSceneProperties properties, CacheManager cacheManager
+            , SceneFinderManager sceneFinderManager, AgentPromptLoader agentPromptLoader) {
+        super(properties, cacheManager, sceneFinderManager, agentPromptLoader);
     }
 
     @Override
     public List<SceneWrapper> findScene(CoreContext context) throws MpdaException {
-        if (!isInit) {
-            lazyInit();
-        }
         return List.of(next(context));
     }
 
@@ -76,7 +75,8 @@ public class RouteFinderStrategy extends AbstractSceneFinderStrategy {
         return next(context, runtimeWrapper, retry);
     }
 
-    public void lazyInit() {
+    @Override
+    public void init() {
         Map<String, SceneWrapper> sceneWrappers = cacheManager.getSceneWrappers();
         cacheManager.getScenes().stream().forEach(scene -> {
             Class<? extends Scene> parent = scene.parent();

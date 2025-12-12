@@ -32,8 +32,6 @@ public class ResolutionAgentPrompt implements AgentPrompt {
                         1234567: 购买产品
                     返回：abcdefg
             """;
-    @Autowired
-    private ObjectMapper objectMapper;
     private String description;
 
     @Override

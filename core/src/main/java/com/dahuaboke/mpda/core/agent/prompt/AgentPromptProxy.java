@@ -26,7 +26,7 @@ public class AgentPromptProxy {
         this.agentPromptLoader = agentPromptLoader;
     }
 
-    @Pointcut("within(com.dahuaboke.mpda.core.node..*)")
+    @Pointcut("execution(* com.dahuaboke.mpda.core.agent.prompt.AgentPrompt+.description(..))")
     public void agentPromptPointcut() {
     }
 

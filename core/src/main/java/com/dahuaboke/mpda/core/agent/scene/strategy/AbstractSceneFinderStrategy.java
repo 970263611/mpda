@@ -1,5 +1,6 @@
 package com.dahuaboke.mpda.core.agent.scene.strategy;
 
+import com.dahuaboke.mpda.core.agent.prompt.AgentPromptLoader;
 import com.dahuaboke.mpda.core.agent.scene.SceneWrapper;
 import com.dahuaboke.mpda.core.agent.scene.unknown.UnknownWrapper;
 import com.dahuaboke.mpda.core.config.MpdaSceneProperties;
@@ -18,19 +19,26 @@ import java.util.List;
 public abstract class AbstractSceneFinderStrategy implements SceneFinderStrategy {
 
     protected CacheManager cacheManager;
+    protected AgentPromptLoader agentPromptLoader;
     @Autowired
     protected UnknownWrapper unknownWrapper;
     protected int sceneRetry;
     protected volatile boolean isInit = false;
 
-    public AbstractSceneFinderStrategy(MpdaSceneProperties properties, CacheManager cacheManager, SceneFinderManager sceneFinderManager) {
+    public AbstractSceneFinderStrategy(MpdaSceneProperties properties, CacheManager cacheManager
+            , SceneFinderManager sceneFinderManager, AgentPromptLoader agentPromptLoader) {
         this.sceneRetry = properties.getRetry();
         this.cacheManager = cacheManager;
+        this.agentPromptLoader = agentPromptLoader;
         sceneFinderManager.register(this.name(), this);
     }
 
     @Override
     public List<SceneWrapper> find(CoreContext context) throws MpdaException {
+        if (!isInit) {
+            agentPromptLoader.load();
+            init();
+        }
         String sceneName = context.getSceneName();
         if (StringUtils.hasLength(sceneName)) {
             return List.of(cacheManager.getSceneWrapperByName(sceneName));
@@ -39,4 +47,6 @@ public abstract class AbstractSceneFinderStrategy implements SceneFinderStrategy
     }
 
     public abstract List<SceneWrapper> findScene(CoreContext context) throws MpdaException;
+
+    public abstract void init();
 }

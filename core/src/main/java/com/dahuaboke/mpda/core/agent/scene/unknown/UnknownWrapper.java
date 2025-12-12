@@ -12,7 +12,7 @@ import reactor.core.publisher.Flux;
  */
 public abstract class UnknownWrapper extends SceneWrapper {
     protected UnknownWrapper() {
-        super(null, null);
+        super(null, null, null, null);
     }
 
     abstract public String reply();

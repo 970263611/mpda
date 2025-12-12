@@ -1,6 +1,7 @@
 package com.dahuaboke.mpda.core.context;
 
 import com.dahuaboke.mpda.core.agent.chain.DefaultChain;
+import com.dahuaboke.mpda.core.agent.prompt.AgentPromptLoader;
 import com.dahuaboke.mpda.core.agent.scene.Scene;
 import com.dahuaboke.mpda.core.agent.scene.SceneWrapper;
 import com.dahuaboke.mpda.core.exception.MpdaIllegalConfigException;
@@ -38,6 +39,8 @@ public class CacheManager implements BeanPostProcessor {
     private final Map<String, LimitedListWrapper<TraceMessage>> traces = new LinkedHashMap();
     @Autowired
     private ApplicationContext applicationContext;
+    @Autowired
+    private AgentPromptLoader agentPromptLoader;
     /**
      * scene
      */
@@ -47,6 +50,7 @@ public class CacheManager implements BeanPostProcessor {
      */
     private ThreadLocal<CoreContext> contextThreadLocal = new ThreadLocal<>();
     private ThreadLocal<Map<String, Object>> attributeThreadLocal = new ThreadLocal<>();
+    private ThreadLocal<String> promptFromFieThreadLocal = new ThreadLocal<>();
 
     public CoreContext getContext() {
         return contextThreadLocal.get();
@@ -58,6 +62,18 @@ public class CacheManager implements BeanPostProcessor {
 
     public void removeContext() {
         contextThreadLocal.remove();
+    }
+
+    public String getPromptFromFie() {
+        return promptFromFieThreadLocal.get();
+    }
+
+    public void setPromptFromFie(String prompt) {
+        promptFromFieThreadLocal.set(prompt);
+    }
+
+    public void removePromptFromFie() {
+        promptFromFieThreadLocal.remove();
     }
 
     public Map<String, Object> getAttribute() {
@@ -126,6 +142,8 @@ public class CacheManager implements BeanPostProcessor {
         SceneWrapper wrapper = SceneWrapper.builder()
                 .chain(chain)
                 .scene(scene)
+                .agentPromptLoader(agentPromptLoader)
+                .cacheManager(this)
                 .build();
         BeanDefinitionRegistry registry = (BeanDefinitionRegistry) ((ConfigurableApplicationContext) applicationContext).getBeanFactory();
         AbstractBeanDefinition beanDefinition = BeanDefinitionBuilder.genericBeanDefinition(SceneWrapper.class).getBeanDefinition();

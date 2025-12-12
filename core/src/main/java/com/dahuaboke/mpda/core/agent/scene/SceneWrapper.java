@@ -1,7 +1,10 @@
 package com.dahuaboke.mpda.core.agent.scene;
 
 import com.dahuaboke.mpda.core.agent.chain.Chain;
+import com.dahuaboke.mpda.core.agent.prompt.AgentPromptLoader;
+import com.dahuaboke.mpda.core.agent.prompt.entity.AgentPromptEntity;
 import com.dahuaboke.mpda.core.agent.scene.entity.SceneResponse;
+import com.dahuaboke.mpda.core.context.CacheManager;
 import com.dahuaboke.mpda.core.context.CoreContext;
 import com.dahuaboke.mpda.core.exception.MpdaException;
 import com.dahuaboke.mpda.core.exception.MpdaGraphException;
@@ -9,6 +12,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import reactor.core.publisher.Flux;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -21,10 +26,14 @@ public class SceneWrapper {
     private final Scene scene;
     private final Chain chain;
     protected Set<SceneWrapper> childrenWrapper;
+    private final AgentPromptLoader agentPromptLoader;
+    private final CacheManager cacheManager;
 
-    protected SceneWrapper(Chain chain, Scene scene) {
+    protected SceneWrapper(Chain chain, Scene scene, AgentPromptLoader agentPromptLoader, CacheManager cacheManager) {
         this.chain = chain;
         this.scene = scene;
+        this.agentPromptLoader = agentPromptLoader;
+        this.cacheManager = cacheManager;
     }
 
     public static Builder builder() {
@@ -48,7 +57,7 @@ public class SceneWrapper {
 
     public void init() throws MpdaGraphException {
         if (CollectionUtils.isNotEmpty(childrenWrapper) && scene != null && scene.prompt() != null) {
-            scene.prompt().build(childrenWrapper.stream().collect(Collectors.toMap(child -> {
+            Map<String, String> collect = childrenWrapper.stream().collect(Collectors.toMap(child -> {
                 if (child != null) {
                     return child.getSceneName();
                 }
@@ -58,7 +67,19 @@ public class SceneWrapper {
                     return child.getDescription();
                 }
                 return "";
-            })));
+            }));
+            scene.prompt().build(collect);
+            List<AgentPromptEntity> prompts = agentPromptLoader.extractPrompt(scene.getClass().getName());
+            prompts.forEach(entity -> {
+                try {
+                    cacheManager.setPromptFromFie(entity.getPrompt());
+                    scene.prompt().build(collect);
+                    String prompt = cacheManager.getPromptFromFie();
+                    agentPromptLoader.updatePrompt(entity.getSceneName(), entity.getFindStrategyName(), prompt);
+                } finally {
+                    cacheManager.removePromptFromFie();
+                }
+            });
         }
         this.chain.init();
     }
@@ -83,6 +104,8 @@ public class SceneWrapper {
 
         private Chain chain;
         private Scene scene;
+        private AgentPromptLoader agentPromptLoader;
+        private CacheManager cacheManager;
 
         private Builder() {
         }
@@ -97,8 +120,18 @@ public class SceneWrapper {
             return this;
         }
 
+        public Builder agentPromptLoader(AgentPromptLoader agentPromptLoader) {
+            this.agentPromptLoader = agentPromptLoader;
+            return this;
+        }
+
+        public Builder cacheManager(CacheManager cacheManager) {
+            this.cacheManager = cacheManager;
+            return this;
+        }
+
         public SceneWrapper build() {
-            return new SceneWrapper(chain, scene);
+            return new SceneWrapper(chain, scene, agentPromptLoader, cacheManager);
         }
     }
 }

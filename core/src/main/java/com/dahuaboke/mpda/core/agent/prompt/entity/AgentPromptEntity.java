@@ -28,4 +28,8 @@ public class AgentPromptEntity {
     public String getSceneName() {
         return sceneName;
     }
+
+    public void setPrompt(String prompt) {
+        this.prompt = prompt;
+    }
 }
