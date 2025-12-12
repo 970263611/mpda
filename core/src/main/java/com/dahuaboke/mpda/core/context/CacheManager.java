@@ -78,7 +78,7 @@ public class CacheManager implements BeanPostProcessor {
 
     public String getSceneNameBySceneClass(Class<? extends Scene> clz) {
         return sceneWrappers.values().stream().filter(
-                wrapper -> wrapper.getSceneName().equals(clz)).findFirst().orElseThrow(MpdaIllegalConfigException::new).getSceneName();
+                wrapper -> wrapper.getSceneName().equals(clz.getName())).findFirst().orElseThrow(MpdaIllegalConfigException::new).getSceneName();
     }
 
     public Map<String, Map<String, LimitedListWrapper<Message>>> getMemories() {
