@@ -37,6 +37,9 @@ public class InformationByIdTool extends ProductTool<InformationByIdTool.Input> 
     public ToolResult execute(Input input) {
         try {
             String productNo = input.productNo();
+            if(StringUtils.isBlank(productNo) || productNo.length() != 6){
+                return ToolResult.success("查询失败", "请提供6位产品编号.");
+            }
             ProdInfoDto prodInfoDto = productToolHandler.selectProdInfo(new NetValReq(productNo));
             if (StringUtils.isEmpty(prodInfoDto.getFundCode())) {
                 return ToolResult.success("查询成功", "未查询到任何消息,请确认产品编号.");
@@ -50,27 +53,26 @@ public class InformationByIdTool extends ProductTool<InformationByIdTool.Input> 
             Map converted = objectMapper.convertValue(prodInfoDto, Map.class);
             if (converted != null) {
                 //近三月最大回撤
-                converted.put("maxWithDrawal", getMaxWithDrawal(productNo));
+                converted.put("近三月最大回撤", getMaxWithDrawal(productNo));
                 //近一月收益率
-                converted.put("yearRita", getYearRita(productNo));
+                converted.put("近一月收益率", getYearRita(productNo));
                 //近三月收益率
                 LocalDateTime now = LocalDateTime.now();
                 LocalDateTime nowAnd3 = now.plusMonths(-3);
-                converted.put("year3MRita", getYearRita(productNo, nowAnd3, now));
+                converted.put("近三月收益率", getYearRita(productNo, nowAnd3, now));
                 //近一年收益率
                 LocalDateTime nowAnd1Y = now.plusMonths(-12);
-                converted.put("year1YRita", getYearRita(productNo, nowAnd1Y, now));
+                converted.put("近一年收益率", getYearRita(productNo, nowAnd1Y, now));
                 //货基
                 if(FundType.MONET_MARKET_FUND.getCode().equals(prodtClsCode)){
                     //7日年化
                     NetValReq netValReq = new NetValReq();
                     netValReq.setProdtCode(productNo);
                     String sevenDayYearlyProfrat = productToolHandler.sevenDayYearlyProfrat(netValReq);
-                    double value = Double.parseDouble(sevenDayYearlyProfrat);
-                    converted.put("year7DRita", value);
-                    //TODO 万份收益
-
-
+                    converted.put("7日年化收益率", sevenDayYearlyProfrat);
+                    //万份收益
+                    String yieldPer10000 = productToolHandler.thouCopFundUnitProfit(netValReq);
+                    converted.put("万份收益", yieldPer10000);
                 }
 
             }

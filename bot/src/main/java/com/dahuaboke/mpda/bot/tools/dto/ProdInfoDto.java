@@ -1,26 +1,32 @@
 package com.dahuaboke.mpda.bot.tools.dto;
 
+import com.dahuaboke.mpda.bot.utils.FieldTranslation;
+
 public class ProdInfoDto {
 
 
     /**
      * 基金代码
      **/
+    @FieldTranslation(value = "基金代码", order = -5)
     private String fundCode;
 
     /**
      * 基金类型
      */
+    @FieldTranslation(value = "基金类型", order = -3)
     private String prodtClsCode;
 
     /**
      * 基金全称
      **/
+    @FieldTranslation(value = "基金全称", order = -6)
     private String fundFnm;
 
     /**
      * 基金简称
      **/
+    @FieldTranslation(value = "基金简称")
     private String prodtSname;
 
     /**
@@ -31,202 +37,242 @@ public class ProdInfoDto {
     /**
      * 基金经理名字
      **/
+    @FieldTranslation(value = "基金经理", order = -2)
     private String investMgrName;
 
     /**
      * 基金经理任职日期
      **/
+    @FieldTranslation(value = "基金经理任职日期")
     private String offcDt;
 
     /**
      * 基金经理证券从业年限
      **/
+    @FieldTranslation(value = "基金经理证券从业年限")
     private String engageYearNum;
 
     /**
      * 基金经理说明
      **/
+    @FieldTranslation(value = "基金经理说明")
     private String engagePersonDesc;
 
     /**
      * 基金经理开始担任本基金基金经理的日期
      **/
+    @FieldTranslation(value = "基金经理开始担任本基金基金经理的日期")
     private String relatBgnTime;
 
     /**
      * 基金经理证券从业日期
      **/
+    @FieldTranslation(value = "基金经理证券从业日期")
     private String competBgnTime;
 
     /**
      * 报告期末按行业分类的境内股票投资组合
      **/
+    @FieldTranslation(value = "报告期末按行业分类的境内股票投资组合")
     private String ltsrIvstStockInfo;
 
     /**
      * 报告期末按公允价值占基金资产净值比例大小排序的前十名股票投资明细
      **/
+    @FieldTranslation(value = "报告期末按公允价值占基金资产净值比例大小排序的前十名股票投资明细")
     private String stockBondIssueSituDesc;
 
     /**
      * 报告期末按债券品种分类的债券投资组合
      **/
+    @FieldTranslation(value = "报告期末按债券品种分类的债券投资组合")
     private String bondChrgIntInfo;
 
     /**
      * 报告期末按债券品种分类的债券投资组合中国家债券占基金资产净值比例
      **/
+    @FieldTranslation(value = "报告期末按债券品种分类的债券投资组合中国家债券占基金资产净值比例")
     private String firstIssueBondBillNo;
 
     /**
      * 报告期末按债券品种分类的债券投资组合中央行票据占基金资产净值比例
      **/
+    @FieldTranslation(value = "报告期末按债券品种分类的债券投资组合中央行票据占基金资产净值比例")
     private String pbcBuyRtslPamt;
 
     /**
      * 报告期末按债券品种分类的债券投资组合中金融债券占基金资产净值比例
      **/
+    @FieldTranslation(value = "报告期末按债券品种分类的债券投资组合中金融债券占基金资产净值比例")
     private String amtAppoRatio;
 
     /**
      * 报告期末按债券品种分类的债券投资组合中政策性金融债占基金资产净值比例
      **/
+    @FieldTranslation(value = "报告期末按债券品种分类的债券投资组合中政策性金融债占基金资产净值比例")
     private String plcyFdbtAmt;
 
     /**
      * 报告期末按债券品种分类的债券投资组合中企业债券占基金资产净值比例
      **/
+    @FieldTranslation(value = "报告期末按债券品种分类的债券投资组合中企业债券占基金资产净值比例")
     private String beInvesCorpShrHoldRatio;
 
     /**
      * 报告期末按债券品种分类的债券投资组合中企业短期融资券占基金资产净值比例
      **/
+    @FieldTranslation(value = "报告期末按债券品种分类的债券投资组合中企业短期融资券占基金资产净值比例")
     private String docBillRatio;
 
     /**
      * 报告期末按债券品种分类的债券投资组合中中期票据占基金资产净值比例
      **/
+    @FieldTranslation(value = "报告期末按债券品种分类的债券投资组合中中期票据占基金资产净值比例")
     private String bibTmOcqn;
 
     /**
      * 报告期末按公允价值占基金资产净值比例大小排序的前五名债券投资明细
      **/
+    @FieldTranslation(value = "报告期末按公允价值占基金资产净值比例大小排序的前五名债券投资明细")
     private String bondiDtl;
 
     /**
      * 报告期末基金资产组合情况
      **/
+    @FieldTranslation(value = "报告期末基金资产组合情况")
     private String assetInfo;
 
     /**
      * 本报告期基金份额净值增长率及其与同期业绩比较基准收益率的比较
      **/
+    @FieldTranslation(value = "本报告期基金份额净值增长率及其与同期业绩比较基准收益率的比较")
     private String fundstgSumProfrat;
 
     /**
      * 期末基金资产净值
      **/
+    @FieldTranslation(value = "基金规模", order = -1)
     private String assetNval;
 
     /**
      * 报告期期末基金份额总额
      **/
+    @FieldTranslation(value = "报告期期末基金份额总额")
     private String projTotLimt;
 
 
     /**
      * 基金管理人
      **/
+    @FieldTranslation(value = "基金公司", order = -4)
     private String fundMgrName;
 
     /**
      * 基金托管人
      **/
+    @FieldTranslation(value = "基金托管人")
     private String trusteePersName;
 
     /**
      * 运作方式
      **/
+    @FieldTranslation(value = "运作方式")
     private String fundOprModeCd;
 
     /**
      * 开放频率
      **/
+    @FieldTranslation(value = "开放频率")
     private String exgRateUpdFreq;
 
     /**
      * 基金合同生效日
      **/
+    @FieldTranslation(value = "基金合同生效日")
     private String contractEffDate;
 
     /**
      * 投资目标
      **/
+    @FieldTranslation(value = "投资目标")
     private String investTargetCode;
 
     /**
      * 投资范围
      **/
+    @FieldTranslation(value = "投资范围")
     private String investScope;
 
     /**
      * 主要投资策略
      **/
+    @FieldTranslation(value = "主要投资策略")
     private String ivstStgyName;
 
     /**
      * 业绩比较基准
      **/
+    @FieldTranslation(value = "业绩比较基准")
     private String performCmpBmkTxtDesc;
 
     /**
      * 风险收益特征
      **/
+    @FieldTranslation(value = "风险收益特征")
     private String riskProfitCoeff;
 
     /**
      * 基金销售相关费用申购费
      **/
+    @FieldTranslation(value = "基金销售相关费用申购费")
     private String fundAplypchsFee;
 
     /**
      * 基金销售相关费用赎回费
      **/
+    @FieldTranslation(value = "基金销售相关费用赎回费")
     private String rdmFert;
 
     /**
      * 基金运作相关费用管理费
      **/
+    @FieldTranslation(value = "基金运作相关费用管理费")
     private String excessMngFee;
 
     /**
      * 基金运作相关费用托管费
      **/
+    @FieldTranslation(value = "基金运作相关费用托管费")
     private String fundTsfrt;
 
     /**
      * 基金运作相关费用销售服务费
      **/
+    @FieldTranslation(value = "基金运作相关费用销售服务费")
     private String saleServFee;
 
     /**
      * 基金运作相关费用审计费用
      **/
+    @FieldTranslation(value = "基金运作相关费用审计费用")
     private String auditFe;
 
     /**
      * 基金运作相关费用信息披露费
      **/
+    @FieldTranslation(value = "基金运作相关费用信息披露费")
     private String infdclNppSumm;
 
     /**
      * 基金运作相关费用其他费用
      **/
+    @FieldTranslation(value = "基金运作相关费用其他费用")
     private String afadjOthfe;
 
     /**
      * 基金运作综合费率（年化）
      **/
+    @FieldTranslation(value = "基金运作综合费率（年化）")
     private String psbcChremCphsFert;
 
     /**
@@ -248,8 +294,6 @@ public class ProdInfoDto {
      * 基金分类原因(模型)
      **/
     private String mainReason;
-
-
 
 
     public ProdInfoDto() {

@@ -95,6 +95,16 @@ public class ProductToolHandler {
         return robotService.sevenDayYearlyProfrat(netValReq);
     }
 
+
+    /**
+     * 货基万份收益
+     * @param netValReq
+     * @return
+     */
+    public String thouCopFundUnitProfit(NetValReq netValReq) {
+        return robotService.thouCopFundUnitProfit(netValReq);
+    }
+
     /**
      * 市场排名报告
      * @param finBondType

@@ -24,7 +24,7 @@ public class MarketRankingTool extends ProductTool<MarketRankingTool.Input> {
 
     @Override
     public String getDescription() {
-        return "查询产品市场排名/定制市场分析报告/市场排名报告";
+        return "根据基金类型和时间范围来查询产品市场排名/定制市场分析报告/市场排名报告";
     }
 
     @Override
@@ -39,15 +39,27 @@ public class MarketRankingTool extends ProductTool<MarketRankingTool.Input> {
 
     @Override
     public ToolResult execute(MarketRankingTool.Input input) {
-        String period = input.period + "";
-        String finBondType = input.finBondType + "";
-        if ("0".equals(finBondType)) {
-            finBondType = "1";
+        String period = null;
+        String finBondType = null;
+        if (input.period instanceof List<Integer> && input.finBondType instanceof List<Integer>) {
+            if (input.period.size() == 1 && input.finBondType.size() == 1) {
+                period = input.period.get(0) + "";
+                finBondType = input.finBondType.get(0) + "";
+                if ("0".equals(finBondType)) {
+                    finBondType = "1";
+                }
+            } else if (input.period.size() == 0 || input.finBondType.size() == 0) {
+                return ToolResult.success("查询成功", "请重新输入查询条件");
+            } else if (input.period.size() > 1 || input.finBondType.size() > 1) {
+                return ToolResult.success("查询成功", "请重新输入查询条件");
+            } else {
+                return ToolResult.success("查询成功", "请重新输入查询条件");
+            }
         }
         //特殊处理场景:用户查询时间为季度
         if (TimeType.CURRENT_YEAR_Q1.getCode().equals(period) || TimeType.CURRENT_YEAR_Q2.getCode().equals(period) || TimeType.CURRENT_YEAR_Q3.getCode().equals(period) || TimeType.CURRENT_YEAR_Q4.getCode().equals(period)) {
-            if (input.period >= 5 && input.period <= 8) {
-                String periodTemp = String.valueOf(input.period - 4);
+            if (input.period.get(0) >= 5 && input.period.get(0) <= 8) {
+                String periodTemp = String.valueOf(input.period.get(0) - 4);
                 Map<String, String> supportYearQuartergMap = supportYearQuarter(Integer.parseInt(input.year() + periodTemp));
                 if ("false".equals(supportYearQuartergMap.get("flag"))) {
                     return ToolResult.success("查询成功", "您查询的时间不在可查询时间范围内~" + "支持查询的季度范围为" + supportYearQuartergMap.get("cue"));
@@ -178,9 +190,9 @@ public class MarketRankingTool extends ProductTool<MarketRankingTool.Input> {
                     4:利率债指数1-3年     -包含"利率债" "指数型"且明确年限"1-3年" "一年到三年"
                     5:利率债指数3-5年     -包含"利率债" "指数型"且明确年限"3-5年" "三年到五年"
                     6:利率债指数1-5年     -包含"利率债" "指数型"且明确年限"1-5年" "一年到五年"                     
-                     """) int finBondType,
+                     """) List<Integer> finBondType,
             @JsonPropertyDescription("""
-                    可用时间范围（非必填）
+                    可用时间范围（必填）
                     请严格按照以下规则匹配用户语义到数字参数(0-9)
                     0:无
                     1:近1周
@@ -191,10 +203,10 @@ public class MarketRankingTool extends ProductTool<MarketRankingTool.Input> {
                     6:第二季度
                     7:第三季度
                     8:第四季度(8)
-                    9:当前年
-                     """) int period,
+                    9:当前年/今年
+                     """) List<Integer> period,
             @JsonPropertyDescription("""
-                    查询年份（默认为当前年，时间格式为yyyy）
+                    查询年份（默认值为今年，时间格式为yyyy）
                      """) int year
     ) {
 
@@ -218,6 +230,7 @@ public class MarketRankingTool extends ProductTool<MarketRankingTool.Input> {
     /**
      * 返回是否支持查询
      * 如果不支持 返回支持查询的季度范围
+     *
      * @param yearAndQuarter
      * @return
      */

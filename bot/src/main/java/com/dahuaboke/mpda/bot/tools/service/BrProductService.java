@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.dahuaboke.mpda.bot.tools.dao.BrProductMapper;
 import com.dahuaboke.mpda.bot.tools.entity.BrProduct;
 import com.dahuaboke.mpda.bot.tools.enums.FileDealFlag;
+import com.dahuaboke.mpda.bot.tools.enums.FundInfoType;
+import com.dahuaboke.mpda.bot.tools.enums.FundType;
 import java.util.List;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,6 +97,9 @@ public class BrProductService {
         LambdaQueryWrapper<BrProduct> queryWrapper = new LambdaQueryWrapper<BrProduct>()
                 .select(BrProduct::getFundCode)
                 .eq(BrProduct::getProdtClsCode, fundType)
+                .and(w -> w.eq(BrProduct::getAncmTpBclsCd, FundInfoType.SUMMARY.getCode())
+                        .or(w2 ->w2.eq(BrProduct::getAncmTpBclsCd, FundInfoType.REPORT.getCode())
+                                .ge(BrProduct::getDlineDate, "20241231")))
                 .groupBy(BrProduct::getFundCode)
                 .having("count(1) = {0}" ,2);
         return brProductMapper.selectObjs(queryWrapper).stream().map(Object::toString).distinct().toList();

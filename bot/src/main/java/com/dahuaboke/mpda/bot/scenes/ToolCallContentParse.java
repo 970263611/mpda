@@ -7,33 +7,37 @@ import com.dahuaboke.mpda.core.context.consts.Constants;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.model.Generation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.ai.chat.messages.AssistantMessage;
-import org.springframework.ai.chat.messages.ToolResponseMessage;
-import org.springframework.ai.chat.model.ChatResponse;
-import org.springframework.ai.chat.model.Generation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 @Component
 public class ToolCallContentParse {
 
     private static final Logger log = LoggerFactory.getLogger(ToolCallContentParse.class);
 
-    private static final Pattern pattern = Pattern.compile("<tool_call\\s*[^>]*>(.*?)(</tool_call>|$)", Pattern.DOTALL);
+    private static final Pattern pattern = Pattern.compile(
+            "(?:<tool_call\\s*[^>]*>|tool_call[s]?:?)\\s*(\\{[\\s\\S]*\\})",
+            Pattern.DOTALL
+    );
 
     @Autowired
     private ObjectMapper objectMapper;
 
     public String parseContent(AbstractProductAgentPrompt prompt, ChatResponse chatResponse, OverAllState state) throws JsonProcessingException {
         String text = chatResponse.getResult().getOutput().getText();
+        log.info("ToolCallContentParse text is：{}", text);
         Matcher matcher = pattern.matcher(text);
         while (matcher.find()) {
             AssistantMessage output = chatResponse.getResult().getOutput();

@@ -5,6 +5,7 @@ import com.dahuaboke.mpda.bot.constants.FundConstant;
 import com.dahuaboke.mpda.bot.rag.exception.AdvancedFundCodeExtractor;
 import com.dahuaboke.mpda.bot.rag.exception.InitExceptionService;
 import com.dahuaboke.mpda.bot.rag.service.ProductReportQueryService;
+import com.dahuaboke.mpda.bot.rag.service.ProductSummaryQueryService;
 import com.dahuaboke.mpda.bot.scheduler.AddProductNameTask;
 import com.dahuaboke.mpda.bot.scheduler.CalculatedRateBondTask;
 import com.dahuaboke.mpda.bot.scheduler.ExceptionRetryTask;
@@ -20,6 +21,7 @@ import com.dahuaboke.mpda.bot.tools.dto.MarketRankDto;
 import com.dahuaboke.mpda.bot.tools.dto.MarketRankESBDto;
 import com.dahuaboke.mpda.bot.tools.entity.BrProduct;
 import com.dahuaboke.mpda.bot.tools.entity.BrProductReport;
+import com.dahuaboke.mpda.bot.tools.entity.BrProductSummary;
 import com.dahuaboke.mpda.bot.tools.service.BrPdfParseExceptionsService;
 import com.dahuaboke.mpda.bot.tools.service.BrProductService;
 import com.dahuaboke.mpda.bot.tools.service.RobotService;
@@ -69,6 +71,9 @@ public class ReserveController {
 
     @Autowired
     private ProductReportQueryService productReportQueryService;
+
+    @Autowired
+    private ProductSummaryQueryService productSummaryQueryService;
 
     @Autowired
     private BrProductMapper brProductMapper;
@@ -268,13 +273,18 @@ public class ReserveController {
     }
 
     @GetMapping("fund/queryReport")
-    public BrProductReport queryReport() {
-        BrProduct brProduct = new BrProduct();
-        brProduct.setFundCode("008256");
-        brProduct.setFundProdtFullNm("南方中债1-5年国开行债券指数A");
-        BrProductReport report = productReportQueryService.queryFundProduct(brProduct);
-        return report;
+    public String queryReport(@RequestParam("fundCode")String fundCode,@RequestParam("name")String name, @RequestParam("question")String question, @RequestParam("enableMonitor")boolean enableMonitor) {
+
+        return productReportQueryService.monitorSingleQuestion(fundCode,name,question,enableMonitor);
     }
+
+    @GetMapping("fund/querySummary")
+    public String querySummary(@RequestParam("fundCode")String fundCode,@RequestParam("name")String name, @RequestParam("question")String question, @RequestParam("enableMonitor")boolean enableMonitor) {
+
+        return productSummaryQueryService.monitorSingleQuestion(fundCode,name,question,enableMonitor);
+    }
+
+
 
     @GetMapping("fund/init")
     public void initException(){

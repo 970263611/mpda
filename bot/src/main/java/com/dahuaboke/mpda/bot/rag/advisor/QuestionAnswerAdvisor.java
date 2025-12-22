@@ -19,6 +19,7 @@ package com.dahuaboke.mpda.bot.rag.advisor;
 import com.dahuaboke.mpda.bot.rag.handler.DocContextHandler;
 import com.dahuaboke.mpda.bot.rag.handler.SearchHandler;
 import com.dahuaboke.mpda.bot.rag.handler.SortHandler;
+import com.dahuaboke.mpda.bot.rag.utils.MonitorUtil;
 import com.dahuaboke.mpda.core.rag.handler.EmbeddingSearchHandler;
 import com.dahuaboke.mpda.core.rag.rerank.Rerank;
 import org.springframework.ai.chat.client.ChatClientRequest;
@@ -35,7 +36,6 @@ import reactor.core.scheduler.Scheduler;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 /**
@@ -107,10 +107,12 @@ public class QuestionAnswerAdvisor implements BaseAdvisor {
 
     private final Rerank rerankHandler;
 
+    private final boolean enableMonitor;
+
     public QuestionAnswerAdvisor(SearchRequest searchRequest, @Nullable PromptTemplate promptTemplate,
                                  @Nullable Scheduler scheduler, int order, List<String> productName, List<String> keys,
                                  String fileType, SearchHandler searchHandler, EmbeddingSearchHandler embeddingSearchHandler, SortHandler sortHandler
-            , DocContextHandler docContextHandler, Rerank rerankHandler) {
+            , DocContextHandler docContextHandler, Rerank rerankHandler, boolean enableMonitor) {
         this.searchRequest = searchRequest;
         this.promptTemplate = promptTemplate != null ? promptTemplate : DEFAULT_PROMPT_TEMPLATE;
         this.scheduler = scheduler != null ? scheduler : BaseAdvisor.DEFAULT_SCHEDULER;
@@ -123,6 +125,7 @@ public class QuestionAnswerAdvisor implements BaseAdvisor {
         this.docContextHandler = docContextHandler;
         this.sortHandler = sortHandler;
         this.rerankHandler = rerankHandler;
+        this.enableMonitor = enableMonitor;
     }
 
     public static Builder builder() {
@@ -138,14 +141,17 @@ public class QuestionAnswerAdvisor implements BaseAdvisor {
     public ChatClientRequest before(ChatClientRequest chatClientRequest, AdvisorChain advisorChain) {
         //处理请求
         List<Document> topKDocuments = processRequest(searchRequest);
+        MonitorUtil.stepStart(enableMonitor,"步骤8,根据页码进行整理,使得结果保持有序","productName",productName,"fileType",fileType,"keys",keys, "documents",topKDocuments);
+
         //封装返回
         String documentContext = topKDocuments == null ? ""
                 : topKDocuments.stream().map(Document::getText).collect(Collectors.joining(System.lineSeparator()));
 
-        UserMessage userMessage = chatClientRequest.prompt().getUserMessage(); // TODO 替换为wrapper包装类
+        UserMessage userMessage = chatClientRequest.prompt().getUserMessage();
 
         String augmentedUserText = this.promptTemplate
                 .render(Map.of("query", userMessage.getText(), "question_answer_context", documentContext));
+        MonitorUtil.stepStart(enableMonitor,"步骤9,将整理结果让入提示词中","productName",productName,"fileType",fileType,"keys",keys, "finalText",augmentedUserText);
 
         Map<String, Object> context = new HashMap<>(chatClientRequest.context());
         context.put(RETRIEVED_DOCUMENTS, documentContext);
@@ -160,33 +166,41 @@ public class QuestionAnswerAdvisor implements BaseAdvisor {
         int topK = searchRequest.getTopK();
         //1. 通过关键字做精准查询
         List<Document> documents = new ArrayList<>();
+        MonitorUtil.stepStart(enableMonitor,"步骤1,开始向量检索","productName",productName,"fileType",fileType,"keys",keys, "documents",documents);
+
         if (productName.isEmpty() && !keys.isEmpty()) {
             documents.addAll(searchHandler.requestKey(searchRequest, keys,fileType));
+            MonitorUtil.stepStart(enableMonitor,"步骤2，基金代码为空，通过关键字匹配数据","keys",keys,"fileType",fileType,documents);
         } else if (!productName.isEmpty() && !keys.isEmpty()) {
             documents.addAll(searchHandler.requestProductAndKey(searchRequest, productName, keys,fileType));
+            MonitorUtil.stepStart(enableMonitor,"步骤3,通过关键字和基金代码匹配数据","productName",productName,"fileType",fileType,"keys",keys, "documents",documents);
         }
 
         //2. 通过关键字并没有匹配到数据,或者匹配到的数据过少, 通过基金名称提取出来
         if (!productName.isEmpty() && (documents.isEmpty() || documents.size() < topK)) {
             List<Document> productDocs = searchHandler.requestProduct(searchRequest, productName, topK * 2,fileType);
             documents.addAll(productDocs);
+            MonitorUtil.stepStart(enableMonitor,"步骤4,上述并没有匹配到数据,或者匹配到的数据过少, 通过基金名称提取出来","productName",productName,"fileType",fileType,"keys",keys, "documents",documents);
         }
 
         //3. 兜底向量查询
         if (documents.isEmpty() || productName.isEmpty()) {
             documents.addAll(embeddingSearchHandler.handler(searchRequest, topK * 2));
+            MonitorUtil.stepStart(enableMonitor,"步骤5,兜底向量查询","productName",productName,"fileType",fileType,"keys",keys, "documents",documents);
         }
 
         //4. 查询的结果,有可能出现pdf分页情况,获取上下页防止分页场景出现
         List<Document> docContext = new ArrayList<>();
         if (!documents.isEmpty()) {
             docContext = docContextHandler.handler(searchRequest, distinctById(documents),fileType);
+            MonitorUtil.stepStart(enableMonitor,"步骤6,分页情况处理","productName",productName,"fileType",fileType,"keys",keys, "documents",documents);
         }
 
         //5. 根据Document ID去重
         ArrayList<Document> allDocs = new ArrayList<>(documents);
         allDocs.addAll(docContext);
         List<Document> uniqueDocs = distinctById(allDocs);
+        MonitorUtil.stepStart(enableMonitor,"步骤7,去重，去掉文件中重复页码","productName",productName,"fileType",fileType,"keys",keys, "documents",documents);
 
         //6. 按文件,页码整理有序,并返回
         return sortHandler.handler(uniqueDocs);
@@ -227,6 +241,7 @@ public class QuestionAnswerAdvisor implements BaseAdvisor {
         private List<String> productName;
         private String fileType;
         private SearchRequest searchRequest;
+        private boolean enableMonitor;
 
         public Builder() {
         }
@@ -276,11 +291,15 @@ public class QuestionAnswerAdvisor implements BaseAdvisor {
             return this;
         }
 
+        public Builder enableMonitor(boolean enableMonitor) {
+            this.enableMonitor = enableMonitor;
+            return this;
+        }
+
         public QuestionAnswerAdvisor build() {
-            QuestionAnswerAdvisor questionAnswerAdvisor = new QuestionAnswerAdvisor(
+            return new QuestionAnswerAdvisor(
                     searchRequest, DEFAULT_PROMPT_TEMPLATE, null, 0, productName, keys,fileType,
-                    searchHandler, embeddingSearchHandler, sortHandler, docContextHandler, rerankHandler);
-            return questionAnswerAdvisor;
+                    searchHandler, embeddingSearchHandler, sortHandler, docContextHandler, rerankHandler, enableMonitor);
         }
     }
 }

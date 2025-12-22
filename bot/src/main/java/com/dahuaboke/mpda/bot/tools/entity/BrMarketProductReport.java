@@ -1,5 +1,7 @@
 package com.dahuaboke.mpda.bot.tools.entity;
 
+import com.dahuaboke.mpda.bot.utils.FieldTranslation;
+
 /**
  * @Desc: 市场产品报告实体类
  * @Author：zhh
@@ -10,172 +12,206 @@ public class BrMarketProductReport {
     /**
      * 基金代码
      */
+    @FieldTranslation(value = "基金代码", order = 1)
     private String fundCode;
 
     /**
      * 债券基金类型	1-信用债-指数型，2-信用债主动-开放式，3-利率债主动-开放式，4-利率债指数1-3年，5-利率债指数3-5年，6-利率债指数1-5年
      */
+    @FieldTranslation(value = "债券基金类型", order = 2)
     private String finBondType;
 
     /**
      * 近一周收益率
      */
+    @FieldTranslation(value = "近一周收益率", order = 10)
     private String nwk1CombProfrat;
 
     /**
      * 近一周收益率排名
      */
+    @FieldTranslation(value = "近一周收益率排名", order = 11)
     private int indsRankSeqNo;
 
     /**
      * 近一周收益率昨日排名
      */
+    @FieldTranslation(value = "近一周收益率昨日排名", order = 12)
     private int txamtRankNo;
 
     /**
      * 近一周收益率排名变动
      */
+    @FieldTranslation(value = "近一周收益率排名变动", order = 13)
     private int curdayBalChgTotalAccnum;
+
+    /**
+     * 近一周最大回撤
+     */
+    @FieldTranslation(value = "近一周最大回撤", order = 14)
+    private String styoMaxWdwDesc;
 
     /**
      * 近一月收益率
      */
+    @FieldTranslation(value = "近一月收益率", order = 15)
     private String nmm1CombProfrat;
 
     /**
      * 近一月收益率排名
      */
+    @FieldTranslation(value = "近一月收益率排名", order = 16)
     private int lblmRank;
 
     /**
      * 近一月收益率昨日排名
      */
+    @FieldTranslation(value = "近一月收益率昨日排名", order = 17)
     private int busicmLmRank;
 
     /**
      * 近一月收益率排名变动
      */
+    @FieldTranslation(value = "近一月收益率排名变动", order = 18)
     private int curdayBalChgAccnum;
+
+    /**
+     * 近一月最大回撤
+     */
+    @FieldTranslation(value = "近一月最大回撤", order = 19)
+    private String maxWdwrt;
 
     /**
      * 近三月收益率
      */
+    @FieldTranslation(value = "近三月收益率", order = 20)
     private String nmm3CombProfrat;
 
     /**
      * 近三月收益率排名
      */
+    @FieldTranslation(value = "近三月收益率排名", order = 21)
     private int rankScopeLowLmtVal;
 
     /**
      * 近三月收益率昨日排名
      */
+    @FieldTranslation(value = "近三月收益率昨日排名", order = 22)
     private int intglRankSeqNo;
 
     /**
      * 近三月收益率排名变动
      */
+    @FieldTranslation(value = "近三月收益率排名变动", order = 23)
     private int supptranBalChgTotalAccnum;
 
     /**
-     * 今年以来收益率
+     * 近三月最大回撤
      */
-    private String drtPftrtTval;
-
-    /**
-     * 今年以来收益率排名
-     */
-    private int rtnRtRank;
-
-    /**
-     * 今年以来收益率(年化)
-     */
-    private String pftrtName;
-
-    /**
-     * 今年以来收益率排名（年化）
-     */
-    private int busicmOybinpRank;
+    @FieldTranslation(value = "近三月最大回撤", order = 24)
+    private String fundstgMaxWdwrt;
 
     /**
      * 近一年收益率
      */
+    @FieldTranslation(value = "近一年收益率", order = 25)
     private String nyy1Profrat;
 
     /**
      * 近一年收益率排名
      */
+    @FieldTranslation(value = "近一年收益率排名", order = 26)
     private int reachStRankSeqNo;
 
     /**
      * 近一年收益率昨日排名
      */
+    @FieldTranslation(value = "近一年收益率昨日排名", order = 27)
     private int chremMgrIntglRankSeqNo;
 
     /**
      * 近一年收益率排名变动
      */
+    @FieldTranslation(value = "近一年收益率排名变动", order = 28)
     private int centerCfmCurdayChgTnum;
+
+    /**
+     * 近一年最大回撤
+     */
+    @FieldTranslation(value = "近一年最大回撤", order = 29)
+    private String nyy1Wdwrt;
+
+    /**
+     * 今年以来收益率
+     */
+    @FieldTranslation(value = "今年以来收益率", order = 30)
+    private String drtPftrtTval;
+
+    /**
+     * 今年以来收益率排名
+     */
+    @FieldTranslation(value = "今年以来收益率排名", order = 31)
+    private int rtnRtRank;
+
+    /**
+     * 今年以来收益率(年化)
+     */
+    @FieldTranslation(value = "今年以来收益率(年化)", order = 32)
+    private String pftrtName;
+
+    /**
+     * 今年以来收益率排名（年化）
+     */
+    @FieldTranslation(value = "今年以来收益率排名（年化）", order = 33)
+    private int busicmOybinpRank;
 
     /**
      * xxxx年第1季度收益率
      */
+    @FieldTranslation(value = "第1季度收益率", order = 34)
     private String lastYrlyPftrt;
 
     /**
      * xxxx年第1季度收益率排名
      */
+    @FieldTranslation(value = "第1季度收益率排名", order = 35)
     private int custRaiseRateRankNo;
 
     /**
      * xxxx年第2季度收益率
      */
+    @FieldTranslation(value = "第2季度收益率", order = 36)
     private String nmm6CombProfrat;
 
     /**
      * xxxx年第2季度收益率排名
      */
+    @FieldTranslation(value = "第2季度收益率排名", order = 37)
     private int detainRateRankNo;
 
     /**
      * xxxx年第3季度收益率
      */
+    @FieldTranslation(value = "第3季度收益率", order = 38)
     private String nmm3YrlyPftrt;
 
     /**
      * xxxx年第3季度收益率排名
      */
+    @FieldTranslation(value = "第3季度收益率排名", order = 39)
     private int tmPontAsetRaiseTotRanknum;
 
     /**
      * xxxx年第4季度收益率
      */
+    @FieldTranslation(value = "第4季度收益率", order = 40)
     private String nmm1YearlyProfrat;
 
     /**
      * xxxx年第4季度收益率排名
      */
+    @FieldTranslation(value = "第4季度收益率排名", order = 41)
     private int addRepPurcProTotnumRankno;
-
-    /**
-     * 近一周最大回撤
-     */
-    private String styoMaxWdwDesc;
-
-    /**
-     * 近一月最大回撤
-     */
-    private String maxWdwrt;
-
-    /**
-     * 近三月最大回撤
-     */
-    private String fundstgMaxWdwrt;
-
-    /**
-     * 近一年最大回撤
-     */
-    private String nyy1Wdwrt;
 
     public String getFundCode() {
         return fundCode;

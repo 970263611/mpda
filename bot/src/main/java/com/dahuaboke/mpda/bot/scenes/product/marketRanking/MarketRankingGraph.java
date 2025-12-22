@@ -7,6 +7,7 @@ import com.alibaba.cloud.ai.graph.exception.GraphRunnerException;
 import com.alibaba.cloud.ai.graph.exception.GraphStateException;
 import com.dahuaboke.mpda.bot.scenes.entity.PlatformExtend;
 import com.dahuaboke.mpda.bot.scenes.product.marketRanking.edge.MarketRankingDispatcher;
+import com.dahuaboke.mpda.bot.scenes.product.marketRanking.node.MarketRankingTranslateNode;
 import com.dahuaboke.mpda.bot.tools.enums.BondFundType;
 import com.dahuaboke.mpda.core.agent.graph.AbstractGraph;
 import com.dahuaboke.mpda.core.agent.scene.entity.SceneExtend;
@@ -55,6 +56,9 @@ public class MarketRankingGraph extends AbstractGraph {
     @Autowired
     private MarketRankingAgentPrompt marketRankingPrompt;
 
+    @Autowired
+    private MarketRankingTranslateNode marketRankingTranslateNode;
+
     @Override
     public Map<Object, StateGraph> buildGraph(KeyStrategyFactory keyStrategyFactory) throws MpdaGraphException {
         try {
@@ -63,12 +67,13 @@ public class MarketRankingGraph extends AbstractGraph {
                     .addNode("streamLlm", node_async(streamLlmNode))
                     .addNode("human", node_async(humanNode))
                     .addNode("tool", node_async(toolNode))
+                    .addNode("translate", node_async(marketRankingTranslateNode))
 
                     .addEdge(StateGraph.START, "llm")
                     .addConditionalEdges("llm", edge_async(marketRankingDispatcher),
-                            Map.of("go_human", "human", "go_tool", "tool"))
-                    .addEdge("tool", "streamLlm")
-                    .addEdge("human", StateGraph.END)
+                            Map.of("go_human", "streamLlm", "go_tool", "tool"))
+                    .addEdge("tool", "translate")
+                    .addEdge("translate", "streamLlm")
                     .addEdge("streamLlm", StateGraph.END);
             return Map.of("default", stateGraph);
         } catch (GraphStateException e) {
@@ -111,7 +116,7 @@ public class MarketRankingGraph extends AbstractGraph {
         try {
             if (toolExtend != null) {
                 if (toolExtend instanceof List) {
-                    if(toolExtend.get(0) instanceof List) {
+                    if (toolExtend.get(0) instanceof List) {
                         List<Map<String, Object>> o = (List<Map<String, Object>>) toolExtend.get(0);
                         if (o != null && !o.isEmpty()) {
                             platformExtend.setDownloadLink(true);

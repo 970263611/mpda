@@ -2,42 +2,50 @@ package com.dahuaboke.mpda.bot.tools.dto;
 
 
 import com.dahuaboke.mpda.bot.tools.entity.BrMarketProductReport;
+import com.dahuaboke.mpda.bot.utils.FieldTranslation;
 
 public class MarketRankDto extends BrMarketProductReport {
 
     /**
      * 基金名称
      */
+    @FieldTranslation(value = "基金名称", order = 3)
     private String fundFnm;
 
     /**
      * 期末基金资产净值（基金规模）
      **/
+    @FieldTranslation(value = "期末基金资产净值（基金规模）", order = 4)
     private String assetNval;
 
     /**
      * 基金管理人
      **/
+    @FieldTranslation(value = "基金管理人", order = 5)
     private String fundMgrName;
 
     /**
      * 基金成立日
      **/
+    @FieldTranslation(value = "基金成立日", order = 6)
     private String contractEffDate;
 
     /**
      * 基金经理
      */
+    @FieldTranslation(value = "基金经理", order = 7)
     private String investMgrName;
 
     /**
      * 存续天数
      */
+    @FieldTranslation(value = "存续天数", order = 8)
     private int curRenewDt;
 
     /**
      * 单位净值
      */
+    @FieldTranslation(value = "单位净值", order = 9)
     private String unitNetVal;
 
     /**

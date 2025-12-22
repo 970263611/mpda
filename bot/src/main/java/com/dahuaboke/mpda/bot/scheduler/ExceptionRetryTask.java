@@ -133,12 +133,12 @@ public class ExceptionRetryTask {
             if(FundInfoType.REPORT.getCode().equals(ancmTpBclsCd)){
                 List<BrProductReport> brProductReports = brProductReportService.selectBrProductReportByCodes(List.of(fundCode));
                 BrProductReport report = brProductReports.get(0);
-                report = reportQueryService.queryFundProduct(report, ancmTpBclsCd, question);
+                report = reportQueryService.querySingleQuestion(report, ancmTpBclsCd, question);
                 brProductReportService.updateProductReport(report);
             }else {
                 List<BrProductSummary> brProductSummaries = brProductSummaryService.selectBrProductSummaryByCodes(List.of(fundCode));
                 BrProductSummary summary = brProductSummaries.get(0);
-                summary = summaryQueryService.queryFundProduct(summary, ancmTpBclsCd, question);
+                summary = summaryQueryService.querySingleQuestion(summary, ancmTpBclsCd, question);
                 brProductSummaryService.updateProductSummary(summary);
             }
             successFlag = true;
