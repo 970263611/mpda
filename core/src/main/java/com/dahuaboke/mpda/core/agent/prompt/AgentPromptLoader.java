@@ -56,9 +56,9 @@ public class AgentPromptLoader {
         });
     }
 
-    public String extractPrompt(String sceneName, String findStrategyName) {
+    public String extractPrompt(String promptName, String findStrategyName) {
         Stream<AgentPromptEntity> agentPromptEntityStream = agentPrompts.stream().filter(entity ->
-                StringUtils.endsWithIgnoreCase(findStrategyName, entity.getFindStrategyName()) && StringUtils.endsWithIgnoreCase(sceneName, entity.getSceneName()));
+                StringUtils.endsWithIgnoreCase(findStrategyName, entity.getFindStrategyName()) && StringUtils.endsWithIgnoreCase(promptName, entity.getPromptName()));
         Optional<AgentPromptEntity> first = agentPromptEntityStream.findFirst();
         if (first.isPresent()) {
             return first.get().getPrompt();
@@ -66,15 +66,15 @@ public class AgentPromptLoader {
         return null;
     }
 
-    public List<AgentPromptEntity> extractPrompt(String sceneName) {
+    public List<AgentPromptEntity> extractPrompt(String promptName) {
         Stream<AgentPromptEntity> agentPromptEntityStream = agentPrompts.stream().filter(entity ->
-                StringUtils.endsWithIgnoreCase(sceneName, entity.getSceneName()));
+                StringUtils.endsWithIgnoreCase(promptName, entity.getPromptName()));
         return agentPromptEntityStream.toList();
     }
 
-    public void updatePrompt(String sceneName, String findStrategyName, String prompt) {
+    public void updatePrompt(String promptName, String findStrategyName, String prompt) {
         Stream<AgentPromptEntity> agentPromptEntityStream = agentPrompts.stream().filter(entity ->
-                StringUtils.endsWithIgnoreCase(findStrategyName, entity.getFindStrategyName()) && StringUtils.endsWithIgnoreCase(sceneName, entity.getSceneName()));
+                StringUtils.endsWithIgnoreCase(findStrategyName, entity.getFindStrategyName()) && StringUtils.endsWithIgnoreCase(promptName, entity.getPromptName()));
         Optional<AgentPromptEntity> first = agentPromptEntityStream.findFirst();
         if (first.isPresent()) {
             first.get().setPrompt(prompt);

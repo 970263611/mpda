@@ -9,12 +9,12 @@ public class AgentPromptEntity {
 
     private String findStrategyName;
     private String prompt;
-    private String sceneName;
+    private String promptName;
 
-    public AgentPromptEntity(String findStrategyName, String prompt, String sceneName) {
+    public AgentPromptEntity(String findStrategyName, String prompt, String promptName) {
         this.findStrategyName = findStrategyName;
         this.prompt = prompt;
-        this.sceneName = sceneName;
+        this.promptName = promptName;
     }
 
     public String getFindStrategyName() {
@@ -25,8 +25,8 @@ public class AgentPromptEntity {
         return prompt;
     }
 
-    public String getSceneName() {
-        return sceneName;
+    public String getPromptName() {
+        return promptName;
     }
 
     public void setPrompt(String prompt) {

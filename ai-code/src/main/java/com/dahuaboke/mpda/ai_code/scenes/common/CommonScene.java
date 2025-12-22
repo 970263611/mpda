@@ -6,6 +6,8 @@ import com.dahuaboke.mpda.core.agent.prompt.AgentPrompt;
 import com.dahuaboke.mpda.core.agent.scene.Scene;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.List;
+
 /**
  * auth: dahua
  * time: 2025/11/3 15:15
@@ -29,8 +31,8 @@ public class CommonScene implements Scene {
     }
 
     @Override
-    public AgentPrompt prompt() {
-        return commonAgentPrompt;
+    public List<AgentPrompt> prompt() {
+        return List.of(commonAgentPrompt);
     }
 
     @Override

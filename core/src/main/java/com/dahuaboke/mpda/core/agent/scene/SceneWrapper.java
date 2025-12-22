@@ -68,17 +68,19 @@ public class SceneWrapper {
                 }
                 return "";
             }));
-            scene.prompt().build(collect);
-            List<AgentPromptEntity> prompts = agentPromptLoader.extractPrompt(scene.getClass().getName());
-            prompts.forEach(entity -> {
-                try {
-                    cacheManager.setPromptFromFie(entity.getPrompt());
-                    scene.prompt().build(collect);
-                    String prompt = cacheManager.getPromptFromFie();
-                    agentPromptLoader.updatePrompt(entity.getSceneName(), entity.getFindStrategyName(), prompt);
-                } finally {
-                    cacheManager.removePromptFromFie();
-                }
+            scene.prompt().stream().forEach(agentPrompt -> {
+                agentPrompt.build(collect);
+                List<AgentPromptEntity> prompts = agentPromptLoader.extractPrompt(agentPrompt.getClass().getSuperclass().getName());
+                prompts.forEach(entity -> {
+                    try {
+                        cacheManager.setPromptFromFie(entity.getPrompt());
+                        agentPrompt.build(collect);
+                        String prompt = cacheManager.getPromptFromFie();
+                        agentPromptLoader.updatePrompt(entity.getPromptName(), entity.getFindStrategyName(), prompt);
+                    } finally {
+                        cacheManager.removePromptFromFie();
+                    }
+                });
             });
         }
         this.chain.init();

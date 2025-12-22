@@ -6,6 +6,8 @@ import com.dahuaboke.mpda.core.agent.prompt.AgentPrompt;
 import com.dahuaboke.mpda.core.agent.scene.Scene;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.List;
+
 /**
  * auth: dahua
  * time: 2025/8/21 15:03
@@ -29,8 +31,8 @@ public class ResolutionScene implements Scene {
     }
 
     @Override
-    public AgentPrompt prompt() {
-        return resolutionPrompt;
+    public List<AgentPrompt> prompt() {
+        return List.of(resolutionPrompt);
     }
 
     @Override

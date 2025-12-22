@@ -17,6 +17,7 @@ import org.springframework.ai.chat.messages.Message;
 import reactor.core.publisher.Flux;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,11 +29,11 @@ public abstract class AbstractChain implements Chain {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractChain.class);
     protected final Graph graph;
-    protected final AgentPrompt agentPrompt;
+    protected final List<AgentPrompt> agentPrompt;
     protected final CacheManager cacheManager;
     protected Map<String, Object> attribute;
 
-    public AbstractChain(Graph graph, AgentPrompt agentPrompt, CacheManager cacheManager, Set<Class<? extends Message>> memoryExclude) {
+    public AbstractChain(Graph graph, List<AgentPrompt> agentPrompt, CacheManager cacheManager, Set<Class<? extends Message>> memoryExclude) {
         this.graph = graph;
         this.agentPrompt = agentPrompt;
         this.cacheManager = cacheManager;
@@ -94,7 +95,7 @@ public abstract class AbstractChain implements Chain {
         attribute.remove(Constants.TOOLS);
         attribute.put(Constants.STATE, null);
         if (agentPrompt != null) {
-            attribute.put(Constants.PROMPT, agentPrompt.description());
+            attribute.put(Constants.PROMPT, agentPrompt.get(0).description());
         }
         attribute.put(Constants.QUERY, context.getQuery());
         attribute.put(Constants.CONVERSATION_ID, context.getConversationId());

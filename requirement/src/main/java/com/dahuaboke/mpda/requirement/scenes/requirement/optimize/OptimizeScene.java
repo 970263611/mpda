@@ -8,6 +8,8 @@ import com.dahuaboke.mpda.core.agent.scene.Scene;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 /**
  * auth: dahua
  * time: 2025/9/26 11:17
@@ -32,8 +34,8 @@ public class OptimizeScene implements Scene {
     }
 
     @Override
-    public AgentPrompt prompt() {
-        return optimizeAgentPrompt;
+    public List<AgentPrompt> prompt() {
+        return List.of(optimizeAgentPrompt);
     }
 
     @Override

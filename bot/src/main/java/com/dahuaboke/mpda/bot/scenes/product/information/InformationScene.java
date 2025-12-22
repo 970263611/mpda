@@ -10,6 +10,8 @@ import org.springframework.ai.chat.messages.ToolResponseMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 /**
  * auth: dahua
  * time: 2025/10/28 10:12
@@ -38,8 +40,8 @@ public class InformationScene implements Scene {
     }
 
     @Override
-    public AgentPrompt prompt() {
-        return informationAgentPrompt;
+    public List<AgentPrompt> prompt() {
+        return List.of(informationAgentPrompt);
     }
 
     @Override

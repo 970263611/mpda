@@ -1,9 +1,11 @@
 package com.dahuaboke.mpda.ai_code.scenes.codeGenerate.tools;
 
 
+import com.dahuaboke.mpda.ai_code.scenes.codeGenerate.CodeGenerateAgentPrompt;
 import com.dahuaboke.mpda.core.agent.tools.AbstractBaseTool;
 import com.dahuaboke.mpda.core.agent.tools.ToolResult;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -18,6 +20,9 @@ import java.util.Map;
  */
 @Component
 public class CodeGenerateTool extends AbstractBaseTool<CodeGenerateTool.Input> {
+
+    @Autowired
+    private CodeGenerateAgentPrompt codeGenerateAgentPrompt;
 
     @Override
     public String getDescription() {
@@ -38,6 +43,7 @@ public class CodeGenerateTool extends AbstractBaseTool<CodeGenerateTool.Input> {
 
     @Override
     public ToolResult execute(Input input) {
+        codeGenerateAgentPrompt.description();
         String filePath = input.path();
         boolean fileIfNotExists = createFileIfNotExists(filePath);
         if (!fileIfNotExists) {

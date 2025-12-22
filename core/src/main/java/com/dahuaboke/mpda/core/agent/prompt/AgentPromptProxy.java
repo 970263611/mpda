@@ -1,6 +1,7 @@
 package com.dahuaboke.mpda.core.agent.prompt;
 
 
+import com.dahuaboke.mpda.core.agent.scene.Scene;
 import com.dahuaboke.mpda.core.context.CacheManager;
 import com.dahuaboke.mpda.core.context.CoreContext;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -32,10 +33,11 @@ public class AgentPromptProxy {
 
     @Around("agentPromptPointcut()")
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
+        Object targetObject = joinPoint.getTarget();
+        Class<?> targetClass = targetObject.getClass();
         CoreContext context = cacheManager.getContext();
-        String sceneName = context.getSceneName();
         String findStrategyName = context.getFindStrategy().name();
-        String prompt = agentPromptLoader.extractPrompt(sceneName, findStrategyName);
+        String prompt = agentPromptLoader.extractPrompt(targetClass.getName(), findStrategyName);
         if (StringUtils.hasLength(prompt)) {
             return prompt;
         }

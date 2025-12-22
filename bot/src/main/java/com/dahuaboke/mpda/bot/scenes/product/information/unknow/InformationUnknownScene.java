@@ -8,6 +8,8 @@ import com.dahuaboke.mpda.core.agent.scene.Scene;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 /**
  * auth: dahua
  * time: 2025/11/25 13:52
@@ -29,7 +31,7 @@ public class InformationUnknownScene implements Scene {
     }
 
     @Override
-    public AgentPrompt prompt() {
+    public List<AgentPrompt> prompt() {
         return null;
     }
 

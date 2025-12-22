@@ -8,6 +8,8 @@ import com.dahuaboke.mpda.core.agent.scene.Scene;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 /**
  * auth: dahua
  * time: 2025/8/21 15:03
@@ -34,8 +36,8 @@ public class SmallTalkScene implements Scene {
     }
 
     @Override
-    public AgentPrompt prompt() {
-        return smallTalkPrompt;
+    public List<AgentPrompt> prompt() {
+        return List.of(smallTalkPrompt);
     }
 
     @Override

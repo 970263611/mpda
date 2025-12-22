@@ -9,6 +9,7 @@ import com.dahuaboke.mpda.core.exception.MpdaRuntimeException;
 import org.springframework.ai.chat.messages.Message;
 import reactor.core.publisher.Flux;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -17,7 +18,7 @@ import java.util.Set;
  */
 public class DefaultChain extends AbstractChain {
 
-    private DefaultChain(Graph graph, AgentPrompt agentPrompt, CacheManager cacheManager, Set<Class<? extends Message>> memoryExclude) {
+    private DefaultChain(Graph graph, List<AgentPrompt> agentPrompt, CacheManager cacheManager, Set<Class<? extends Message>> memoryExclude) {
         super(graph, agentPrompt, cacheManager, memoryExclude);
     }
 
@@ -38,7 +39,7 @@ public class DefaultChain extends AbstractChain {
     public static final class Builder {
 
         private Graph graph;
-        private AgentPrompt agentPrompt;
+        private List<AgentPrompt> agentPrompt;
         private CacheManager cacheManager;
         private Set<Class<? extends Message>> memoryExclude;
 
@@ -50,7 +51,7 @@ public class DefaultChain extends AbstractChain {
             return this;
         }
 
-        public Builder prompt(AgentPrompt agentPrompt) {
+        public Builder prompt(List<AgentPrompt> agentPrompt) {
             this.agentPrompt = agentPrompt;
             return this;
         }
