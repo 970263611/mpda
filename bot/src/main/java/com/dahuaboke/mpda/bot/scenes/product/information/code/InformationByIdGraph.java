@@ -6,6 +6,7 @@ import com.alibaba.cloud.ai.graph.StateGraph;
 import com.alibaba.cloud.ai.graph.exception.GraphRunnerException;
 import com.alibaba.cloud.ai.graph.exception.GraphStateException;
 import com.dahuaboke.mpda.bot.scenes.product.information.code.edge.InformationByIdDispatcher;
+import com.dahuaboke.mpda.bot.scenes.product.information.code.node.InformationByIdTranslateNode;
 import com.dahuaboke.mpda.bot.scenes.product.information.name.InformationByNameScene;
 import com.dahuaboke.mpda.bot.scenes.product.marketRanking.MarketRankingScene;
 import com.dahuaboke.mpda.core.agent.graph.AbstractGraph;
@@ -53,20 +54,23 @@ public class InformationByIdGraph extends AbstractGraph {
     @Autowired
     private InformationByIdAgentPrompt informationPrompt;
 
+    @Autowired
+    private InformationByIdTranslateNode informationByIdTranslateNode;
+
     @Override
     public Map<Object, StateGraph> buildGraph(KeyStrategyFactory keyStrategyFactory) throws MpdaGraphException {
         try {
             StateGraph stateGraph = new StateGraph(keyStrategyFactory)
                     .addNode("llm", node_async(llmNode))
                     .addNode("streamLlm", node_async(streamLlmNode))
-                    .addNode("human", node_async(humanNode))
                     .addNode("tool", node_async(toolNode))
+                    .addNode("translate", node_async(informationByIdTranslateNode))
 
                     .addEdge(StateGraph.START, "llm")
                     .addConditionalEdges("llm", edge_async(informationByIdDispatcher),
-                            Map.of("go_human", "human", "go_tool", "tool"))
-                    .addEdge("tool", "streamLlm")
-                    .addEdge("human", StateGraph.END)
+                            Map.of("go_human", "streamLlm", "go_tool", "tool"))
+                    .addEdge("tool", "translate")
+                    .addEdge("translate", "streamLlm")
                     .addEdge("streamLlm", StateGraph.END);
             return Map.of("default", stateGraph);
         } catch (GraphStateException e) {

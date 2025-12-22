@@ -665,11 +665,19 @@ public class RobotService {
         return netValues.get(0).getStgyD7YearlyProfrat();
     }
 
-    public void updateValidFlag() {
-        BrProduct brProduct = new BrProduct();
-        brProduct.setValidFlag("1");//是否解析标志 0-未上架 1-已上架
-        brProductMapper.update(brProduct, new LambdaQueryWrapper<BrProduct>());
+    public String thouCopFundUnitProfit(NetValReq netValReq) {
+        LambdaQueryWrapper<BrNetvalue> queryWrapper = new LambdaQueryWrapper<BrNetvalue>()
+                .eq(BrNetvalue::getFundCode, netValReq.getProdtCode())
+                .orderByDesc(BrNetvalue::getNetValDate)
+                .last("LIMIT 1");
+
+        List<BrNetvalue> netValues = brNetvalueMapper.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(netValues)) {
+            return "0";
+        }
+        return netValues.get(0).getThouCopFundUnitProfit();
     }
+
 
 
 }

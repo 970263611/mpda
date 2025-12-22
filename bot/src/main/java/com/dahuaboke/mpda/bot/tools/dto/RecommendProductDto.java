@@ -62,8 +62,26 @@ public class RecommendProductDto {
      */
     private String drawTimePeriod;
 
+    /**
+     * 七日年化 只有货基有
+     */
+    private Double sevenDayYearlyProfrat;
 
-    public RecommendProductDto(String fundCode, String prodtClsCode, String fundFnm, String investMgrName, String assetNval, String fundMgrName, String trusteePersName, String riskProfitCoeff, Double rate, String rateTimePeriod, Double maxWithDraw, String drawTimePeriod) {
+
+    /**
+     * 万份收益 只有货基有
+     */
+    private Double thouCopFundUnitProfit;
+
+
+    public void setThouCopFundUnitProfit(Double thouCopFundUnitProfit) {
+        this.thouCopFundUnitProfit = thouCopFundUnitProfit;
+    }
+
+    public RecommendProductDto() {
+    }
+
+    public RecommendProductDto(String fundCode, String prodtClsCode, String fundFnm, String investMgrName, String assetNval, String fundMgrName, String trusteePersName, String riskProfitCoeff, Double rate, String rateTimePeriod, Double maxWithDraw, String drawTimePeriod, Double sevenDayYearlyProfrat, Double thouCopFundUnitProfit) {
         this.fundCode = fundCode;
         this.prodtClsCode = prodtClsCode;
         this.fundFnm = fundFnm;
@@ -76,9 +94,8 @@ public class RecommendProductDto {
         this.rateTimePeriod = rateTimePeriod;
         this.maxWithDraw = maxWithDraw;
         this.drawTimePeriod = drawTimePeriod;
-    }
-
-    public RecommendProductDto() {
+        this.sevenDayYearlyProfrat = sevenDayYearlyProfrat;
+        this.thouCopFundUnitProfit = thouCopFundUnitProfit;
     }
 
     @Override
@@ -96,6 +113,8 @@ public class RecommendProductDto {
                 ", rateTimePeriod='" + rateTimePeriod + '\'' +
                 ", maxWithDraw=" + maxWithDraw +
                 ", drawTimePeriod='" + drawTimePeriod + '\'' +
+                ", sevenDayYearlyProfrat='" + sevenDayYearlyProfrat + '\'' +
+                ", thouCopFundUnitProfit=" + thouCopFundUnitProfit +
                 '}';
     }
 
@@ -193,6 +212,18 @@ public class RecommendProductDto {
 
     public void setDrawTimePeriod(String drawTimePeriod) {
         this.drawTimePeriod = drawTimePeriod;
+    }
+
+    public Double getThouCopFundUnitProfit() {
+        return thouCopFundUnitProfit;
+    }
+
+    public Double getSevenDayYearlyProfrat() {
+        return sevenDayYearlyProfrat;
+    }
+
+    public void setSevenDayYearlyProfrat(Double sevenDayYearlyProfrat) {
+        this.sevenDayYearlyProfrat = sevenDayYearlyProfrat;
     }
 
 }

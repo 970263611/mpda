@@ -124,4 +124,8 @@ contentManage:
   opeUser: 20080733650
   opeOrg: 11005293
 
+#mpda:
+#  monitor:
+#    persistence:
+#      enabled: true
 

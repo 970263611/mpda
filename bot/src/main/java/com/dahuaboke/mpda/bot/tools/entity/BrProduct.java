@@ -62,7 +62,7 @@ public class BrProduct implements Serializable {
     private String fileName;
 
     /**
-     * 分类代码 0-债基 1-非债基
+     * 分类代码 FundType枚举
      */
     private String prodtClsCode;
 

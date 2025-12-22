@@ -23,6 +23,7 @@ public class MarketRankingScene implements Scene {
     private final String description = """
                 定制市场分析报告
                 查询产品市场排名
+                根据基金类型和时间范围 定制市场分析报告
             """;
 
     @Autowired

@@ -31,22 +31,21 @@ public class ToolUtil {
         ToolExecutionResult toolExecutionResult;
 
         ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
-        log.debug("origin classLoader：" + originClassLoader);
+        log.debug("origin classLoader：{}", originClassLoader);
 
         try {
             Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-            log.debug("current classLoader：" + this.getClass().getClassLoader());
+            log.debug("current classLoader：{}", this.getClass().getClassLoader());
             toolExecutionResult = toolCallingManager.executeToolCalls(new Prompt(), chatResponse);
         } finally {
             Thread.currentThread().setContextClassLoader(originClassLoader);
         }
 
         List<Message> conversationHistory = toolExecutionResult.conversationHistory();
-        ToolResponseMessage toolResponse = null;
-        if (conversationHistory
-                .get(conversationHistory.size() - 1) instanceof ToolResponseMessage toolResponseMessage) {
-            toolResponse = toolResponseMessage;
+        try {
+            return (ToolResponseMessage) conversationHistory.get(conversationHistory.size() - 1);
+        } catch (Exception e) {
+            return null;
         }
-        return toolResponse;
     }
 }

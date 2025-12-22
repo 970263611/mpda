@@ -11,6 +11,7 @@ import com.dahuaboke.mpda.core.monitor.persistence.PersistenceManager;
 import com.dahuaboke.mpda.core.monitor.persistence.PersistenceService;
 import com.dahuaboke.mpda.core.rag.config.RagConfiguration;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.tool.ToolCallbackProvider;
@@ -22,6 +23,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import static com.dahuaboke.mpda.core.config.MpdaMonitorProperties.PERSISTENCE_ENABLE;
 import static com.dahuaboke.mpda.core.config.MpdaMonitorProperties.PERSISTENCE_ENABLE_VALUE;
@@ -48,20 +50,12 @@ public class CoreAutoConfiguration {
     }
 
     @Bean
-    public ObjectMapper utf8ObjectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
+    public ObjectMapper utf8ObjectMapper(Jackson2ObjectMapperBuilder builder) {
+        ObjectMapper objectMapper = builder.build();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         objectMapper.configure(JsonGenerator.Feature.COMBINE_UNICODE_SURROGATES_IN_UTF8, true);
         return objectMapper;
     }
-
-//    @Bean
-//    @Primary
-//    public WebClient.Builder openAiWebClientBuilder(ObjectMapper objectMapper) {
-//        return WebClient.builder().codecs(configurer -> {
-//            configurer.defaultCodecs().jackson2JsonEncoder(new Jackson2JsonEncoder(objectMapper));
-//            configurer.defaultCodecs().jackson2JsonDecoder(new Jackson2JsonDecoder(objectMapper));
-//        });
-//    }
 
     @Bean
     @ConditionalOnProperty(value = PERSISTENCE_ENABLE, havingValue = PERSISTENCE_ENABLE_VALUE)

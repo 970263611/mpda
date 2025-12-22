@@ -11,6 +11,7 @@ import com.dahuaboke.mpda.bot.tools.entity.BrProduct;
 import com.dahuaboke.mpda.bot.tools.entity.BrProductReport;
 import com.dahuaboke.mpda.bot.tools.entity.BrProductSummary;
 import com.dahuaboke.mpda.bot.tools.enums.FileDealFlag;
+import com.dahuaboke.mpda.bot.tools.enums.FundInfoType;
 import com.dahuaboke.mpda.bot.tools.enums.PdfExceptionType;
 import com.dahuaboke.mpda.bot.tools.service.BrPdfParseExceptionsService;
 import com.dahuaboke.mpda.core.rag.entity.FundFieldMapper;
@@ -82,35 +83,7 @@ public class ProductSummaryQueryService {
             String key = entry.getValue();
             String userQuery = "基于" + productCode + "基金代码," + "基金名称为" + productName + "的" + question;
             try {
-                SearchRequest searchRequest = SearchRequest.builder()
-                        .topK(15)
-                        .query(userQuery)
-                        .similarityThreshold(0.25)
-                        .build();
-
-                String content = chatClient.prompt()
-                        .advisors(QuestionAnswerAdvisor
-                                .builder()
-                                .keys(List.of(key))
-                                .fileType(ancmTpBclsCd)
-                                .productName(List.of(productCode))
-                                .searchRequest(searchRequest)
-                                .searchHandler(searchHandler)
-                                .embeddingHandler(embeddingSearchHandler)
-                                .docContextHandler(docContextHandler)
-                                .rerankHandler(rerankHandler)
-                                .sortHandler(sortHandler)
-                                .build())
-                        .user(userQuery)
-                        .call().content();
-
-                String answer = "无数据";
-                String prefix = "『RESULT』";
-                String suffix = "『END』";
-                if(content.contains(prefix) && content.contains(suffix)){
-                    answer = content.split(prefix)[1].split(suffix)[0].trim();
-                }
-
+                String answer = this.extraAnswer(userQuery, List.of(key), List.of(productCode), ancmTpBclsCd,false);
                 mapper.setFieldByComment(fdProductSummary, question, StringUtils.isEmpty(answer)?"无数据":answer);
             } catch (Exception e) {
                 log.error("基金{}查询失败问题为: {}", productName, userQuery, e);
@@ -120,13 +93,27 @@ public class ProductSummaryQueryService {
         return fdProductSummary;
     }
 
-    public BrProductSummary queryFundProduct(BrProductSummary brSummaryReport, String ancmTpBclsCd , String question) throws Exception {
+    public BrProductSummary querySingleQuestion(BrProductSummary brProductSummary, String ancmTpBclsCd, String question) throws Exception {
         // 将模型结果封装到基金对象
         FundFieldMapper mapper = new FundFieldMapper(BrProductSummary.class);
-        String productCode = brSummaryReport.getFundCode();
-        String productName = brSummaryReport.getFundFnm();
+        String productCode = brProductSummary.getFundCode();
+        String productName = brProductSummary.getFundFnm();
         String userQuery = "基于" + productCode + "基金代码," + "基金名称为" + productName + "的" + question;
 
+        String answer = this.extraAnswer(userQuery, List.of(), List.of(productCode),  ancmTpBclsCd,false);
+        mapper.setFieldByComment(brProductSummary, question, StringUtils.isEmpty(answer)?"无数据":answer);
+        return brProductSummary;
+    }
+
+
+    public String monitorSingleQuestion(String productCode,String productName ,  String question ,boolean enableMonitor)  {
+
+        String userQuery = "基于" + productCode + "基金代码," + "基金名称为" + productName + "的" + question;
+
+        return this.extraAnswer(userQuery, List.of(), List.of(productCode), FundInfoType.SUMMARY.getCode(), enableMonitor);
+    }
+
+    private String extraAnswer(String userQuery,List<String> keys,List<String> productCode ,  String ancmTpBclsCd, boolean enableMonitor){
         SearchRequest searchRequest = SearchRequest.builder()
                 .topK(15)
                 .query(userQuery)
@@ -136,10 +123,11 @@ public class ProductSummaryQueryService {
         String content = chatClient.prompt()
                 .advisors(QuestionAnswerAdvisor
                         .builder()
-                        .keys(List.of())
-                        .productName(List.of(productCode))
+                        .keys(keys)
                         .fileType(ancmTpBclsCd)
+                        .productName(productCode)
                         .searchRequest(searchRequest)
+                        .enableMonitor(enableMonitor)
                         .searchHandler(searchHandler)
                         .embeddingHandler(embeddingSearchHandler)
                         .docContextHandler(docContextHandler)
@@ -148,17 +136,15 @@ public class ProductSummaryQueryService {
                         .build())
                 .user(userQuery)
                 .call().content();
+
         String answer = "无数据";
         String prefix = "『RESULT』";
         String suffix = "『END』";
         if(content.contains(prefix) && content.contains(suffix)){
             answer = content.split(prefix)[1].split(suffix)[0].trim();
         }
-
-        mapper.setFieldByComment(brSummaryReport, question, StringUtils.isEmpty(answer)?"无数据":answer);
-        return brSummaryReport;
+        return answer;
     }
-
 
 
     public void insertPdfExceptionsTable(String productCode, String ancmTpBclsCd, String productName,String userQuery,Exception e) {
