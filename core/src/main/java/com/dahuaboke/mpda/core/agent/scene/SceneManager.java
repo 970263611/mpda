@@ -42,15 +42,15 @@ public class SceneManager {
     }
 
     public Flux<SceneResponse> applyAsync(CoreContext context) throws MpdaException {
-        List<SceneWrapper> sceneWrappers = find(context);
-        for (SceneWrapper sceneWrapper : sceneWrappers) {
-            try {
+        try {
+            List<SceneWrapper> sceneWrappers = find(context);
+            for (SceneWrapper sceneWrapper : sceneWrappers) {
                 context.setSceneName(sceneWrapper.getSceneName());
                 cacheManager.setContext(context);
                 return sceneWrapper.applyAsync(context);
-            } finally {
-                cacheManager.removeContext();
             }
+        } finally {
+            cacheManager.removeContext();
         }
         throw new MpdaException("Not found match scene");
     }

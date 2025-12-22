@@ -41,13 +41,9 @@ public class RouteFinderStrategy extends AbstractSceneFinderStrategy {
     protected SceneWrapper next(CoreContext context) throws MpdaException {
         SceneWrapper runtimeWrapper = cacheManager.getRootWrapper();
         while (!runtimeWrapper.isEnd()) {
-            try {
-                context.setSceneName(runtimeWrapper.getSceneName());
-                cacheManager.setContext(context);
-                runtimeWrapper = next(context, runtimeWrapper);
-            } finally {
-                cacheManager.removeContext();
-            }
+            context.setSceneName(runtimeWrapper.getSceneName());
+            cacheManager.setContext(context);
+            runtimeWrapper = next(context, runtimeWrapper);
         }
         return runtimeWrapper;
     }
